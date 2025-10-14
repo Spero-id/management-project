@@ -1,5 +1,16 @@
 @extends('layouts.app')
 
+@push('styles')
+    <style>
+        
+    body.modal-open {
+        padding-right: 0 !important;
+        overflow-y: auto !important;
+    }
+
+    </style>
+@endpush
+
 @section('header')
     <div class="row g-2 align-items-center">
         <div class="col">
@@ -180,10 +191,18 @@
     <div class="row row-cards mt-3">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">
                         Status History
                     </h3>
+                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#followUpModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="me-1">
+                        <path d="M12 5v14m-7-7h14" />
+                    </svg>
+                    Follow Up
+                </button>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -424,4 +443,102 @@
             </div>
         </div>
     </div>
+
+            <!-- Follow Up Modal -->
+        <div class="modal fade" id="followUpModal" tabindex="-1" aria-labelledby="followUpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="followUpModalLabel">Tambah Follow Up</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('prospect.show') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Notes</label>
+                    <textarea id="hugerte-mytextarea" name="notes" placeholder="Tuliskan catatan follow up..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="progress" class="form-label">Progress (%)</label>
+                    <input type="number" name="progress" id="progress" class="form-control" min="0" max="100" placeholder="Masukkan progress (misal 90)">
+                </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+            </div>
+        </div>
+        </div>
+
+        
+@push('scripts')
+    <!-- WYSIWYG Editor Tabler (lokal) -->
+    <script src="{{ asset('assets/libs/hugerte/hugerte.min.js') }}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        let options = {
+          selector: "#hugerte-mytextarea",
+          height: 300,
+          menubar: false,
+          statusbar: false,
+          license_key: "gpl",
+          plugins: [
+            "advlist",
+            "autolink",
+            "lists",
+            "link",
+            "image",
+            "charmap",
+            "preview",
+            "anchor",
+            "searchreplace",
+            "visualblocks",
+            "code",
+            "fullscreen",
+            "insertdatetime",
+            "media",
+            "table",
+            "code",
+            "help",
+            "wordcount",
+          ],
+          toolbar:
+            "undo redo | formatselect | " +
+            "bold italic backcolor | alignleft aligncenter " +
+            "alignright alignjustify | bullist numlist outdent indent | " +
+            "removeformat",
+          content_style:
+            "body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; font-size: 14px; -webkit-font-smoothing: antialiased; }",
+        };
+        if (localStorage.getItem("tablerTheme") === "dark") {
+          options.skin = "oxide-dark";
+          options.content_css = "dark";
+        }
+        hugeRTE.init(options);
+        
+            // Reset modal form on close
+           const followUpModal = document.getElementById('followUpModal');
+            followUpModal.addEventListener('hidden.bs.modal', function () {
+
+                // Reset input progress
+                document.getElementById('progress').value = '';
+
+                // Reset isi WYSIWYG editor
+                const editor = hugeRTE.get('#hugerte-mytextarea');
+                if (editor) {
+                    editor.setContent('');
+                }
+
+                const form = followUpModal.querySelector('form');
+                form.reset();
+            });
+      });
+
+
+    </script>
+@endpush
+
 @endsection
