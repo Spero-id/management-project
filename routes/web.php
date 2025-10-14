@@ -19,3 +19,19 @@ Route::middleware('auth')->group(function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('/project', function () {
+    return view('project_list.project');
+})->name('project.index');
+
+Route::get('/project/detail/{id}', function ($id) {
+    return view('project_list.detail', compact('id'));
+})->name('project.detail');
+
+Route::get('/project/{id}/log', function($id) {
+    return view('project_list.log', compact('id'));
+})->name('project.log');
+
+Route::get('/project/notes/{status}', function ($status) {
+    return view('project_list.notes', compact('status'));
+});
