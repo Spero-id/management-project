@@ -3,18 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\ProjectClientPerson;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
-class ProspectController extends Controller
+class ProjectController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $projects = Project::with('user')->latest()->paginate(10);
+
+        $projects = Project::with(['status', 'manager', 'creator'])->get();
+
         return view('project.index', compact('projects'));
+
     }
 
     /**
@@ -48,7 +54,7 @@ class ProspectController extends Controller
 
         $project = Project::create($validated);
 
-        return redirect()->route('projects.show', $project)->with('success', 'Project created successfully!');
+        return redirect()->route('project.show', $project)->with('success', 'Project created successfully!');
     }
 
     /**
@@ -57,7 +63,12 @@ class ProspectController extends Controller
     public function show(Project $project)
     {
 
-        return view('project.show', compact('project'));
+        // Load simple WBS items for this project (categories and tasks)
+        $wbsItems = \App\Models\ProjectWBSItem::where('project_id', $project->id)
+            ->orderBy('id')
+            ->get();
+
+        return view('project.show', compact('project', 'wbsItems'));
     }
 
     /**
@@ -65,7 +76,7 @@ class ProspectController extends Controller
      */
     public function edit(Project $project)
     {
-        return view('projects.edit', compact('project'));
+        return view('project.edit', compact('project'));
     }
 
     /**
@@ -89,7 +100,7 @@ class ProspectController extends Controller
 
         $project->update($validated);
 
-        return redirect()->route('projects.show', $project)->with('success', 'Project updated successfully!');
+        return redirect()->route('project.show', $project)->with('success', 'Project updated successfully!');
     }
 
     /**
@@ -99,6 +110,152 @@ class ProspectController extends Controller
     {
         $project->delete();
 
-        return redirect()->route('projects.index')->with('success', 'Project deleted successfully!');
+        return redirect()->route('project.index')->with('success', 'Project deleted successfully!');
+    }
+
+    public function changeStatus(Request $request, Project $project)
+    {
+
+        try {
+            $status = match ($request->input('status')) {
+                'on-going' => $this->changeStatusToOnGoing($request, $project),
+                
+                default => null,
+            };
+
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            // return redirect()->route('project.show', $project)->with('error', 'Failed to change project status: '.$e->getMessage());
+        }
+
+        return redirect()->route('project.show', $project)->with('success', 'Project status changed successfully.');
+    }
+
+    private function changeStatusToOnGoing(Request $request, Project $project)
+    {
+
+        $validated = $request->validate([
+            'pic_project' => 'nullable|string|max:255',
+            'waktu_pelaksanaan_days' => 'nullable|string|min:1',
+            'mom_file' => 'nullable|file|mimes:pdf|max:5120',
+            'client_persons' => 'nullable',
+            'client_persons.*.name' => 'required_with:client_persons|string|max:255',
+            'client_persons.*.phone' => 'nullable|string|max:50',
+            'client_persons.*.email' => 'nullable|email|max:255',
+            'client_persons.*.notes' => 'nullable|string',
+        ]);
+
+        $project->pic_project = $validated['pic_project'] ?? null;
+        $project->execution_time = $validated['waktu_pelaksanaan_days'] ?? null;
+        $project->status = 'on-going';
+
+        // Handle M.O.M PDF upload (store on public disk)
+        if ($request->hasFile('mom_file')) {
+            $momPath = $request->file('mom_file')->store('projects/mom', 'public');
+            $project->mom_file = $momPath;
+        }
+        $project->save();
+
+        $clientPersons = json_decode($validated['client_persons'] ?? []);
+        if (isset($validated['client_persons'])) {
+            $project->clientPersons()->delete(); // untuk memastikan data lama dihapus
+
+            foreach ($clientPersons as $person) {
+                ProjectClientPerson::create([
+                    'project_id' => $project->id,
+                    'name' => $person->name ?? null,
+                    'email' => $person->email ?? null,
+                    'phone' => $person->phone ?? null,
+                    'note' => $person->notes ?? null,
+                ]);
+            }
+        }
+
+        return 'ok';
+
+    }
+
+    /**
+     * Upload a project file and attach it to the given project's file key.
+     */
+    public function uploadFile(Request $request)
+    {
+        $allowedKeys = [
+            'drawing_file',
+            'wbs_file',
+            'project_schedule_file',
+            'purchase_schedule_file',
+            'pengajuan_material_project_file',
+            'pengajuan_tools_project_file',
+            'document',
+            'po_file',
+            'spk_file',
+            'mom_file',
+        ];
+
+        $validated = $request->validate([
+            'project_id' => ['required', 'integer', 'exists:projects,id'],
+            'file_key' => ['required', 'string', Rule::in($allowedKeys)],
+            'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+        ]);
+
+        $project = Project::findOrFail($validated['project_id']);
+        $fileKey = $validated['file_key'];
+
+        if ($request->hasFile('file')) {
+            $disk = 'public';
+            // store under projects/files/{fileKey}
+            $path = $request->file('file')->store("projects/files/{$fileKey}", $disk);
+
+            // delete previous file if exists
+            if (!empty($project->{$fileKey})) {
+                try {
+                    Storage::disk($disk)->delete($project->{$fileKey});
+                } catch (\Exception $e) {
+                    // non-fatal: continue
+                }
+            }
+
+            $project->{$fileKey} = $path;
+            $project->save();
+        }
+
+        return redirect()->route('project.show', $project)->with('success', 'File uploaded successfully.');
+    }
+
+    /**
+     * Delete a stored file for a project and clear the attribute.
+     */
+    public function deleteFile(Project $project, $fileKey)
+    {
+        $allowedKeys = [
+            'drawing_file',
+            'wbs_file',
+            'project_schedule_file',
+            'purchase_schedule_file',
+            'pengajuan_material_project_file',
+            'pengajuan_tools_project_file',
+            'document',
+            'po_file',
+            'spk_file',
+            'mom_file',
+        ];
+
+        if (!in_array($fileKey, $allowedKeys)) {
+            return redirect()->route('project.show', $project)->with('error', 'Invalid file key.');
+        }
+
+        if (!empty($project->{$fileKey})) {
+            try {
+                Storage::disk('public')->delete($project->{$fileKey});
+            } catch (\Exception $e) {
+                // ignore
+            }
+
+            $project->{$fileKey} = null;
+            $project->save();
+        }
+
+        return redirect()->route('project.show', $project)->with('success', 'File deleted successfully.');
     }
 }

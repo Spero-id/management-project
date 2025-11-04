@@ -32,14 +32,30 @@
         <div class="col">
             <!-- Page pre-title -->
             <div class="page-pretitle">Overview</div>
-            <h2 class="page-title">Project</h2>
+            <h2 class="page-title">Prospect</h2>
         </div>
         <!-- Page title actions -->
         <div class="col-auto ms-auto d-print-none">
+
             <div class="btn-list">
-               
-                <a href="#" class="btn btn-primary btn-5 d-none d-sm-inline-block" data-bs-toggle="modal"
-                    data-bs-target="#modal-report">
+
+
+                <a href="" class="btn btn-success btn-5 d-none d-sm-inline-block">
+                    <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-file-excel">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
+                        <path d="M10 12l4 5" />
+                        <path d="M10 17l4 -5" />
+                    </svg>
+                    Export
+                </a>
+
+
+                <a href="{{ route('prospect.create') }}" class="btn btn-primary btn-5 d-none d-sm-inline-block">
                     <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -47,8 +63,9 @@
                         <path d="M12 5l0 14" />
                         <path d="M5 12l14 0" />
                     </svg>
-                    Create Project
+                    Create Prospect
                 </a>
+
                 <a href="#" class="btn btn-primary btn-6 d-sm-none btn-icon" data-bs-toggle="modal"
                     data-bs-target="#modal-report" aria-label="Create new report">
                     <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
@@ -61,25 +78,99 @@
                 </a>
             </div>
             <!-- BEGIN MODAL -->
+            <!-- Delete Confirmation Modal -->
+            <div class="modal modal-blur fade" id="modal-delete-prospect" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="modal-status bg-danger"></div>
+                        <div class="modal-body text-center py-4">
+                            <!-- Download SVG icon from http://tabler.io/icons/icon/alert-triangle -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24"
+                                height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M12 9v2m0 4v.01" />
+                                <path
+                                    d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                            </svg>
+                            <h3>Apakah Anda yakin?</h3>
+                            <div class="text-secondary">
+                                Anda akan menghapus prospect <strong id="deleteProspectName"></strong>.
+                                Tindakan ini tidak dapat dibatalkan dan akan menghapus semua file terkait.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="w-100">
+                                <div class="row">
+                                    <div class="col">
+                                        <button type="button" class="btn w-100" data-bs-dismiss="modal">
+                                            Batal
+                                        </button>
+                                    </div>
+                                    <div class="col">
+                                        <form id="deleteProspectForm" method="POST" style="display: inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger w-100">
+                                                Ya, hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- END MODAL -->
         </div>
     </div>
 @endsection
 
 @section('content')
+    <!-- Flash Messages -->
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-check me-2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M5 12l5 5l10 -10" />
+            </svg>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-alert-circle me-2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                <path d="M12 8v4" />
+                <path d="M12 16h.01" />
+            </svg>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Projects</h3>
+                    <h3 class="card-title">Prospects</h3>
                 </div>
                 <div class="card-body border-bottom py-3">
                     <div class="d-flex">
                         <div class="text-secondary">
                             Show
                             <div class="mx-2 d-inline-block">
-                                <input type="text" id="pageLength" class="form-control form-control-sm" value="8"
-                                    size="3" aria-label="Projects count">
+                                <input type="text" id="pageLength" class="form-control form-control-sm"
+                                    value="8" size="3" aria-label="Prospects count">
                             </div>
                             entries
                         </div>
@@ -87,7 +178,7 @@
                             Search:
                             <div class="ms-2 d-inline-block">
                                 <input type="text" id="customSearch" class="form-control form-control-sm"
-                                    aria-label="Search project">
+                                    aria-label="Search Prospect">
                             </div>
                         </div>
                     </div>
@@ -95,7 +186,8 @@
                 <div class="card-body p-0">
                     <!-- Custom Search and Page Length Controls -->
                     <div class="table-responsive">
-                        <table id="example" class="table table-selectable card-table table-vcenter text-nowrap datatable">
+                        <table id="example"
+                            class="table table-selectable card-table table-vcenter text-nowrap datatable">
                             <thead>
                                 <tr>
 
@@ -109,262 +201,121 @@
                                             <path d="M6 15l6 -6l6 6"></path>
                                         </svg>
                                     </th>
-                                    <th>Project Name</th>
-                                    <th>Type</th>
-                                    <th>Client</th>
-                                    <th>Progress</th>
-                                    <th>Start Date</th>
+                                    <th>Company</th>
+                                    <th>Customer Name</th>
+                                    <th>No Quotation</th>
+                                    <th>Target Deal</th>
                                     <th>Status</th>
-                                    <th>Budget</th>
+                                    <th>Progress</th>
+                                    <th>Create Date</th>
                                     <th></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
 
-                                    <td><span class="text-secondary">1</span></td>
-                                    <td><a href="#" class="text-reset" tabindex="-1">E-Commerce Platform</a></td>
-                                    <td>Web Development</td>
-                                    <td>TechCorp Inc.</td>
-                                    <td>
-                                        <div class="progress progress-sm">
-                                            <div class="progress-bar" style="width: 85%" role="progressbar"
-                                                aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="visually-hidden">85% Complete</span>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">85%</small>
-                                    </td>
-                                    <td>2024-01-15</td>
-                                    <td><span class="badge bg-success me-1"></span> Active</td>
-                                    <td>Rp 1.875.000.000</td>
-                                    <td class="text-end">
-                                        <span class="dropdown">
-                                            <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport"
-                                                data-bs-toggle="dropdown">Actions</button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="#"> Edit </a>
-                                                <a class="dropdown-item" href="#"> View </a>
-                                                <a class="dropdown-item text-danger" href="#"> Delete </a>
-                                            </div>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
+                                @foreach ($prospects as $index => $prospect)
+                                    <tr>
+                                        <td><span class="text-secondary">{{ $index + 1 }}</span></td>
+                                        <td><a href="#" class="text-reset"
+                                                tabindex="-1">{{ $prospect->company }}</a>
+                                        </td>
+                                        <td>{{ $prospect->customer_name }}</td>
+                                        <td>
+                                            @if ($prospect->quotations->isNotEmpty())
+                                                <ul class="list-unstyled mb-0">
+                                                    @foreach ($prospect->quotations as $quotation)
+                                                        <li>
+                                                            <a href="{{ route('quotation.show', $quotation->id) }}"
+                                                                class="text-primary text-decoration-none"
+                                                                title="View quotation details">
+                                                                {{ $quotation->quotation_number }}
+                                                            </a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                <span class="text-muted">No Quotation</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $prospect->target_deal }}</td>
+                                        <td>
 
-                                    <td><span class="text-secondary">2</span></td>
-                                    <td><a href="#" class="text-reset" tabindex="-1">Mobile Banking App</a></td>
-                                    <td>Mobile Development</td>
-                                    <td>FinanceBank</td>
-                                    <td>
-                                        <div class="progress progress-sm">
-                                            <div class="progress-bar bg-info" style="width: 60%" role="progressbar"
-                                                aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="visually-hidden">60% Complete</span>
+                                            <span class="badge me-1"
+                                                style="background-color: {{ $prospect->prospectStatus->color }};"></span>
+                                            {{ $prospect->prospectStatus->name }}
+                                        </td>
+                                        <td>
+                                            @php
+                                                $progress = $prospect->prospectStatus->persentage ?? 0;
+                                            @endphp
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress progress-md me-2" style="flex: 1; min-width: 80px;">
+                                                    <div class="progress-bar" style="width: {{ $progress }}%"
+                                                        role="progressbar" aria-valuenow="{{ $progress }}"
+                                                        aria-valuemin="0" aria-valuemax="100">
+                                                        <span class="visually-hidden">{{ $progress }}% Complete</span>
+                                                    </div>
+                                                </div>
+                                                <small class="text-secondary fw-medium">{{ $progress }}%</small>
                                             </div>
-                                        </div>
-                                        <small class="text-muted">60%</small>
-                                    </td>
-                                    <td>2024-02-20</td>
-                                    <td><span class="badge bg-success me-1"></span> Active</td>
-                                    <td>Rp 1.342.500.000</td>
-                                    <td class="text-end">
-                                        <span class="dropdown">
-                                            <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport"
-                                                data-bs-toggle="dropdown">Actions</button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="#"> Edit </a>
-                                                <a class="dropdown-item" href="#"> View </a>
-                                                <a class="dropdown-item text-danger" href="#"> Delete </a>
-                                            </div>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
+                                        </td>
+                                        <td>{{ $prospect->created_at->format('Y-m-d') }}</td>
+                                        <td>
+                                            <a href="{{ route('prospect.show', $prospect->id) }}" class="btn btn-icon"
+                                                aria-label="View" title="View prospect">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-eye">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                    <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                                    <path
+                                                        d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                                                </svg>
+                                            </a>
+                                            @if(($prospect->prospectStatus->persentase ?? 0) < 100)
+                                                <a href="{{ route('prospect.edit', $prospect->id) }}" class="btn btn-icon"
+                                                    aria-label="Edit" title="Edit prospect">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                        class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                        <path
+                                                            d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                        <path d="M16 5l3 3" />
+                                                    </svg>
+                                                </a>
+                                                <button class="btn btn-icon delete-prospect-btn" data-bs-toggle="modal"
+                                                    data-bs-target="#modal-delete-prospect"
+                                                    data-prospect-id="{{ $prospect->id }}"
+                                                    data-prospect-name="{{ $prospect->customer_name }}"
+                                                    aria-label="Delete Prospect">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                        class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M4 7l16 0" />
+                                                        <path d="M10 11l0 6" />
+                                                        <path d="M14 11l0 6" />
+                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                                                    </svg>
+                                                </button>
+                                            @else
+                                                <span class="btn btn-icon btn-outline-secondary" disabled title="Prospect sudah selesai (100%) - tidak dapat diedit atau dihapus">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                        <path d="m9 12 2 2 4-4"></path>
+                                                    </svg>
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
 
-                                    <td><span class="text-secondary">3</span></td>
-                                    <td><a href="#" class="text-reset" tabindex="-1">CRM System Upgrade</a></td>
-                                    <td>System Integration</td>
-                                    <td>SalesForce Ltd</td>
-                                    <td>
-                                        <div class="progress progress-sm">
-                                            <div class="progress-bar bg-warning" style="width: 35%" role="progressbar"
-                                                aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="visually-hidden">35% Complete</span>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">35%</small>
-                                    </td>
-                                    <td>2024-03-10</td>
-                                    <td><span class="badge bg-warning me-1"></span> In Progress</td>
-                                    <td>Rp 1.005.000.000</td>
-                                    <td class="text-end">
-                                        <span class="dropdown">
-                                            <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport"
-                                                data-bs-toggle="dropdown">Actions</button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="#"> Edit </a>
-                                                <a class="dropdown-item" href="#"> View </a>
-                                                <a class="dropdown-item text-danger" href="#"> Delete </a>
-                                            </div>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-
-                                    <td><span class="text-secondary">4</span></td>
-                                    <td><a href="#" class="text-reset" tabindex="-1">AI Analytics Dashboard</a>
-                                    </td>
-                                    <td>Data Analytics</td>
-                                    <td>DataVision Co</td>
-                                    <td>
-                                        <div class="progress progress-sm">
-                                            <div class="progress-bar bg-success" style="width: 92%" role="progressbar"
-                                                aria-valuenow="92" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="visually-hidden">92% Complete</span>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">92%</small>
-                                    </td>
-                                    <td>2023-11-08</td>
-                                    <td><span class="badge bg-success me-1"></span> Active</td>
-                                    <td>Rp 2.340.000.000</td>
-                                    <td class="text-end">
-                                        <span class="dropdown">
-                                            <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport"
-                                                data-bs-toggle="dropdown">Actions</button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="#"> Edit </a>
-                                                <a class="dropdown-item" href="#"> View </a>
-                                                <a class="dropdown-item text-danger" href="#"> Delete </a>
-                                            </div>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-
-                                    <td><span class="text-secondary">5</span></td>
-                                    <td><a href="#" class="text-reset" tabindex="-1">Inventory Management
-                                            System</a></td>
-                                    <td>ERP Development</td>
-                                    <td>LogisticPro</td>
-                                    <td>
-                                        <div class="progress progress-sm">
-                                            <div class="progress-bar bg-secondary" style="width: 15%" role="progressbar"
-                                                aria-valuenow="15" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="visually-hidden">15% Complete</span>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">15%</small>
-                                    </td>
-                                    <td>2024-04-01</td>
-                                    <td><span class="badge bg-secondary me-1"></span> On Hold</td>
-                                    <td>Rp 1.102.500.000</td>
-                                    <td class="text-end">
-                                        <span class="dropdown">
-                                            <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport"
-                                                data-bs-toggle="dropdown">Actions</button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="#"> Edit </a>
-                                                <a class="dropdown-item" href="#"> View </a>
-                                                <a class="dropdown-item text-danger" href="#"> Delete </a>
-                                            </div>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-
-                                    <td><span class="text-secondary">6</span></td>
-                                    <td><a href="#" class="text-reset" tabindex="-1">Cloud Migration Project</a>
-                                    </td>
-                                    <td>Infrastructure</td>
-                                    <td>CloudTech Solutions</td>
-                                    <td>
-                                        <div class="progress progress-sm">
-                                            <div class="progress-bar bg-danger" style="width: 5%" role="progressbar"
-                                                aria-valuenow="5" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="visually-hidden">5% Complete</span>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">5%</small>
-                                    </td>
-                                    <td>2024-05-15</td>
-                                    <td><span class="badge bg-danger me-1"></span> Cancelled</td>
-                                    <td>Rp 2.970.000.000</td>
-                                    <td class="text-end">
-                                        <span class="dropdown">
-                                            <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport"
-                                                data-bs-toggle="dropdown">Actions</button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="#"> Edit </a>
-                                                <a class="dropdown-item" href="#"> View </a>
-                                                <a class="dropdown-item text-danger" href="#"> Delete </a>
-                                            </div>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-
-                                    <td><span class="text-secondary">7</span></td>
-                                    <td><a href="#" class="text-reset" tabindex="-1">Social Media Platform</a>
-                                    </td>
-                                    <td>Web Development</td>
-                                    <td>SocialConnect</td>
-                                    <td>
-                                        <div class="progress progress-sm">
-                                            <div class="progress-bar bg-success" style="width: 78%" role="progressbar"
-                                                aria-valuenow="78" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="visually-hidden">78% Complete</span>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">78%</small>
-                                    </td>
-                                    <td>2023-12-03</td>
-                                    <td><span class="badge bg-success me-1"></span> Active</td>
-                                    <td>Rp 2.134.500.000</td>
-                                    <td class="text-end">
-                                        <span class="dropdown">
-                                            <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport"
-                                                data-bs-toggle="dropdown">Actions</button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="#"> Edit </a>
-                                                <a class="dropdown-item" href="#"> View </a>
-                                                <a class="dropdown-item text-danger" href="#"> Delete </a>
-                                            </div>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-
-                                    <td><span class="text-secondary">8</span></td>
-                                    <td><a href="#" class="text-reset" tabindex="-1">Cybersecurity Audit
-                                            System</a></td>
-                                    <td>Security</td>
-                                    <td>SecureNet Corp</td>
-                                    <td>
-                                        <div class="progress progress-sm">
-                                            <div class="progress-bar bg-warning" style="width: 42%" role="progressbar"
-                                                aria-valuenow="42" aria-valuemin="0" aria-valuemax="100">
-                                                <span class="visually-hidden">42% Complete</span>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">42%</small>
-                                    </td>
-                                    <td>2024-01-28</td>
-                                    <td><span class="badge bg-warning me-1"></span> In Progress</td>
-                                    <td>Rp 1.481.250.000</td>
-                                    <td class="text-end">
-                                        <span class="dropdown">
-                                            <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport"
-                                                data-bs-toggle="dropdown">Actions</button>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="#"> Edit </a>
-                                                <a class="dropdown-item" href="#"> View </a>
-                                                <a class="dropdown-item text-danger" href="#"> Delete </a>
-                                            </div>
-                                        </span>
-                                    </td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -465,6 +416,19 @@
                 // Update pagination controls
                 // This function should be implemented based on your needs
             }
+
+            // Handle delete prospect modal
+            $('.delete-prospect-btn').on('click', function() {
+                var prospectId = $(this).data('prospect-id');
+                var prospectName = $(this).data('prospect-name');
+
+                // Update modal content
+                $('#deleteProspectName').text(prospectName);
+
+                // Update form action URL - build the URL properly
+                var baseUrl = '{{ url('/prospect') }}';
+                $('#deleteProspectForm').attr('action', baseUrl + '/' + prospectId);
+            });
         });
     </script>
 @endpush

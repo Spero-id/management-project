@@ -13,10 +13,19 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('unique_id')->unique();
+            $table->string('no_karyawan')->unique();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('join_month');
+            $table->string('join_year');
+            $table->foreignId('division_id')->constrained('divisions')->onDelete('cascade');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('ktp')->nullable();
+            $table->string('ijazah')->nullable();
+            $table->json('sertifikat')->nullable();
+            $table->integer('no_quotation')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -35,6 +44,7 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+
     }
 
     /**

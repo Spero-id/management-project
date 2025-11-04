@@ -13,18 +13,18 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('client_name');
+            $table->string('client_email');
+            $table->string('client_phone');
+            $table->string('company');
+            $table->string('company_identity');
+            $table->string('target_from_month');
+            $table->string('target_to_month');
+            $table->foreignId('status_id')->constrained('prospect_status')->onDelete('cascade');
             $table->text('description')->nullable();
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
-            $table->enum('status', ['planning', 'active', 'on-hold', 'completed', 'cancelled'])->default('planning');
-            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');
-            $table->decimal('budget', 15, 2)->nullable();
-            $table->decimal('spent', 15, 2)->default(0);
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('client_name')->nullable();
-            $table->string('project_manager')->nullable();
-            $table->integer('progress')->default(0)->comment('Progress percentage 0-100');
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->string('po_file')->nullable();
+            $table->string('spk_file')->nullable();
             $table->timestamps();
         });
     }

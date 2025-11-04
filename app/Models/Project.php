@@ -4,28 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
+
+
+    protected $table = 'projects';
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'description',
-        'start_date',
-        'end_date',
-        'status',
-        'priority',
-        'budget',
-        'spent',
-        'user_id',
-        'client_name',
-        'project_manager',
-        'progress',
-    ];
+    protected $guarded = [];
 
     /**
      * Get the attributes that should be cast.
@@ -35,35 +26,48 @@ class Project extends Model
     protected function casts(): array
     {
         return [
-            'start_date' => 'date',
-            'end_date' => 'date',
-            'budget' => 'decimal:2',
-            'spent' => 'decimal:2',
-            'progress' => 'integer',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 
     /**
-     * Get the user that owns the project.
+     * Get the user that created the project.
      */
-    public function user(): BelongsTo
+    public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
-     * Get the project's remaining budget.
+     * Get the project manager.
      */
-    public function getRemainingBudgetAttribute(): float
+    public function manager(): BelongsTo
     {
-        return $this->budget ? $this->budget - $this->spent : 0;
+        return $this->belongsTo(User::class, 'project_manager');
     }
 
     /**
-     * Check if the project is overdue.
+     * Get the project status.
      */
-    public function getIsOverdueAttribute(): bool
+    public function status(): BelongsTo
     {
-        return $this->end_date && $this->end_date->isPast() && $this->status !== 'completed';
+        return $this->belongsTo(\App\Models\ProspectStatus::class, 'status_id');
+    }
+
+    /**
+     * Get the prospect that was converted to this project.
+     */
+    public function prospect(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Prospect::class, 'prospect_id');
+    }
+
+    /**
+     * Get the client persons related to the project.
+     */
+    public function clientPersons(): HasMany
+    {
+        return $this->hasMany(\App\Models\ProjectClientPerson::class, 'project_id');
     }
 }

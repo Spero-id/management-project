@@ -3,181 +3,415 @@
 @section('header')
     <div class="row g-2 align-items-center">
         <div class="col">
-            <!-- Page pre-title -->
-            <div class="page-pretitle">Overview</div>
-            <h2 class="page-title">Projects</h2>
-        </div>
-        <!-- Page title actions -->
-        <div class="col-auto ms-auto d-print-none">
-            <div class="btn-list">
-                <a href="{{ route('prospect.create') }}" class="btn btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="icon icon-2">
-                        <path d="M12 5v14" />
-                        <path d="M5 12h14" />
-                    </svg>
-                    Create New Project
-                </a>
-            </div>
+            <div class="page-pretitle">Create</div>
+            <h2 class="page-title">New Prospect</h2>
         </div>
     </div>
 @endsection
 
 @section('content')
+    {{-- Success & Error Messages --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="d-flex">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon alert-icon">
+                        <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                </div>
+                <div class="ms-2">
+                    {{ session('success') }}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="d-flex">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon alert-icon">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                        </path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <div class="ms-2">
+                    {{ session('error') }}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="d-flex">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="icon alert-icon">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                        </path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <div class="ms-2">
+                    <strong>Terdapat kesalahan pada form:</strong>
+                    <ul class="mb-0 mt-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="row row-cards">
         <div class="col-12">
-            <form action="" method="POST" class="card">
+            <form action="{{ route('prospect.store') }}" method="POST" class="card" id="prospectForm"
+                enctype="multipart/form-data">
                 @csrf
+
+                {{-- Customer Information Section --}}
                 <div class="card-header">
-                    <h3 class="card-title">Create New Project</h3>
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="icon me-2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Customer Information
+                    </h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <!-- Project Name -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Project Name</label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                                value="{{ old('name') }}" placeholder="Enter project name" required>
-                            @error('name')
+                            <label class="form-label required">Customer Name</label>
+                            <input type="text" name="customer_name"
+                                class="form-control @error('customer_name') is-invalid @enderror"
+                                value="{{ old('customer_name') }}" placeholder="Enter customer name" required>
+                            @error('customer_name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- Client Name -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Client Name</label>
-                            <input type="text" name="client_name"
-                                class="form-control @error('client_name') is-invalid @enderror"
-                                value="{{ old('client_name') }}" placeholder="Enter client name">
-                            @error('client_name')
+                            <label class="form-label required">Phone Number</label>
+                            <input type="tel" name="no_handphone"
+                                class="form-control @error('no_handphone') is-invalid @enderror"
+                                value="{{ old('no_handphone') }}" placeholder="Enter phone number" required>
+                            @error('no_handphone')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- Description -->
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea name="description" rows="4" class="form-control @error('description') is-invalid @enderror"
-                                placeholder="Project description">{{ old('description') }}</textarea>
-                            @error('description')
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Email Address</label>
+                            <input type="email" name="email"
+                                class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}"
+                                placeholder="Enter email address" required>
+                            @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- Start Date -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Start Date</label>
-                            <input type="date" name="start_date"
-                                class="form-control @error('start_date') is-invalid @enderror"
-                                value="{{ old('start_date') }}">
-                            @error('start_date')
+                            <label class="form-label required">Company Name</label>
+                            <input type="text" name="company"
+                                class="form-control @error('company') is-invalid @enderror" value="{{ old('company') }}"
+                                placeholder="Enter company name" required>
+                            @error('company')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- End Date -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">End Date</label>
-                            <input type="date" name="end_date"
-                                class="form-control @error('end_date') is-invalid @enderror" value="{{ old('end_date') }}">
-                            @error('end_date')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <label class="form-label required">Company Identity</label>
+                            <input type="text" name="company_identity"
+                                class="form-control @error('company_identity') is-invalid @enderror"
+                                value="{{ old('company_identity') }}" placeholder="Enter company identity number"
+                                maxlength="3" required>
+                            <small class="form-hint">Max 3 characters</small>
 
-                        <!-- Status -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label required">Status</label>
-                            <select name="status" class="form-select @error('status') is-invalid @enderror" required>
-                                <option value="">Select Status</option>
-                                <option value="planning" {{ old('status') == 'planning' ? 'selected' : '' }}>Planning
-                                </option>
-                                <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
-                                <option value="on-hold" {{ old('status') == 'on-hold' ? 'selected' : '' }}>On Hold</option>
-                                <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Completed
-                                </option>
-                                <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Cancelled
-                                </option>
-                            </select>
-                            @error('status')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Priority -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label required">Priority</label>
-                            <select name="priority" class="form-select @error('priority') is-invalid @enderror" required>
-                                <option value="">Select Priority</option>
-                                <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low</option>
-                                <option value="medium" {{ old('priority') == 'medium' ? 'selected' : '' }}>Medium</option>
-                                <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High</option>
-                                <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Urgent</option>
-                            </select>
-                            @error('priority')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Project Manager -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Project Manager</label>
-                            <input type="text" name="project_manager"
-                                class="form-control @error('project_manager') is-invalid @enderror"
-                                value="{{ old('project_manager') }}" placeholder="Enter project manager name">
-                            @error('project_manager')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Progress -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Progress (%)</label>
-                            <input type="number" name="progress" min="0" max="100"
-                                class="form-control @error('progress') is-invalid @enderror"
-                                value="{{ old('progress', 0) }}" placeholder="0">
-                            @error('progress')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Budget -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Budget</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" name="budget" step="0.01" min="0"
-                                    class="form-control @error('budget') is-invalid @enderror"
-                                    value="{{ old('budget') }}" placeholder="0.00">
-                            </div>
-                            @error('budget')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Spent -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Amount Spent</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" name="spent" step="0.01" min="0"
-                                    class="form-control @error('spent') is-invalid @enderror"
-                                    value="{{ old('spent', 0) }}" placeholder="0.00">
-                            </div>
-                            @error('spent')
+                            @error('company_identity')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-end">
-                    <div class="d-flex">
-                        <a href="{{ route('prospect.index') }}" class="btn btn-link">Cancel</a>
-                        <button type="submit" class="btn btn-primary ms-auto">Create Project</button>
+
+                {{-- Prospect Information Section --}}
+                <div class="card-header border-top">
+                    <h3 class="card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="icon me-2">
+                            <path d="M3 12l2-2 4 4L19 4"></path>
+                        </svg>
+                        Prospect Information
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Pre Sales Person</label>
+                            <select name="pre_sales" class="form-control @error('pre_sales') is-invalid @enderror"
+                                required>
+                                <option value="">Select Pre Sales Person</option>
+                                @foreach ($salesUser as $user)
+                                    <option value="{{ $user->id }}"
+                                        {{ old('pre_sales') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('pre_sales')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">Target Deal Period</label>
+                            <div class="row g-2">
+                                <div class="col-3">
+                                    <select name="target_deal_from_month"
+                                        class="form-control @error('target_deal') is-invalid @enderror" required>
+                                        <option value="">From Month</option>
+                                        <option value="01"
+                                            {{ old('target_deal_from_month') == '01' ? 'selected' : '' }}>January</option>
+                                        <option value="02"
+                                            {{ old('target_deal_from_month') == '02' ? 'selected' : '' }}>February</option>
+                                        <option value="03"
+                                            {{ old('target_deal_from_month') == '03' ? 'selected' : '' }}>March</option>
+                                        <option value="04"
+                                            {{ old('target_deal_from_month') == '04' ? 'selected' : '' }}>April</option>
+                                        <option value="05"
+                                            {{ old('target_deal_from_month') == '05' ? 'selected' : '' }}>May</option>
+                                        <option value="06"
+                                            {{ old('target_deal_from_month') == '06' ? 'selected' : '' }}>June</option>
+                                        <option value="07"
+                                            {{ old('target_deal_from_month') == '07' ? 'selected' : '' }}>July</option>
+                                        <option value="08"
+                                            {{ old('target_deal_from_month') == '08' ? 'selected' : '' }}>August</option>
+                                        <option value="09"
+                                            {{ old('target_deal_from_month') == '09' ? 'selected' : '' }}>September
+                                        </option>
+                                        <option value="10"
+                                            {{ old('target_deal_from_month') == '10' ? 'selected' : '' }}>October</option>
+                                        <option value="11"
+                                            {{ old('target_deal_from_month') == '11' ? 'selected' : '' }}>November</option>
+                                        <option value="12"
+                                            {{ old('target_deal_from_month') == '12' ? 'selected' : '' }}>December</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select name="target_deal_from_year"
+                                        class="form-control @error('target_deal') is-invalid @enderror" required>
+                                        <option value="">From Year</option>
+                                        @php
+                                            $currentYear = date('Y');
+                                            $selectedFromYear = old('target_deal_from_year', $currentYear);
+                                        @endphp
+                                        @for ($year = $currentYear; $year <= $currentYear + 10; $year++)
+                                            <option value="{{ $year }}"
+                                                {{ $selectedFromYear == $year ? 'selected' : '' }}>
+                                                {{ $year }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select name="target_deal_to_month"
+                                        class="form-control @error('target_deal') is-invalid @enderror" required>
+                                        <option value="">To Month</option>
+                                        <option value="01"
+                                            {{ old('target_deal_to_month') == '01' ? 'selected' : '' }}>January</option>
+                                        <option value="02"
+                                            {{ old('target_deal_to_month') == '02' ? 'selected' : '' }}>February</option>
+                                        <option value="03"
+                                            {{ old('target_deal_to_month') == '03' ? 'selected' : '' }}>March</option>
+                                        <option value="04"
+                                            {{ old('target_deal_to_month') == '04' ? 'selected' : '' }}>April</option>
+                                        <option value="05"
+                                            {{ old('target_deal_to_month') == '05' ? 'selected' : '' }}>May</option>
+                                        <option value="06"
+                                            {{ old('target_deal_to_month') == '06' ? 'selected' : '' }}>June</option>
+                                        <option value="07"
+                                            {{ old('target_deal_to_month') == '07' ? 'selected' : '' }}>July</option>
+                                        <option value="08"
+                                            {{ old('target_deal_to_month') == '08' ? 'selected' : '' }}>August</option>
+                                        <option value="09"
+                                            {{ old('target_deal_to_month') == '09' ? 'selected' : '' }}>September</option>
+                                        <option value="10"
+                                            {{ old('target_deal_to_month') == '10' ? 'selected' : '' }}>October</option>
+                                        <option value="11"
+                                            {{ old('target_deal_to_month') == '11' ? 'selected' : '' }}>November</option>
+                                        <option value="12"
+                                            {{ old('target_deal_to_month') == '12' ? 'selected' : '' }}>December</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <select name="target_deal_to_year"
+                                        class="form-control @error('target_deal') is-invalid @enderror" required>
+                                        <option value="">To Year</option>
+                                        @php
+                                            $currentYear = date('Y');
+                                            $selectedToYear = old('target_deal_to_year', $currentYear);
+                                        @endphp
+                                        @for ($year = $currentYear; $year <= $currentYear + 10; $year++)
+                                            <option value="{{ $year }}"
+                                                {{ $selectedToYear == $year ? 'selected' : '' }}>
+                                                {{ $year }}
+                                            </option>
+                                        @endfor
+                                    </select>
+                                </div>
+                            </div>
+                            @error('target_deal')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Quotation Document</label>
+                            <input type="file" name="document"
+                                class="form-control @error('document') is-invalid @enderror" accept=".xlsx,.xls,.csv">
+                            <small class="form-hint">Accepted formats: xlsx</small>
+                            @error('document')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Additional Notes</label>
+                            <textarea name="note" rows="4" class="form-control @error('note') is-invalid @enderror"
+                                placeholder="Enter any additional information or notes about this prospect...">{{ old('note') }}</textarea>
+                            @error('note')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+                {{-- Form Actions --}}
+                <div class="card-footer">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <button type="submit" class="btn btn-primary">
+                            Create Prospect
+                        </button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const prospectForm = document.getElementById('prospectForm');
+
+            // Form submission validation
+            prospectForm.addEventListener('submit', function(e) {
+                let formValid = true;
+                const requiredFields = document.querySelectorAll('[required]');
+
+                // Clear previous validation states
+                requiredFields.forEach(field => {
+                    field.classList.remove('is-invalid');
+                });
+
+                // Validate required fields
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        formValid = false;
+                    }
+                });
+
+                // Validate target deal period
+                const fromMonth = document.querySelector('select[name="target_deal_from_month"]').value;
+                const fromYear = document.querySelector('select[name="target_deal_from_year"]').value;
+                const toMonth = document.querySelector('select[name="target_deal_to_month"]').value;
+                const toYear = document.querySelector('select[name="target_deal_to_year"]').value;
+
+                if (fromMonth && fromYear && toMonth && toYear) {
+                    const fromDate = new Date(parseInt(fromYear), parseInt(fromMonth) - 1);
+                    const toDate = new Date(parseInt(toYear), parseInt(toMonth) - 1);
+                    
+                    if (fromDate > toDate) {
+                        alert('Periode "dari" tidak boleh lebih besar dari periode "sampai"');
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
+                if (!formValid) {
+                    e.preventDefault();
+                    // Show alert for better user experience
+                    alert('Mohon lengkapi semua field yang wajib diisi.');
+                    return false;
+                }
+
+                // Show loading state
+                const submitBtn = prospectForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML =
+                    '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menyimpan...';
+            });
+
+
+
+            // File upload validation
+            const documentInput = document.querySelector('input[name="document"]');
+            if (documentInput) {
+                documentInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const maxSize = 5 * 1024 * 1024; // 5MB
+                        const allowedTypes = [
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'text/csv',
+                            'application/csv',
+                            'image/jpeg',
+                            'image/jpg',
+                            'image/png'
+                        ];
+
+                        if (file.size > maxSize) {
+                            alert('File size must be less than 5MB');
+                            e.target.value = '';
+                            retur;n
+                        }
+
+                        if (!allowedTypes.includes(file.type)) {
+                            alert(
+                                'Please select a valid file format (PDF, DOC, DOCX, XLS, XLSX, CSV, JPG, PNG)'
+                            );
+                            e.target.value = '';
+                            return;
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+@endpush

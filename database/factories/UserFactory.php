@@ -23,9 +23,18 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $divisions = ['IT', 'Sales', 'Marketing', 'Finance', 'HR', 'Operations'];
+        $months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+        
         return [
+            'unique_id' => 'USR' . fake()->unique()->numberBetween(1000, 9999),
+            'no_karyawan' => 'EMP' . fake()->unique()->numberBetween(1000, 9999),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'join_month' => fake()->randomElement($months),
+            'join_year' => fake()->randomElement(['2020', '2021', '2022', '2023', '2024', '2025']),
+            'division' => fake()->randomElement($divisions),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

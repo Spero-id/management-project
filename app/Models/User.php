@@ -19,9 +19,20 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'unique_id',
+        'no_karyawan',
+        'no_quotation',
         'name',
         'email',
+        'join_month',
+        'join_year',
+        'division_id',
+        'type',
         'password',
+        'ktp',
+        'ijazah',
+        'sertifikat',
+        'sales_target',
     ];
 
     /**
@@ -44,6 +55,24 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'sertifikat' => 'array',
         ];
     }
+
+    public function division()
+    {
+        return $this->belongsTo(Division::class);
+    }
+
+    public function quotations()
+    {
+        return $this->hasMany(Quotation::class, 'created_by');
+    }
+
+    public function quotationCount()
+    {
+        return $this->quotations()->count();
+    }
+
+
 }
