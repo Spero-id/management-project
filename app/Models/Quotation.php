@@ -43,7 +43,7 @@ class Quotation extends Model
 
     public function accommodationItems()
     {
-        return $this->hasMany(QuotationaccommodationItem::class);
+        return $this->hasMany(QuotationAccommodationItem::class);
     }
 
     public function installationItems()
