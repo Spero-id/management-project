@@ -63,7 +63,7 @@
                 <!-- BEGIN NAVBAR LOGO -->
                 <div class="navbar-brand navbar-brand-autodark">
                     <a href=".">
-                        <img src="{{ asset('/assets/images/SIS-logo NB.png') }}" alt="SIS Logo"
+                        <img src="{{ asset('/assets/images/SIS-Logo-NB.png') }}" alt="SIS Logo"
                             class="navbar-brand-image"
                             style="width: 160px; height: auto; max-height: 100px; margin: 10px 0;">
                     </a>

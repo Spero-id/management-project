@@ -175,7 +175,7 @@
     <div class="header">
         <div class="header-center">
             <div class="logo">
-                <img src="{{ public_path('/assets/images/SIS-Logo NB.png') }}" alt="SISOLUSI"
+                <img src="{{ public_path('/assets/images/SIS-Logo-NB.png') }}" alt="SISOLUSI"
                     style="width:140px; height:auto;">
             </div>
             <div class="company-name">PT Smart Integrator Solution</div>

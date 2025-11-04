@@ -43,7 +43,7 @@
             <div class="text-center mb-4">
                 <!-- BEGIN NAVBAR LOGO -->
                 <a href=".">
-                    <img src="{{ asset('/assets/images/SIS-logo NB.png') }}" alt="SIS Logo" class="navbar-brand-image"
+                    <img src="{{ asset('/assets/images/SIS-Logo-NB.png') }}" alt="SIS Logo" class="navbar-brand-image"
                         style="width: 160px; height: auto; max-height: 100px; margin: 10px 0;">
                 </a>
             </div>
