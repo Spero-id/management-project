@@ -20,6 +20,7 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'EDIT_PROSPECT']);
         Permission::create(['name' => 'DELETE_PROSPECT']);
         Permission::create(['name' => 'VIEW_PROSPECT']);
+        Permission::create(['name' => 'VIEW_ALL_PROSPECT']);
 
         Permission::create(['name' => 'CREATE_QUOTATION']);
         Permission::create(['name' => 'EDIT_QUOTATION']);
@@ -41,7 +42,7 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'VIEW_USER']);
 
         Permission::create(['name' => 'FOLLOWUP_PROSPECT']);
-        
+
         Permission::create(['name' => 'CREATE_PRODUCT']);
         Permission::create(['name' => 'EDIT_PRODUCT']);
         Permission::create(['name' => 'DELETE_PRODUCT']);
@@ -52,19 +53,10 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'CREATE_PROJECT']);
         Permission::create(['name' => 'EDIT_PROJECT']);
         Permission::create(['name' => 'DELETE_PROJECT']);
-
+        Permission::create(['name' => 'VIEW_ALL_PROJECT']);
 
         Permission::create(['name' => 'VIEW_SETTING']);
         Permission::create(['name' => 'EDIT_SETTING']);
-
-
-
-
-
-
-
-
-        
 
         Role::create(['name' => 'SUPER_ADMIN'])->givePermissionTo(Permission::all());
         Role::create(['name' => 'BOD'])->givePermissionTo([
@@ -99,6 +91,14 @@ class RoleSeeder extends Seeder
             'EDIT_PRODUCT',
             'DELETE_PRODUCT',
             'VIEW_ALL_INFO_PRODUCT',
+            'VIEW_SETTING',
+
+            'VIEW_ALL_PROSPECT',
+            "VIEW_ALL_PROJECT",
+            "VIEW_PRODUCT",
+            "EDIT_PRODUCT",
+            "CREATE_PRODUCT",
+            "DELETE_PRODUCT",
 
         ]);
         Role::create(['name' => 'SALES'])->givePermissionTo([
@@ -121,15 +121,12 @@ class RoleSeeder extends Seeder
             'VIEW_PRODUCT',
         ]);
 
-
         Role::create(['name' => 'PROJECT'])->givePermissionTo([
-            
+
             'VIEW_PROJECT',
             'CREATE_PROJECT',
             'EDIT_PROJECT',
             'DELETE_PROJECT',
-
-     
 
         ]);
 

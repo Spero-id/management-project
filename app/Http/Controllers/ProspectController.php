@@ -26,7 +26,14 @@ class ProspectController extends Controller
     public function index()
     {
 
-        $prospects = Prospect::with(['quotations', 'prospectStatus'])->where('created_by', Auth::id())->get();
+        
+        if (Auth::user()->can('VIEW_ALL_PROSPECT')) {
+            $prospects = Prospect::with(['quotations', 'prospectStatus'])->get();
+
+        } else {
+            $prospects = Prospect::with(['quotations', 'prospectStatus'])->where('created_by', Auth::id())->get();
+
+        }
         $prospects->map(function ($prospect) {
             $prospect->status = ProspectStatus::find($prospect->status_id);
         });
@@ -89,8 +96,8 @@ class ProspectController extends Controller
             $toYear = (int) $validated['target_deal_to_year'];
 
             // Create date objects for comparison
-            $fromDate = \DateTime::createFromFormat('Y-m', $fromYear . '-' . sprintf('%02d', $fromMonth));
-            $toDate = \DateTime::createFromFormat('Y-m', $toYear . '-' . sprintf('%02d', $toMonth));
+            $fromDate = \DateTime::createFromFormat('Y-m', $fromYear.'-'.sprintf('%02d', $fromMonth));
+            $toDate = \DateTime::createFromFormat('Y-m', $toYear.'-'.sprintf('%02d', $toMonth));
 
             if ($fromDate > $toDate) {
                 return redirect()->back()
@@ -199,13 +206,13 @@ class ProspectController extends Controller
     public function edit(string $id)
     {
         $prospect = Prospect::with('prospectStatus')->findOrFail($id);
-        
+
         // Prevent editing if progress is 100%
         if (($prospect->prospectStatus->persentase ?? 0) >= 100) {
             return redirect()->route('prospect.show', $id)
                 ->with('error', 'Prospect dengan progress 100% tidak dapat diedit lagi.');
         }
-        
+
         $salesUser = User::whereHas('roles', function ($query) {
             $query->where('name', 'SALES');
         })->get();
@@ -219,7 +226,7 @@ class ProspectController extends Controller
     public function update(Request $request, string $id)
     {
         $prospect = Prospect::with('prospectStatus')->findOrFail($id);
-        
+
         // Prevent updating if progress is 100%
         if (($prospect->prospectStatus->persentase ?? 0) >= 100) {
             return redirect()->route('prospect.show', $id)
@@ -265,8 +272,8 @@ class ProspectController extends Controller
             $toYear = (int) $validated['target_deal_to_year'];
 
             // Create date objects for comparison
-            $fromDate = \DateTime::createFromFormat('Y-m', $fromYear . '-' . sprintf('%02d', $fromMonth));
-            $toDate = \DateTime::createFromFormat('Y-m', $toYear . '-' . sprintf('%02d', $toMonth));
+            $fromDate = \DateTime::createFromFormat('Y-m', $fromYear.'-'.sprintf('%02d', $fromMonth));
+            $toDate = \DateTime::createFromFormat('Y-m', $toYear.'-'.sprintf('%02d', $toMonth));
 
             if ($fromDate > $toDate) {
                 return redirect()->back()
@@ -328,7 +335,7 @@ class ProspectController extends Controller
     {
         try {
             $prospect = Prospect::with('prospectStatus')->findOrFail($id);
-            
+
             // Prevent deleting if progress is 100%
             if (($prospect->prospectStatus->persentase ?? 0) >= 100) {
                 return redirect()->route('prospect.index')
