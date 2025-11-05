@@ -514,7 +514,7 @@
                 "processing": true,
                 "serverSide": true,
                 "ajax": {
-                    "url": "http://management-project.test/product/datatable/api",
+                    "url": "{{ url('/product/datatable/api') }}",
                     "type": "GET",
                     "data": function(d) {
                         // send custom filter values to server
