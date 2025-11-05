@@ -28,7 +28,7 @@
             
 
             <div class="btn-list">
-                <a href="{{ route('kpi.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('kpi.index') }}" class="btn btn-outline-light">
                     Back to KPI
                 </a>
             </div>

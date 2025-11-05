@@ -177,7 +177,7 @@
                                         </svg>
                                         Select Products
                                     </button>
-                                    <button type="button" class="btn btn-outline-primary" onclick="addProductRow()">
+                                    <button type="button" class="btn btn-outline-light" onclick="addProductRow()">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                             stroke-linecap="round" stroke-linejoin="round" class="me-2">
@@ -203,7 +203,7 @@
                                     </svg>
                                     Select Products
                                 </button>
-                                <button type="button" class="btn btn-outline-primary" onclick="addProductRow()">
+                                <button type="button" class="btn btn-outline-light" onclick="addProductRow()">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         stroke-linecap="round" stroke-linejoin="round">
@@ -326,7 +326,7 @@
                         <small class="text-muted">Select products and click "Add Selected Products" to continue</small>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-outline-primary me-2" data-bs-dismiss="modal">
                             <i class="ti ti-x me-1"></i>Cancel
                         </button>
                         <button type="button" class="btn btn-primary" id="addSelectedProductsBtn">

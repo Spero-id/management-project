@@ -509,7 +509,6 @@
 
     <script>
         $(document).ready(function() {
-            // Initialize DataTable
             var table = $('#example').DataTable({
                 "processing": true,
                 "serverSide": true,
