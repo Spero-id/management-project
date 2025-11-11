@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 
 class Prospect extends Model
 {
+    // NOTE: Pastikan is_empty nya
+
     protected $fillable = [
         'customer_name',
         'no_handphone',
@@ -24,6 +25,8 @@ class Prospect extends Model
         'po_file',
         'spk_file',
         'created_by',
+        'is_empty',
+        'product_offered',
     ];
 
     protected $appends = ['target_deal'];
@@ -68,7 +71,7 @@ class Prospect extends Model
         $months = [
             '01' => 'Jan', '02' => 'Feb', '03' => 'Mar', '04' => 'Apr',
             '05' => 'May', '06' => 'Jun', '07' => 'Jul', '08' => 'Aug',
-            '09' => 'Sep', '10' => 'Oct', '11' => 'Nov', '12' => 'Dec'
+            '09' => 'Sep', '10' => 'Oct', '11' => 'Nov', '12' => 'Dec',
         ];
 
         $fromMonth = $months[$this->target_from_month] ?? $this->target_from_month;

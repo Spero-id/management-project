@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Imports\QuotationItemsImport;
-use App\Models\Product;
+use App\Models\Accommodation;
+use App\Models\Installation;
 use App\Models\Prospect;
 use App\Models\ProspectStatus;
 use App\Models\Quotation;
-use App\Models\QuotationItem;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class ProspectController extends Controller
     /**
@@ -26,33 +24,87 @@ class ProspectController extends Controller
     public function index()
     {
 
-        
         if (Auth::user()->can('VIEW_ALL_PROSPECT')) {
-            $prospects = Prospect::with(['quotations', 'prospectStatus'])->get();
+            $prospects = Prospect::with(['quotations', 'prospectStatus'])->where('is_empty', false)->get();
 
         } else {
-            $prospects = Prospect::with(['quotations', 'prospectStatus'])->where('created_by', Auth::id())->get();
+            $prospects = Prospect::with(['quotations', 'prospectStatus'])->where('is_empty', false)->where('created_by', Auth::id())->get();
 
         }
         $prospects->map(function ($prospect) {
             $prospect->status = ProspectStatus::find($prospect->status_id);
         });
-        // $prospectStatus = $prospect->status_id;
 
         return view('prospect.index', compact('prospects'));
 
     }
 
     /**
+     * Create an empty prospect and redirect to edit.
+     */
+    public function createEmpty()
+    {
+        DB::beginTransaction();
+
+        try {
+            $prospect = Prospect::create([
+                'customer_name' => '',
+                'no_handphone' => '',
+                'email' => '',
+                'company' => '',
+                'company_identity' => '',
+                'pre_sales' => Auth::id(),
+                'target_from_month' => '01',
+                'target_to_month' => '12',
+                'target_from_year' => now()->year,
+                'target_to_year' => now()->year,
+                'note' => '',
+                'status_id' => 1,
+                'created_by' => Auth::id(),
+            ]);
+
+            // Create empty quotation
+            Quotation::create([
+                'prospect_id' => $prospect->id,
+                'created_by' => Auth::id(),
+                'revision_number' => 0,
+                'total_amount' => 0,
+                'status' => 'draft',
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('prospect.create', $prospect->id);
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return redirect()->route('prospect.index')
+                ->with('error', 'Terjadi kesalahan saat membuat prospect: '.$e->getMessage());
+        }
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(string $id)
     {
+        $prospect = Prospect::findOrFail($id);
         $salesUser = User::whereHas('roles', function ($query) {
             $query->where('name', 'SALES');
         })->get();
 
-        return view('prospect.create', compact('salesUser'));
+        $prospectStatuses = ProspectStatus::all();
+        $accommodationCategory = Accommodation::all();
+        $quotation = $prospect->quotations()->with(['items.product', 'installationItems.installation'])->first();
+        $installationCategories = Installation::all()->map(function ($i) {
+            return (object) [
+                'id' => $i->id,
+                'text' => $i->name ?? ($i->title ?? 'Installation'),
+                'proportional' => $i->proportional ?? null,
+            ];
+        });
+
+        return view('prospect.create', compact('salesUser', 'prospect', 'accommodationCategory', 'quotation', 'installationCategories', 'prospectStatuses'));
     }
 
     /**
@@ -88,104 +140,48 @@ class ProspectController extends Controller
             'target_deal_to_year.required' => 'Tahun target deal sampai harus dipilih',
         ]);
 
+        $fromMonth = (int) $validated['target_deal_from_month'];
+        $toMonth = (int) $validated['target_deal_to_month'];
+        $fromYear = (int) $validated['target_deal_from_year'];
+        $toYear = (int) $validated['target_deal_to_year'];
+        $fromDate = \DateTime::createFromFormat('Y-m', $fromYear.'-'.sprintf('%02d', $fromMonth));
+        $toDate = \DateTime::createFromFormat('Y-m', $toYear.'-'.sprintf('%02d', $toMonth));
+
+        if ($fromDate > $toDate) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['target_deal' => 'Periode "dari" tidak boleh lebih besar dari periode "sampai"']);
+        }
+
+        DB::beginTransaction();
+
         try {
-            // Validasi periode target deal
-            $fromMonth = (int) $validated['target_deal_from_month'];
-            $toMonth = (int) $validated['target_deal_to_month'];
-            $fromYear = (int) $validated['target_deal_from_year'];
-            $toYear = (int) $validated['target_deal_to_year'];
+            $prospect = Prospect::create([
+                'customer_name' => $validated['customer_name'],
+                'no_handphone' => $validated['no_handphone'],
+                'email' => $validated['email'],
+                'company' => $validated['company'],
+                'company_identity' => $validated['company_identity'],
+                'pre_sales' => $validated['pre_sales'],
+                'target_from_month' => $validated['target_deal_from_month'],
+                'target_to_month' => $validated['target_deal_to_month'],
+                'target_from_year' => $validated['target_deal_from_year'],
+                'target_to_year' => $validated['target_deal_to_year'],
+                'note' => $validated['note'],
+                'status_id' => 1,
+                'created_by' => Auth::user()->id,
+            ]);
+            DB::commit();
 
-            // Create date objects for comparison
-            $fromDate = \DateTime::createFromFormat('Y-m', $fromYear.'-'.sprintf('%02d', $fromMonth));
-            $toDate = \DateTime::createFromFormat('Y-m', $toYear.'-'.sprintf('%02d', $toMonth));
+            return redirect()->back()
+                ->with('success', 'Prospect berhasil simpan');
 
-            if ($fromDate > $toDate) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['target_deal' => 'Periode "dari" tidak boleh lebih besar dari periode "sampai"']);
-            }
-
-            // Handle file upload
-            $documentPath = null;
-            if ($request->hasFile('document')) {
-                $file = $request->file('document');
-                $fileName = time().'_'.str_replace(' ', '_', $file->getClientOriginalName());
-                $documentPath = $file->storeAs('prospects/documents', $fileName, 'public');
-            }
-
-            // Mulai database transaction
-            DB::beginTransaction();
-
-            try {
-                // Simpan data ke database
-                $prospect = Prospect::create([
-                    'customer_name' => $validated['customer_name'],
-                    'no_handphone' => $validated['no_handphone'],
-                    'email' => $validated['email'],
-                    'company' => $validated['company'],
-                    'company_identity' => $validated['company_identity'],
-                    'pre_sales' => $validated['pre_sales'],
-                    'target_from_month' => $validated['target_deal_from_month'],
-                    'target_to_month' => $validated['target_deal_to_month'],
-                    'target_from_year' => $validated['target_deal_from_year'],
-                    'target_to_year' => $validated['target_deal_to_year'],
-                    'note' => $validated['note'],
-                    'document' => $documentPath,
-                    'status_id' => 1,
-                    'created_by' => Auth::user()->id,
-                ]);
-
-                if ($request->hasFile('document')) {
-                    $quotation = Quotation::create([
-                        'created_by' => Auth::user()->id,
-                        'prospect_id' => $prospect->id,
-                        'notes' => '',
-                        'status' => 'draft',
-                    ]);
-
-                    $quotationItemsData = Excel::toArray(new QuotationItemsImport, $request->file('document'));
-                    foreach ($quotationItemsData[0] as $itemData) {
-                        if ($itemData['product_id'] && $itemData['quantity']) {
-                            $product = Product::find($itemData['product_id']);
-                            if (! $product) {
-                                continue;
-                            }
-                            QuotationItem::create([
-                                'quotation_id' => $quotation->id,
-                                'product_id' => $itemData['product_id'],
-                                'quantity' => $itemData['quantity'],
-                                'unit_price' => $product->price,
-                                'subtotal' => $itemData['quantity'] * ($product ? $product->price : 0),
-                            ]);
-                        }
-                    }
-
-                    $quotation->calculateTotal();
-                    DB::commit();
-
-                    return redirect()->route('quotation.edit', ['quotation' => $quotation->id, 'is_revision' => false])
-                        ->with('success', 'Prospect berhasil dibuat.');
-                }
-
-                DB::commit();
-
-                return redirect()->route('quotation.create', ['prospect' => $prospect->id]);
-
-            } catch (\Exception $dbException) {
-                // Rollback transaction jika ada error
-                DB::rollback();
-                throw $dbException;
-            }
-
-        } catch (\Exception $e) {
-            // Jika terjadi error, hapus file yang sudah diupload (jika ada)
-            if (isset($documentPath) && $documentPath && Storage::disk('public')->exists($documentPath)) {
-                Storage::disk('public')->delete($documentPath);
-            }
+        } catch (\Exception $dbException) {
+            DB::rollback();
 
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan prospect: '.$e->getMessage()]);
+                ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan prospect: '.$dbException->getMessage()]);
         }
     }
 
@@ -205,19 +201,22 @@ class ProspectController extends Controller
      */
     public function edit(string $id)
     {
-        $prospect = Prospect::with('prospectStatus')->findOrFail($id);
-
-        // Prevent editing if progress is 100%
-        if (($prospect->prospectStatus->persentase ?? 0) >= 100) {
-            return redirect()->route('prospect.show', $id)
-                ->with('error', 'Prospect dengan progress 100% tidak dapat diedit lagi.');
-        }
-
+        $prospect = Prospect::findOrFail($id);
         $salesUser = User::whereHas('roles', function ($query) {
             $query->where('name', 'SALES');
         })->get();
 
-        return view('prospect.edit', compact('prospect', 'salesUser'));
+        $accommodationCategory = Accommodation::all();
+        $quotation = $prospect->quotations()->with(['items.product', 'installationItems.installation'])->first();
+        $installationCategories = Installation::all()->map(function ($i) {
+            return (object) [
+                'id' => $i->id,
+                'text' => $i->name ?? ($i->title ?? 'Installation'),
+                'proportional' => $i->proportional ?? null,
+            ];
+        });
+
+        return view('prospect.edit', compact('salesUser', 'prospect', 'accommodationCategory', 'quotation', 'installationCategories'));
     }
 
     /**
@@ -225,9 +224,9 @@ class ProspectController extends Controller
      */
     public function update(Request $request, string $id)
     {
+
         $prospect = Prospect::with('prospectStatus')->findOrFail($id);
 
-        // Prevent updating if progress is 100%
         if (($prospect->prospectStatus->persentase ?? 0) >= 100) {
             return redirect()->route('prospect.show', $id)
                 ->with('error', 'Prospect dengan progress 100% tidak dapat diubah lagi.');
@@ -244,8 +243,11 @@ class ProspectController extends Controller
             'target_deal_to_month' => 'required|string|in:01,02,03,04,05,06,07,08,09,10,11,12',
             'target_deal_from_year' => 'required|integer|min:2025|max:2040',
             'target_deal_to_year' => 'required|integer|min:2025|max:2040',
-            'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,csv,jpg,jpeg,png|max:5120', // 5MB, optional for update
+            'document' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,csv,jpg,jpeg,png|max:5120',
             'note' => 'nullable|string|max:1000',
+            'quotation_notes' => 'nullable|string|max:1000',
+            'status_id' => 'nullable|integer',
+            'product_offered' => 'nullable|string',
         ], [
             'customer_name.required' => 'Nama customer harus diisi',
             'no_handphone.required' => 'Nomor handphone harus diisi',
@@ -309,10 +311,26 @@ class ProspectController extends Controller
                 'target_to_year' => $validated['target_deal_to_year'],
                 'note' => $validated['note'],
                 'document' => $documentPath,
+                'status_id' => $validated['status_id'],
+                'product_offered' => $validated['product_offered'],
+                'is_empty' => false,
             ]);
 
-            return redirect()->route('prospect.index')
-                ->with('success', 'Prospect berhasil diperbarui');
+            // Update quotation notes if provided
+            if ($request->filled('quotation_notes')) {
+                $quotation = $prospect->quotations()->first();
+                if ($quotation) {
+                    $quotation->update(['notes' => $validated['quotation_notes']]);
+                }
+            }
+
+            if ($request->form_type == 'create') {
+                return redirect()->route('prospect.create', $id)
+                    ->withFragment('quotation');
+            }
+
+            return redirect()->back()
+                ->with('success', 'Prospect berhasil simpan');
 
         } catch (\Exception $e) {
             // Jika terjadi error dan ada file baru yang diupload, hapus file tersebut

@@ -66,6 +66,7 @@ class Quotation extends Model
     public function generateQuotationNumber($isNewQuotation = true)
     {
         $prospect = $this->prospect ?: Prospect::find($this->prospect_id);
+
         $sales = User::find($this->created_by);
 
         // Generate roman month
@@ -99,11 +100,11 @@ class Quotation extends Model
     {
         parent::boot();
 
-        static::creating(function ($quotation) {
-            if (! $quotation->quotation_number) {
-                $quotation->quotation_number = $quotation->generateQuotationNumber(true);
-            }
-        });
+        // static::creating(function ($quotation) {
+        //     if (! $quotation->quotation_number) {
+        //         $quotation->quotation_number = $quotation->generateQuotationNumber(true);
+        //     }
+        // });
 
         static::deleting(function ($quotation) {
             // Delete all quotation items explicitly (though cascade constraint should handle this)

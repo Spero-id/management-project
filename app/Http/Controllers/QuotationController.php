@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Accommodation;
+use App\Models\Installation;
 use App\Models\Prospect;
 use App\Models\Quotation;
-use App\Models\QuotationAccommodationItem;
 use App\Models\QuotationItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,10 +48,13 @@ class QuotationController extends Controller
             'products.*.unit_price' => 'required|min:0',
             'need_accommodation' => 'nullable|boolean',
             'accommodation_wilayah' => 'nullable|string',
-            'accommodation_rooms' => 'nullable|integer|min:1',
+            'accommodation_hotel_rooms' => 'nullable|integer|min:1',
             'accommodation_people' => 'nullable|integer|min:1',
             'accommodation_target_days' => 'nullable|integer|min:1',
-            'accommodation_ticket_price' => 'nullable|integer|min:0',
+            'accommodation_plane_ticket_price' => 'nullable|integer|min:0',
+            'total_hotel_price' => 'nullable',
+            'total_flight_price' => 'nullable',
+            'total_transportation_price' => 'nullable',
         ];
 
         $request->validate($validationRules);
@@ -96,31 +99,6 @@ class QuotationController extends Controller
         return $data;
     }
 
-    private function calculateAccommodationTotal(Request $request): int
-    {
-        return (int) str_replace(['.', ','], ['', '.'], $request->total_hotel_price) +
-               (int) str_replace(['.', ','], ['', '.'], $request->total_flight_price) +
-               (int) str_replace(['.', ','], ['', '.'], $request->total_transportation_price);
-    }
-
-    private function createAccommodationItems(int $quotationId, Request $request): void
-    {
-        $items = [
-            ['name' => 'Total Harga Hotel', 'unit_price' => $request->total_hotel_price],
-            ['name' => 'Harga Pesawat', 'unit_price' => $request->total_flight_price],
-            ['name' => 'Harga Transportasi Kendaraan', 'unit_price' => $request->total_transportation_price],
-        ];
-
-
-        foreach ($items as $item) {
-            QuotationAccommodationItem::create([
-                'quotation_id' => $quotationId,
-                'name' => $item['name'],
-                'unit_price' => (int) str_replace(['.', ','], ['', '.'], $item['unit_price']),
-            ]);
-        }
-    }
-
     private function createQuotationItems(int $quotationId, array $products): void
     {
         foreach ($products as $productData) {
@@ -148,11 +126,19 @@ class QuotationController extends Controller
      */
     public function edit(string $id)
     {
-        $quotation = Quotation::with(['items', 'installationItems'])->findOrFail($id);
-        $prospect = $quotation->prospect;
-        $accommodationCategory = Accommodation::all();
+        $prospect = Prospect::findOrFail($id);
 
-        return view('quotation.edit', compact('quotation', 'prospect', 'accommodationCategory'));
+        $accommodationCategory = Accommodation::all();
+        $quotation = $prospect->quotations()->with(['items.product', 'installationItems.installation'])->first();
+        $installationCategories = Installation::all()->map(function ($i) {
+            return (object) [
+                'id' => $i->id,
+                'text' => $i->name ?? ($i->title ?? 'Installation'),
+                'proportional' => $i->proportional ?? null,
+            ];
+        });
+
+        return view('quotation.edit', compact('prospect', 'accommodationCategory', 'quotation', 'installationCategories'));
     }
 
     /**
@@ -164,7 +150,6 @@ class QuotationController extends Controller
 
         $validationRules = [
             'notes' => 'nullable|string',
-            'status' => 'required|in:draft,sent,accepted,rejected',
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
@@ -182,34 +167,19 @@ class QuotationController extends Controller
             'total_transportation_price' => 'nullable',
         ];
 
-
         $request->validate($validationRules);
-
 
         DB::transaction(function () use ($request, $quotation) {
             $updateData = [
                 'notes' => $request->notes,
-                'status' => $request->status,
-                'need_accommodation' => $request->boolean('need_accommodation'),
+                'revision_number' => $quotation->quotation_number != null ? $quotation->revision_number + 1 : 0,
+               
             ];
 
-            if ($request->boolean('need_accommodation')) {
-                $updateData['accommodation_wilayah'] = $request->accommodation_wilayah;
-                $updateData['accommodation_hotel_rooms'] = $request->accommodation_hotel_rooms;
-                $updateData['accommodation_people'] = $request->accommodation_people;
-                $updateData['accommodation_target_days'] = $request->accommodation_target_days;
-                $updateData['accommodation_plane_ticket_price'] = $request->accommodation_plane_ticket_price;
-                $updateData['accommodation_total_amount'] = $this->calculateAccommodationTotal($request);
-            } else {
-                $updateData['accommodation_wilayah'] = null;
-                $updateData['accommodation_hotel_rooms'] = null;
-                $updateData['accommodation_people'] = null;
-                $updateData['accommodation_target_days'] = null;
-                $updateData['accommodation_plane_ticket_price'] = null;
-                $updateData['accommodation_total_amount'] = null;
-            }
-
             $quotation->update($updateData);
+            $quotation->update([
+                 'quotation_number'=> $quotation->generateQuotationNumber($quotation->quotation_number == null),
+            ]);
 
             $quotation->items()->delete();
 
@@ -222,18 +192,15 @@ class QuotationController extends Controller
                 ]);
             }
 
-            if ($request->boolean('need_accommodation')) {
-                $quotation->accommodationItems()->delete();
-                $this->createAccommodationItems($quotation->id, $request);
-            } else {
-                $quotation->accommodationItems()->delete();
-            }
-
             $quotation->calculateTotal();
         });
 
-        return redirect()->route('quotation.show', $quotation->id)
-            ->with('success', 'Quotation updated successfully.');
+        if ($request->form_type == 'create') {
+            return redirect()->route('prospect.create', $id)
+                ->withFragment('installation');
+        }
+
+        return redirect()->back()->withFragment('quotation')->with('success', 'Quotation berhasil disimpan.');
     }
 
     public function generatePDF(Quotation $quotation)

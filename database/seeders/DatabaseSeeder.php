@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Division;
 use App\Models\Product;
 use App\Models\Prospect;
+use App\Models\Quotation;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -314,6 +315,7 @@ class DatabaseSeeder extends Seeder
                     'pre_sales' => $sales->id,
                     'document' => 'document_'.$sales->id.'_'.$prospectIndex.'.pdf',
                     'created_by' => $sales->id,
+                    'is_empty' => false,
                 ]);
 
                 // Create quotation for each prospect
@@ -325,6 +327,11 @@ class DatabaseSeeder extends Seeder
                     'notes' => 'Initial quotation for '.$prospect->customer_name,
                     'need_accommodation' => rand(0, 1) == 1,
                     'installation_percentage' => rand(0, 1) == 1 ? rand(10, 30) : 0,
+
+                ]);
+
+                $quotation->update([
+                    'quotation_number' => $quotation->generateQuotationNumber(),
                 ]);
 
                 // Add 2-4 random products to each quotation
@@ -370,8 +377,8 @@ class DatabaseSeeder extends Seeder
                     'description' => 'Project created from prospect: '.$prospect->customer_name,
                     'created_by' => $sales->id,
                     'prospect_id' => $prospect->id,
-                    "target_from_year"=> $prospect->target_from_year,
-                    "target_to_year"=> $prospect->target_to_year,
+                    'target_from_year' => $prospect->target_from_year,
+                    'target_to_year' => $prospect->target_to_year,
                 ]);
             }
         }

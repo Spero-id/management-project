@@ -25,7 +25,6 @@ Route::middleware('auth')->group(function () {
         Route::put('/{project}', [App\Http\Controllers\ProjectController::class, 'update'])->name('update');
         Route::delete('/{project}', [App\Http\Controllers\ProjectController::class, 'destroy'])->name('destroy');
 
-
         Route::post('/{project}/wbs-items', [App\Http\Controllers\ProjectWbsItemController::class, 'store'])->name('wbs-items.store');
         Route::put('/wbs-items/{wbsItem}', [App\Http\Controllers\ProjectWbsItemController::class, 'update'])->name('wbs-items.update');
         Route::patch('/wbs-items/{wbsItem}/toggle', [App\Http\Controllers\ProjectWbsItemController::class, 'toggle'])->name('wbs-items.toggle');
@@ -44,7 +43,8 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => 'prospect', 'as' => 'prospect.'], function () {
         Route::get('/', [App\Http\Controllers\ProspectController::class, 'index'])->name('index');
-        Route::get('/create', [App\Http\Controllers\ProspectController::class, 'create'])->name('create');
+        Route::get('/create-empty', [App\Http\Controllers\ProspectController::class, 'createEmpty'])->name('createEmpty');
+        Route::get('/create/{id}', [App\Http\Controllers\ProspectController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\ProspectController::class, 'store'])->name('store');
         Route::get('/{id}', [App\Http\Controllers\ProspectController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [App\Http\Controllers\ProspectController::class, 'edit'])->name('edit');

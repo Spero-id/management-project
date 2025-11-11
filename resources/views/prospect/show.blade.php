@@ -247,6 +247,16 @@
                                 </div>
                             </div>
                         </div>
+                            <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted">Product Offered</label>
+                                <div class="fw-bold">
+                                    {{ $prospect->product_offered ? $prospect->product_offered : 'N/A' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        
 
                         <!-- Additional Notes -->
                         @if ($prospect->note ?? false)
@@ -284,25 +294,7 @@
                         </svg>
                         Related Quotations
                     </h3>
-                    @if(($prospect->prospectStatus->persentage ?? 0) < 100)
-                        <a href="{{ route('quotation.create', ['prospect' => $prospect->id ?? 1]) }}"
-                            class="btn btn-primary">
-                            <svg xmlns="http://www.w3.html/2000/svg" width="24" height="24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                class="me-1">
-                                <path d="M12 5v14m-7-7h14" />
-                            </svg>
-                            Create Quotation
-                        </a>
-                    @else
-                        <span class="text-muted">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="m9 12 2 2 4-4"></path>
-                            </svg>
-                            Prospect sudah selesai
-                        </span>
-                    @endif
+               
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -311,7 +303,6 @@
                                 <tr>
                                     <th>Quotation #</th>
                                     <th>Date Created</th>
-                                    <th>Status</th>
                                     <th>Total Amount</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
@@ -329,10 +320,6 @@
                                             <div class="text-secondary small">
                                                 {{ $quotation->created_at ? $quotation->created_at->format('h:i A') : '' }}
                                             </div>
-                                        </td>
-                                        <td>
-                                            <x-status-badge :status="$quotation->status ?? 'draft'" />
-                                                
                                         </td>
                                         <td class="fw-bold text-success">
                                             Rp {{ number_format($quotation->total_amount ?? 0, 0, ',', '.') }}
@@ -375,28 +362,6 @@
                                                     <path d="M16 5l3 3" />
                                                 </svg>
                                             </a>
-                                            <form action="{{ route('quotation.destroy', $quotation->id) }}"
-                                                method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-icon"
-                                                    onclick="return confirm('Are you sure you want to delete this quotation? This will also delete all associated quotation items and cannot be undone.')"
-                                                    aria-label="Delete Quotation">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                        <path d="M4 7l16 0" />
-                                                        <path d="M10 11l0 6" />
-                                                        <path d="M14 11l0 6" />
-                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                                    </svg>
-                                                </button>
-                                            </form>
-
-
                                         </td>
                                     </tr>
                                 @empty

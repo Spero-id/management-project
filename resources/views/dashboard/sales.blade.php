@@ -128,6 +128,72 @@
         .dropdown-toggle::after {
             margin-left: 0.5em;
         }
+
+        /* Report panel styles */
+        .sales-report {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 30px;
+            background: white;
+            height: 450px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            /* allow vertical scrolling when content overflows */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            /* smooth scrolling on mobile */
+        }
+
+        /* Slightly smaller heading so the panel feels compact */
+        .sales-report h5 {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        /* Make each report-row a vertical list: label above value */
+        .sales-report .report-row {
+            display: flex;
+            flex-direction: column;
+            /* stack label above value */
+            justify-content: flex-start;
+            align-items: flex-start;
+            /* left align for readability */
+            padding: 8px 0;
+            border-bottom: 1px dashed #f1f5f9;
+            gap: 4px;
+        }
+
+        .sales-report .report-row:last-child {
+            border-bottom: none;
+        }
+
+        /* Label sits above the value, smaller and muted */
+        .sales-report .report-label {
+            color: #6b7280;
+            /* slightly muted */
+            font-size: 0.75rem;
+            /* smaller label */
+            font-weight: 600;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: initial;
+            max-width: 100%;
+        }
+
+        /* Value below label: stand out but still compact */
+        .sales-report .report-value {
+            font-weight: 800;
+            color: #111827;
+            font-size: 0.95rem;
+            /* slightly larger than label */
+            white-space: normal;
+            overflow: visible;
+            text-overflow: initial;
+            max-width: 100%;
+            text-align: left;
+        }
     </style>
 @endpush
 
@@ -149,31 +215,97 @@
         <div class="row mb-4">
             <!-- Sales Team Selector -->
             <div class="col-lg-4">
-                <div class="sales-team-selector">
-                    <h3 class="mb-3 text-primary d-flex align-items-center">
-                        <i class="fas fa-user-circle me-2"></i>{{ Auth::user()->name }}
-                    </h3>
-                    <div class="text-secondary">
-                        <p style="font-size:20px">
-                            <i class="fas fa-bullseye text-success me-2"></i>
-                            Sales Target: <strong>{{ number_format(Auth::user()->sales_target, 0, ',', '.') }}</strong>
-                        </p>
-                        <p style="font-size:20px">
-                            <i class="fas fa-wallet text-danger me-2"></i>
-                            Sales Fee: <strong>{{ number_format(Auth::user()->sales_free, 0, ',', '.') }}</strong>
-                        </p>
-                        <p style="font-size:20px">
-                            <i class="fas fa-chart-line text-warning me-2"></i>
-                            KPI: <strong class="text-red">10</strong>
-                        </p>
+                <div class="sales-team-selector d-flex flex-column justify-content-between">
+                    <!-- Top: photo and basic info -->
+
+                    <div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3"
+                                style="width:90px; height:90px; background:#f3f4f6; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                                <span class="text-muted">FOTO</span>
+                            </div>
+                            <div>
+                                <h2 class="mb-1 text-primary">{{ Auth::user()->name }}</h2>
+                                <div class="text-secondary">NO.ID COMPANY</div>
+                                <div class="text-secondary">TARGET TEAM GROSS PROFIT</div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+
+
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-secondary">TARGET SALES YEARLY</div>
+                                    <div class="fw-bold">Rp 4.500.000.000</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-secondary">TARGET SALES MONTHLY</div>
+                                    <div class="fw-bold">Rp 375.000.000</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom: CTA button -->
+                    <div class="mt-3">
+                        <a href={{ route('prospect.createEmpty') }} class="btn btn-primary w-100">CREATE PROSPECT</a>
                     </div>
                 </div>
             </div>
 
+
+            <div class="col-lg-2">
+                <div class="sales-report">
+                    <h5>REPORT</h5>
+                    <div class="mt-2">
+                        <div class="report-row">
+                            <div class="report-label">PENCAPAIAN TARGET</div>
+                            <div class="report-value">70 %</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">TOTAL PROSPEK</div>
+                            <div class="report-value">30</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">PROSPEK DEAL</div>
+                            <div class="report-value">9</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">PROSPEK BARU BULAN</div>
+                            <div class="report-value">15</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">PROSPEK LOST</div>
+                            <div class="report-value">6</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">TOTAL OMSET</div>
+                            <div class="report-value">Rp 4.500.000.000</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">TOTAL DEAL</div>
+                            <div class="report-value">Rp 3.150.000.000</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Monthly Performance Chart -->
-            <div class="col-lg-8">
+            <div class="col-lg-6">
                 <div class="chart-container">
-                    <h4 class="chart-title">Performance Data for ALL TEAMS</h4>
+                    <h4 class="chart-title">YEARLY TARGET COMPLETION RATE</h4>
                     <canvas id="monthlyChart" width="400" height="200"></canvas>
                 </div>
             </div>
@@ -298,8 +430,9 @@
                                         <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
                                             <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-1">
                                                 <path d="M15 6l-6 6l6 6"></path>
                                             </svg>
                                         </a>

@@ -118,7 +118,8 @@ class ProductController extends Controller
             });
         }
 
-        $products = $query->orderBy('name')
+        $products = $query->whereNull('deleted_at')
+            ->orderBy('name')
             ->paginate($perPage, ['*'], 'page', $page);
 
         $results = $products->map(function ($product) {
