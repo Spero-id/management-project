@@ -48,7 +48,7 @@
 @section('content')
     <!-- Flash Messages -->
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert  alert-important alert-success alert-dismissible fade show" role="alert">
             <div class="d-flex">
                 <div>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -67,7 +67,7 @@
     @endif
 
     @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert  alert-important alert-danger alert-dismissible fade show" role="alert">
             <div class="d-flex">
                 <div>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"

@@ -42,7 +42,7 @@
             <div class="btn-list">
 
 
-                <a href="" class="btn btn-success btn-5 d-none d-sm-inline-block">
+                {{-- <a href="" class="btn btn-success btn-5 d-none d-sm-inline-block">
                     <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -54,30 +54,9 @@
                         <path d="M10 17l4 -5" />
                     </svg>
                     Export
-                </a>
+                </a> --}}
 
 
-                <a href="{{ route('prospect.createEmpty') }}" class="btn btn-primary btn-5 d-none d-sm-inline-block">
-                    <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="icon icon-2">
-                        <path d="M12 5l0 14" />
-                        <path d="M5 12l14 0" />
-                    </svg>
-                    Create Prospect
-                </a>
-
-                <a href="#" class="btn btn-primary btn-6 d-sm-none btn-icon" data-bs-toggle="modal"
-                    data-bs-target="#modal-report" aria-label="Create new report">
-                    <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="icon icon-2">
-                        <path d="M12 5l0 14" />
-                        <path d="M5 12l14 0" />
-                    </svg>
-                </a>
             </div>
             <!-- BEGIN MODAL -->
             <!-- Delete Confirmation Modal -->
@@ -133,7 +112,7 @@
 @section('content')
     <!-- Flash Messages -->
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert  alert-important alert-success alert-dismissible fade show" role="alert">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 class="icon icon-tabler icons-tabler-outline icon-tabler-check me-2">
@@ -146,7 +125,7 @@
     @endif
 
     @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert  alert-important alert-danger alert-dismissible fade show" role="alert">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 class="icon icon-tabler icons-tabler-outline icon-tabler-alert-circle me-2">
@@ -275,15 +254,16 @@
                                                         d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
                                                 </svg>
                                             </a>
-                                            @if(($prospect->prospectStatus->persentase ?? 0) < 100)
-                                                <a href="{{ route('prospect.edit', $prospect->id) }}" class="btn btn-icon"
-                                                    aria-label="Edit" title="Edit prospect">
+                                            @if (($prospect->prospectStatus->persentage ?? 0) < 100)
+                                                <a href="{{ route('prospect.edit', $prospect->id) }}"
+                                                    class="btn btn-icon" aria-label="Edit" title="Edit prospect">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                                         class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
                                                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                        <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                        <path
+                                                            d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
                                                         <path
                                                             d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
                                                         <path d="M16 5l3 3" />
@@ -307,17 +287,18 @@
                                                     </svg>
                                                 </button>
                                             @else
-                                                <span class="btn btn-icon btn-outline-primary" disabled title="Prospect sudah selesai (100%) - tidak dapat diedit atau dihapus">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <circle cx="12" cy="12" r="10"></circle>
-                                                        <path d="m9 12 2 2 4-4"></path>
-                                                    </svg>
-                                                </span>
+                                                {{-- buatkan button ke sales order --}}
+                                                @if(!$prospect->is_converted_to_project)
+                                                <a href="{{ route('sales-order.create', $prospect->id) }}"
+                                                    class="btn btn-outline-white outline" aria-label="Create Sales Order"
+                                                    title="Create Sales Order from Prospect">
+                                                    Create Sales Order
+                                                </a>
+                                                @endif
                                             @endif
                                         </td>
                                     </tr>
                                 @endforeach
-
                             </tbody>
                         </table>
                     </div>

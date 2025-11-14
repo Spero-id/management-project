@@ -12,31 +12,37 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use DataTables;
 
 class ProspectController extends Controller
-    /**
-     * Store a new prospect log for a prospect.
-     */
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-
         if (Auth::user()->can('VIEW_ALL_PROSPECT')) {
             $prospects = Prospect::with(['quotations', 'prospectStatus'])->where('is_empty', false)->get();
-
         } else {
             $prospects = Prospect::with(['quotations', 'prospectStatus'])->where('is_empty', false)->where('created_by', Auth::id())->get();
-
         }
         $prospects->map(function ($prospect) {
             $prospect->status = ProspectStatus::find($prospect->status_id);
         });
 
         return view('prospect.index', compact('prospects'));
+    }
 
+    /**
+     * API endpoint for server-side DataTable
+     */
+    public function indexApi(Request $request)
+    {
+    //     $model = Prospect::query();
+
+    //     return DataTables::eloquent($model)
+    //         ->addColumn('intro', 'Hi {{$name}}!')
+    //         ->toJson();
     }
 
     /**
@@ -54,10 +60,10 @@ class ProspectController extends Controller
                 'company' => '',
                 'company_identity' => '',
                 'pre_sales' => Auth::id(),
-                'target_from_month' => '01',
-                'target_to_month' => '12',
-                'target_from_year' => now()->year,
-                'target_to_year' => now()->year,
+                'target_from_month' => '',
+                'target_to_month' => '',
+                'target_from_year' => "",
+                'target_to_year' => "",
                 'note' => '',
                 'status_id' => 1,
                 'created_by' => Auth::id(),

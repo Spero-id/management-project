@@ -14,11 +14,11 @@
         <!-- Page title actions -->
         <div class="col-auto ms-auto d-print-none">
             <div class="btn-list">
-                @if(($prospect->prospectStatus->persentage ?? 0) < 100)
+                @if (($prospect->prospectStatus->persentage ?? 0) < 100)
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProspectLogModal">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="icon icon-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="icon icon-2">
                             <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
                             <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
                             <path d="M16 5l3 3" />
@@ -26,9 +26,9 @@
                         Change Status
                     </button>
                     <a href="{{ route('prospect.edit', $prospect->id ?? 1) }}" class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="icon icon-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="icon icon-2">
                             <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
                             <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
                             <path d="M16 5l3 3" />
@@ -36,8 +36,10 @@
                         Edit Prospect
                     </a>
                 @else
-                    <div class="alert alert-info d-inline-block mb-0 me-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1">
+                    <div class="alert  alert-important alert-info d-inline-block mb-0 me-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="me-1">
                             <circle cx="12" cy="12" r="10"></circle>
                             <path d="m9 12 2 2 4-4"></path>
                         </svg>
@@ -163,7 +165,7 @@
                                             $toMonthKey = $prospect->target_to_month;
                                             $fromMonth = $months[$fromMonthKey] ?? $prospect->target_from_month;
                                             $toMonth = $months[$toMonthKey] ?? $prospect->target_to_month;
-                                            
+
                                             // Use new separate year fields if available, fallback to old target_year
                                             $fromYear = $prospect->target_from_year ?? $prospect->target_year;
                                             $toYear = $prospect->target_to_year ?? $prospect->target_year;
@@ -171,7 +173,8 @@
                                         @if ($fromYear == $toYear)
                                             {{ $fromMonth }} - {{ $toMonth }} {{ $fromYear }}
                                         @else
-                                            {{ $fromMonth }} {{ $fromYear }} - {{ $toMonth }} {{ $toYear }}
+                                            {{ $fromMonth }} {{ $fromYear }} - {{ $toMonth }}
+                                            {{ $toYear }}
                                         @endif
                                     @else
                                         Tidak Ada
@@ -180,7 +183,7 @@
                             </div>
                         </div>
 
-                     
+
 
                         <!-- PO File -->
                         <div class="col-md-6">
@@ -247,7 +250,7 @@
                                 </div>
                             </div>
                         </div>
-                            <div class="col-md-6">
+                        <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label text-muted">Product Offered</label>
                                 <div class="fw-bold">
@@ -256,7 +259,7 @@
                             </div>
                         </div>
 
-                        
+
 
                         <!-- Additional Notes -->
                         @if ($prospect->note ?? false)
@@ -294,7 +297,7 @@
                         </svg>
                         Related Quotations
                     </h3>
-               
+
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -372,7 +375,7 @@
                                                 <p class="empty-subtitle text-muted">
                                                     This prospect doesn't have any quotations yet.
                                                 </p>
-                                               
+
                                             </div>
                                         </td>
                                     </tr>
@@ -474,7 +477,8 @@
                     aria-labelledby="addProspectLogModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
-                            <form action="{{ route('prospect-log.store') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('prospect-log.store') }}" method="POST"
+                                enctype="multipart/form-data">
                                 @csrf
                                 <input type="hidden" name="prospect_id" value="{{ $prospect->id }}">
                                 <div class="modal-header">
@@ -495,7 +499,7 @@
                                         <select class="form-select" id="activity" name="status_id" required>
                                             <option value="">Select Status</option>
                                             @foreach ($prospectStatuses as $status)
-                                                <option value="{{ $status->id }}" 
+                                                <option value="{{ $status->id }}"
                                                     data-percentage="{{ $status->persentage }}"
                                                     {{ $prospect->status_id == $status->id ? 'selected' : '' }}>
                                                     {{ $status->name }}
@@ -503,28 +507,30 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    
+
                                     <!-- File Upload Section (Shows when 100% status is selected) -->
                                     <div id="fileUploadSection" class="mb-3" style="display: none;">
-                                        <div class="alert alert-info">
+                                        <div class="alert   alert-info">
                                             <h4 class="alert-title">Upload Required Documents</h4>
-                                            <div class="text-secondary">Status dengan progres 100% memerlukan upload file PO dan SPK.</div>
+                                            <div class="text-secondary">Status dengan progres 100% memerlukan upload file
+                                                PO dan SPK.</div>
                                         </div>
-                                        
+
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <label for="po_file" class="form-label">File PO (Purchase Order)</label>
-                                                <input type="file" name="po_file" id="po_file" 
-                                                    class="form-control" 
+                                                <input type="file" name="po_file" id="po_file" class="form-control"
                                                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                                <small class="form-hint">Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max: 5MB)</small>
+                                                <small class="form-hint">Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max:
+                                                    5MB)</small>
                                             </div>
                                             <div class="col-md-6">
-                                                <label for="spk_file" class="form-label">File SPK (Surat Perjanjian Kerja)</label>
-                                                <input type="file" name="spk_file" id="spk_file" 
-                                                    class="form-control" 
-                                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                                <small class="form-hint">Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max: 5MB)</small>
+                                                <label for="spk_file" class="form-label">File SPK (Surat Perjanjian
+                                                    Kerja)</label>
+                                                <input type="file" name="spk_file" id="spk_file"
+                                                    class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                                <small class="form-hint">Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max:
+                                                    5MB)</small>
                                             </div>
                                         </div>
                                     </div>
@@ -549,67 +555,68 @@
 @endsection
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const statusSelect = document.getElementById('activity');
-    const fileUploadSection = document.getElementById('fileUploadSection');
-    const poFileInput = document.getElementById('po_file');
-    const spkFileInput = document.getElementById('spk_file');
-    
-    function toggleFileUpload() {
-        const selectedOption = statusSelect.options[statusSelect.selectedIndex];
-        const percentage = selectedOption.getAttribute('data-percentage');
-        
-        if (percentage == 100) {
-            fileUploadSection.style.display = 'block';
-            // Make file inputs required when status is 100%
-            poFileInput.setAttribute('required', 'required');
-            spkFileInput.setAttribute('required', 'required');
-        } else {
-            fileUploadSection.style.display = 'none';
-            // Remove required attribute when not 100%
-            poFileInput.removeAttribute('required');
-            spkFileInput.removeAttribute('required');
-        }
-    }
-    
-    // Check on page load
-    toggleFileUpload();
-    
-    // Check when status changes
-    statusSelect.addEventListener('change', toggleFileUpload);
-    
-    // File validation
-    function validateFile(input) {
-        const file = input.files[0];
-        if (file) {
-            const maxSize = 5 * 1024 * 1024; // 5MB
-            const allowedTypes = ['application/pdf', 'application/msword', 
-                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                                'image/jpeg', 'image/jpg', 'image/png'];
-            
-            if (file.size > maxSize) {
-                alert('File size must be less than 5MB');
-                input.value = '';
-                return false;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusSelect = document.getElementById('activity');
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const poFileInput = document.getElementById('po_file');
+            const spkFileInput = document.getElementById('spk_file');
+
+            function toggleFileUpload() {
+                const selectedOption = statusSelect.options[statusSelect.selectedIndex];
+                const percentage = selectedOption.getAttribute('data-percentage');
+
+                if (percentage == 100) {
+                    fileUploadSection.style.display = 'block';
+                    // Make file inputs required when status is 100%
+                    poFileInput.setAttribute('required', 'required');
+                    spkFileInput.setAttribute('required', 'required');
+                } else {
+                    fileUploadSection.style.display = 'none';
+                    // Remove required attribute when not 100%
+                    poFileInput.removeAttribute('required');
+                    spkFileInput.removeAttribute('required');
+                }
             }
-            
-            if (!allowedTypes.includes(file.type)) {
-                alert('Invalid file type. Please upload PDF, DOC, DOCX, JPG, or PNG files only.');
-                input.value = '';
-                return false;
+
+            // Check on page load
+            toggleFileUpload();
+
+            // Check when status changes
+            statusSelect.addEventListener('change', toggleFileUpload);
+
+            // File validation
+            function validateFile(input) {
+                const file = input.files[0];
+                if (file) {
+                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    const allowedTypes = ['application/pdf', 'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'image/jpeg', 'image/jpg', 'image/png'
+                    ];
+
+                    if (file.size > maxSize) {
+                        alert('File size must be less than 5MB');
+                        input.value = '';
+                        return false;
+                    }
+
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Invalid file type. Please upload PDF, DOC, DOCX, JPG, or PNG files only.');
+                        input.value = '';
+                        return false;
+                    }
+                }
+                return true;
             }
-        }
-        return true;
-    }
-    
-    poFileInput.addEventListener('change', function() {
-        validateFile(this);
-    });
-    
-    spkFileInput.addEventListener('change', function() {
-        validateFile(this);
-    });
-});
-</script>
+
+            poFileInput.addEventListener('change', function() {
+                validateFile(this);
+            });
+
+            spkFileInput.addEventListener('change', function() {
+                validateFile(this);
+            });
+        });
+    </script>
 @endpush

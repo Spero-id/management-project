@@ -11,7 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        
+        Schema::create('minute_of_meetings', function (Blueprint $table) {
+            $table->id();
+            $table->morphs('noteable');
+            $table->text('body');
+            $table->unsignedBigInteger('created_by');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -19,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('minute_of_meetings');
     }
 };

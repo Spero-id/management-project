@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{project}', [App\Http\Controllers\ProjectController::class, 'destroy'])->name('destroy');
 
         Route::post('/{project}/wbs-items', [App\Http\Controllers\ProjectWbsItemController::class, 'store'])->name('wbs-items.store');
+        Route::post('/{project}/wbs-items/import', [App\Http\Controllers\ProjectWbsItemController::class, 'import'])->name('wbs-items.import');
         Route::put('/wbs-items/{wbsItem}', [App\Http\Controllers\ProjectWbsItemController::class, 'update'])->name('wbs-items.update');
         Route::patch('/wbs-items/{wbsItem}/toggle', [App\Http\Controllers\ProjectWbsItemController::class, 'toggle'])->name('wbs-items.toggle');
         Route::delete('/wbs-items/{wbsItem}', [App\Http\Controllers\ProjectWbsItemController::class, 'destroy'])->name('wbs-items.destroy');
@@ -40,9 +41,18 @@ Route::middleware('auth')->group(function () {
         Route::put('/{id}', [App\Http\Controllers\UserController::class, 'update'])->name('update');
         Route::delete('/{id}', [App\Http\Controllers\UserController::class, 'destroy'])->name('destroy');
     });
+    
+
+    Route::group(['prefix' => 'sales-order', 'as' => 'sales-order.'], function () {
+        Route::get('/create/{id}', [App\Http\Controllers\SalesOrderController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\SalesOrderController::class, 'store'])->name('store');
+        Route::post('/mom', [App\Http\Controllers\SalesOrderController::class, 'saveMinuteOfMeeting'])->name('saveMinuteOfMeeting');
+    });
+
 
     Route::group(['prefix' => 'prospect', 'as' => 'prospect.'], function () {
         Route::get('/', [App\Http\Controllers\ProspectController::class, 'index'])->name('index');
+        Route::get('/api/index', [App\Http\Controllers\ProspectController::class, 'indexApi'])->name('api.index');
         Route::get('/create-empty', [App\Http\Controllers\ProspectController::class, 'createEmpty'])->name('createEmpty');
         Route::get('/create/{id}', [App\Http\Controllers\ProspectController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\ProspectController::class, 'store'])->name('store');

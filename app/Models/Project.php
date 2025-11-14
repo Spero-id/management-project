@@ -70,4 +70,12 @@ class Project extends Model
     {
         return $this->hasMany(\App\Models\ProjectClientPerson::class, 'project_id');
     }
+
+    /**
+     * Get the WBS items related to the project.
+     */
+    public function wbsItems(): HasMany
+    {
+        return $this->hasMany(\App\Models\ProjectWBSItem::class, 'project_id');
+    }
 }

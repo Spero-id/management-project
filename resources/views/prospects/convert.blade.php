@@ -12,7 +12,7 @@
 
                 <div class="card-body">
                     @if ($errors->any())
-                        <div class="alert alert-danger">
+                        <div class="alert  alert-important alert-danger">
                             <ul class="mb-0">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>

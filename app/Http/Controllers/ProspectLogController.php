@@ -83,9 +83,6 @@ class ProspectLogController extends Controller
 
             $prospect->update($updateData);
 
-            if ($newStatus->persentage == 100) {
-                $this->convertProspectToProject($prospect, false);
-            }
 
             return redirect()->route('prospect.show', $prospect->id)
                 ->with('success', 'Prospect log added successfully.');

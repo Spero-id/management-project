@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Prospect extends Model
 {
-    // NOTE: Pastikan is_empty nya
 
+
+    // NOTE: Pastikan is_empty nya
     protected $fillable = [
         'customer_name',
         'no_handphone',
@@ -27,6 +28,7 @@ class Prospect extends Model
         'created_by',
         'is_empty',
         'product_offered',
+        'is_converted_to_project',
     ];
 
     protected $appends = ['target_deal'];
@@ -35,6 +37,11 @@ class Prospect extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function minuteOfMeetings()
+    {
+        return $this->morphOne(MinuteOfMeeting::class, 'noteable');
+    }
 
     public function preSalesPerson()
     {

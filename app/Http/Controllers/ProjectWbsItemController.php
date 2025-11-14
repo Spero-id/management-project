@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\WbsItemImport;
 use App\Models\Project;
 use App\Models\ProjectWBSItem;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProjectWbsItemController extends Controller
 {
@@ -29,7 +31,7 @@ class ProjectWbsItemController extends Controller
             'note' => $validated['note'] ?? null,
         ]);
 
-        return redirect()->route('project.show', $project)->with('success', 'Item added.');
+        return redirect()->back()->with('success', 'Item added successfully.');
     }
 
     /**
@@ -53,7 +55,8 @@ class ProjectWbsItemController extends Controller
             'is_done' => $validated['is_done'] ?? $wbsItem->is_done,
         ]);
 
-        return redirect()->route('project.show', $wbsItem->project_id)->with('success', 'Item updated.');
+
+        return redirect()->back()->with('success', 'Item updated successfully.');
     }
 
     /**
@@ -82,6 +85,25 @@ class ProjectWbsItemController extends Controller
     {
         $projectId = $wbsItem->project_id;
         $wbsItem->delete();
-        return redirect()->route('project.show', $projectId)->with('success', 'Item deleted.');
+
+        return redirect()->back()->with('success', 'Item deleted successfully.');
+    }
+
+    /**
+     * Import WBS items from Excel file.
+     */
+    public function import(Request $request, Project $project)
+    {
+        $validated = $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        try {
+            Excel::import(new WbsItemImport($project->id), $validated['file']);
+
+            return redirect()->back()->with('success', 'WBS items imported successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors('Failed to import WBS items: ' . $e->getMessage());
+        }
     }
 }

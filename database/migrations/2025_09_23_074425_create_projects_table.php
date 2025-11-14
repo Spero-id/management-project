@@ -18,9 +18,10 @@ return new class extends Migration
             $table->string('client_phone');
             $table->string('company');
             $table->string('company_identity');
-            $table->string('target_from_month');
-            $table->string('target_to_month');
-            $table->foreignId('status_id')->constrained('prospect_status')->onDelete('cascade');
+            $table->string('project_name');
+            // $table->string('target_from_month');
+            // $table->string('target_to_month');
+            // $table->foreignId('status_id')->constrained('prospect_status')->onDelete('cascade');
             $table->text('description')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->string('po_file')->nullable();

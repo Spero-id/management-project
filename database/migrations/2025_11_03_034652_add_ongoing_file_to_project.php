@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('projects', function (Blueprint $table) {
-            $table->string('drawing_file')->nullable()->after('mom_file');
+            $table->string('drawing_file')->nullable();
             $table->string('wbs_file')->nullable()->after('drawing_file');
             $table->string('project_schedule_file')->nullable()->after('wbs_file');
             $table->string('purchase_schedule_file')->nullable()->after('project_schedule_file');

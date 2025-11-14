@@ -68,7 +68,14 @@ class ProjectController extends Controller
             ->orderBy('id')
             ->get();
 
-        return view('project.show', compact('project', 'wbsItems'));
+        // Load categories (WBS items with item_type = 'category' and no parent)
+        $categories = \App\Models\ProjectWBSItem::where('project_id', $project->id)
+            ->where('item_type', 'category')
+            ->whereNull('parent_id')
+            ->orderBy('id')
+            ->get();
+
+        return view('project.show', compact('project', 'wbsItems', 'categories'));
     }
 
     /**
@@ -137,7 +144,6 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'pic_project' => 'nullable|string|max:255',
             'waktu_pelaksanaan_days' => 'nullable|string|min:1',
-            'mom_file' => 'nullable|file|mimes:pdf|max:5120',
             'client_persons' => 'nullable',
             'client_persons.*.name' => 'required_with:client_persons|string|max:255',
             'client_persons.*.phone' => 'nullable|string|max:50',
@@ -149,11 +155,6 @@ class ProjectController extends Controller
         $project->execution_time = $validated['waktu_pelaksanaan_days'] ?? null;
         $project->status = 'on-going';
 
-        // Handle M.O.M PDF upload (store on public disk)
-        if ($request->hasFile('mom_file')) {
-            $momPath = $request->file('mom_file')->store('projects/mom', 'public');
-            $project->mom_file = $momPath;
-        }
         $project->save();
 
         $clientPersons = json_decode($validated['client_persons'] ?? []);
@@ -190,7 +191,6 @@ class ProjectController extends Controller
             'document',
             'po_file',
             'spk_file',
-            'mom_file',
         ];
 
         $validated = $request->validate([
@@ -238,7 +238,6 @@ class ProjectController extends Controller
             'document',
             'po_file',
             'spk_file',
-            'mom_file',
         ];
 
         if (!in_array($fileKey, $allowedKeys)) {

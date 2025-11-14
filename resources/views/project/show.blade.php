@@ -49,399 +49,411 @@
 @endsection
 
 @section('content')
-    <div class="row row-cards">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" class="icon me-2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        Project Information
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <!-- Customer Name -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Customer Name</label>
-                                <div class="fw-bold">{{ $project->client_name ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <!-- Phone Number -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Phone Number</label>
-                                <div class="fw-bold">{{ $project->client_phone ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <!-- Email Address -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Email Address</label>
-                                <div class="fw-bold">{{ $project->client_email ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <!-- Company Name -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Company Name</label>
-                                <div class="fw-bold">{{ $project->company ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <!-- Company Identity -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Company Identity</label>
-                                <div class="fw-bold">{{ $project->company_identity ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-
-                        <!-- Status -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Status</label>
-                                <div>
-                                    {{ $project->status }}
-                                </div>
-                            </div>
-                            <!-- Change Status Modal -->
-                            <div class="modal modal-blur fade" id="addProjectLogModal" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                                    <div class="modal-content">
-                                        <form id="changeStatusForm" method="POST"
-                                            action="{{ route('project.changeStatus', $project) }}"
-                                            enctype="multipart/form-data">
-                                            @csrf
-
-                                            <input type="hidden" name="status" value="on-going">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Change Project Status</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <input type="hidden" name="project_id" id="modalProjectId"
-                                                    value="{{ $project->id }}">
-
-                                                <div class="mb-3">
-                                                    <label class="form-label">PIC Project</label>
-                                                    <input type="text" name="pic_project" id="picProject"
-                                                        class="form-control"
-                                                        value="{{ $project->preSalesPerson->name ?? '' }}">
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label class="form-label">Waktu Pelaksanaan (hari)</label>
-                                                    <input type="number" name="waktu_pelaksanaan_days"
-                                                        id="waktuPelaksanaan" class="form-control" min="1"
-                                                        step="1"
-                                                        value="{{ $project->waktu_pelaksanaan_days ?? '' }}">
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label class="form-label">M.O.M (PDF)</label>
-                                                    <input type="file" name="mom_file" id="momFile"
-                                                        class="form-control" accept="application/pdf">
-                                                    <div class="form-text text-muted">Upload M.O.M. dalam format PDF (maks
-                                                        5MB).</div>
-                                                </div>
-
-                                                <!-- Additional files required when changing status to on-going -->
-
-                                                <hr>
-
-                                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                                    <h6 class="mb-0">Client Persons</h6>
-                                                    <button id="addClientPersonBtn"
-                                                        class="btn btn-sm btn-outline-primary">Add Person</button>
-                                                </div>
-
-                                                <div id="clientPersonsWrapper"></div>
-
-                                                <!-- Hidden JSON payload for client persons -->
-                                                <input type="hidden" name="client_persons" id="clientPersonsJson">
-
-                                                <!-- Template for client person -->
-                                                <template id="clientPersonTemplate">
-                                                    <div class="card mb-2 client-person-row p-3">
-                                                        <div class="d-flex justify-content-between mb-2">
-                                                            <strong>Client Person</strong>
-                                                            <button class="btn btn-sm btn-danger remove-client-person"
-                                                                type="button">Remove</button>
-                                                        </div>
-                                                        <div class="row g-2">
-                                                            <div class="col-md-6">
-                                                                <label class="form-label">Name</label>
-                                                                <input type="text" name="client_persons[][name]"
-                                                                    class="form-control" required>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <label class="form-label">Phone</label>
-                                                                <input type="text" name="client_persons[][phone]"
-                                                                    class="form-control">
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <label class="form-label">Email</label>
-                                                                <input type="email" name="client_persons[][email]"
-                                                                    class="form-control">
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <label class="form-label">Notes</label>
-                                                                <input type="text" name="client_persons[][notes]"
-                                                                    class="form-control">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </template>
-
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-link"
-                                                    data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-primary">Save</button>
-                                            </div>
-                                        </form>
-                                    </div>
-
-                                </div>
-                            </div>
-
-
-
-                        </div>
-
-
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Sales Person</label>
-                                <div class="fw-bold">
-                                    {{ $project->prospect->creator->name ?? 'Not Assigned' }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Target Deal Period -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Waktu pengerjaan</label>
-                                <div class="fw-bold">
-                                    {{ $project->execution_time . ' Hari' ?? '-' }}
-                                </div>
-                            </div>
-
-                        </div>
-
-
-                        <!-- Supporting Document -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Supporting Document</label>
-                                <div>
-                                    @if ($project->document ?? false)
-                                        <a href="{{ Storage::url("{$project->document}") }}" target="_blank"
-                                            class="">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
-                                                </path>
-                                                <polyline points="14,2 14,8 20,8"></polyline>
-                                                <line x1="16" y1="13" x2="8" y2="13">
-                                                </line>
-                                                <line x1="16" y1="17" x2="8" y2="17">
-                                                </line>
-                                                <polyline points="10,9 9,9 8,9"></polyline>
-                                            </svg>
-                                            View Document
-                                        </a>
-                                    @else
-                                        <span class="text-muted">No document uploaded</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- PO File -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">File PO (Purchase Order)</label>
-                                <div>
-                                    @if ($project->po_file ?? false)
-                                        <a href="{{ Storage::url("{$project->po_file}") }}" target="_blank"
-                                            class="">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
-                                                </path>
-                                                <polyline points="14,2 14,8 20,8"></polyline>
-                                                <line x1="16" y1="13" x2="8" y2="13">
-                                                </line>
-                                                <line x1="16" y1="17" x2="8" y2="17">
-                                                </line>
-                                                <polyline points="10,9 9,9 8,9"></polyline>
-                                            </svg>
-                                            View PO File
-                                        </a>
-                                    @else
-                                        <span class="text-muted">No PO file uploaded</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SPK File -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">File SPK (Surat Perjanjian Kerja)</label>
-                                <div>
-                                    @if ($project->spk_file ?? false)
-                                        <a href="{{ Storage::url("{$project->spk_file}") }}" target="_blank"
-                                            class="">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
-                                                </path>
-                                                <polyline points="14,2 14,8 20,8"></polyline>
-                                                <line x1="16" y1="13" x2="8" y2="13">
-                                                </line>
-                                                <line x1="16" y1="17" x2="8" y2="17">
-                                                </line>
-                                                <polyline points="10,9 9,9 8,9"></polyline>
-                                            </svg>
-                                            View SPK File
-                                        </a>
-                                    @else
-                                        <span class="text-muted">No SPK file uploaded</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Created Date -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label text-muted">Created Date</label>
-                                <div class="fw-bold">
-                                    {{ $project->created_at ? $project->created_at->format('M d, Y') : 'N/A' }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Additional Notes -->
-                        @if ($project->note ?? false)
-                            <div class="col-12">
-                                <div class="mb-3">
-                                    <label class="form-label text-muted">Additional Notes</label>
-                                    <div class="card bg-light">
-                                        <div class="card-body">
-                                            {{ $project->note }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                        
-                        {{-- Client Persons list (from project_client_person) --}}
-                        @if ($project->clientPersons && $project->clientPersons->isNotEmpty())
-                            <div class="col-12">
-                                <div class="mb-3">
-                                    <label class="form-label text-muted">Client Persons</label>
-                                    <div class="list-group">
-                                        @foreach ($project->clientPersons as $person)
-                                            <div class="list-group-item">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div>
-                                                        <div class="fw-bold">{{ $person->name ?? '-' }}</div>
-                                                        @if ($person->note)
-                                                            <div class="small text-muted">{{ $person->note }}</div>
-                                                        @endif
-                                                        <div class="small text-muted mt-1">
-                                                            Phone: {{ $person->phone ?? '-' }}
-                                                            @if($person->email)
-                                                                | Email: {{ $person->email }}
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Project Information
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Customer Name -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Customer Name</label>
+                        <div class="fw-bold">{{ $project->client_name ?? 'N/A' }}</div>
                     </div>
                 </div>
-            </div>
 
+                <!-- Phone Number -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Phone Number</label>
+                        <div class="fw-bold">{{ $project->client_phone ?? 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <!-- Email Address -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Email Address</label>
+                        <div class="fw-bold">{{ $project->client_email ?? 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <!-- Company Name -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Company Name</label>
+                        <div class="fw-bold">{{ $project->company ?? 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <!-- Company Identity -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Company Identity</label>
+                        <div class="fw-bold">{{ $project->company_identity ?? 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Status</label>
+                        <div>
+                            {{ $project->status }}
+                        </div>
+                    </div>
+                    <!-- Change Status Modal -->
+                    <div class="modal modal-blur fade" id="addProjectLogModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <form id="changeStatusForm" method="POST"
+                                    action="{{ route('project.changeStatus', $project) }}" enctype="multipart/form-data">
+                                    @csrf
+
+                                    <input type="hidden" name="status" value="on-going">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Change Project Status</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="hidden" name="project_id" id="modalProjectId"
+                                            value="{{ $project->id }}">
+
+                                        <div class="mb-3">
+                                            <label class="form-label">PIC Project</label>
+                                            <input type="text" name="pic_project" id="picProject"
+                                                class="form-control" value="{{ $project->preSalesPerson->name ?? '' }}">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Waktu Pelaksanaan (hari)</label>
+                                            <input type="number" name="waktu_pelaksanaan_days" id="waktuPelaksanaan"
+                                                class="form-control" min="1" step="1"
+                                                value="{{ $project->waktu_pelaksanaan_days ?? '' }}">
+                                        </div>
+
+
+                                        <!-- Additional files required when changing status to on-going -->
+
+                                        <hr>
+
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">Client Persons</h6>
+                                            <button id="addClientPersonBtn" class="btn btn-sm btn-outline-primary">Add
+                                                Person</button>
+                                        </div>
+
+                                        <div id="clientPersonsWrapper"></div>
+
+                                        <!-- Hidden JSON payload for client persons -->
+                                        <input type="hidden" name="client_persons" id="clientPersonsJson">
+
+                                        <!-- Template for client person -->
+                                        <template id="clientPersonTemplate">
+                                            <div class="card mb-2 client-person-row p-3">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <strong>Client Person</strong>
+                                                    <button class="btn btn-sm btn-danger remove-client-person"
+                                                        type="button">Remove</button>
+                                                </div>
+                                                <div class="row g-2">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Name</label>
+                                                        <input type="text" name="client_persons[][name]"
+                                                            class="form-control" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Phone</label>
+                                                        <input type="text" name="client_persons[][phone]"
+                                                            class="form-control">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Email</label>
+                                                        <input type="email" name="client_persons[][email]"
+                                                            class="form-control">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Notes</label>
+                                                        <input type="text" name="client_persons[][notes]"
+                                                            class="form-control">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-link"
+                                            data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+
+                </div>
+
+
+
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Sales Person</label>
+                        <div class="fw-bold">
+                            {{ $project->prospect->creator->name ?? 'Not Assigned' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Target Deal Period -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Waktu pengerjaan</label>
+                        <div class="fw-bold">
+                            {{ $project->execution_time . ' Hari' ?? '-' }}
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <!-- Supporting Document -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Supporting Document</label>
+                        <div>
+                            @if ($project->document ?? false)
+                                <a href="{{ Storage::url("{$project->document}") }}" target="_blank" class="">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                        </path>
+                                        <polyline points="14,2 14,8 20,8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13">
+                                        </line>
+                                        <line x1="16" y1="17" x2="8" y2="17">
+                                        </line>
+                                        <polyline points="10,9 9,9 8,9"></polyline>
+                                    </svg>
+                                    View Document
+                                </a>
+                            @else
+                                <span class="text-muted">No document uploaded</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PO File -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">File PO (Purchase Order)</label>
+                        <div>
+                            @if ($project->po_file ?? false)
+                                <a href="{{ Storage::url("{$project->po_file}") }}" target="_blank" class="">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                        </path>
+                                        <polyline points="14,2 14,8 20,8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13">
+                                        </line>
+                                        <line x1="16" y1="17" x2="8" y2="17">
+                                        </line>
+                                        <polyline points="10,9 9,9 8,9"></polyline>
+                                    </svg>
+                                    View PO File
+                                </a>
+                            @else
+                                <span class="text-muted">No PO file uploaded</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SPK File -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">File SPK (Surat Perjanjian Kerja)</label>
+                        <div>
+                            @if ($project->spk_file ?? false)
+                                <a href="{{ Storage::url("{$project->spk_file}") }}" target="_blank" class="">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                                        </path>
+                                        <polyline points="14,2 14,8 20,8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13">
+                                        </line>
+                                        <line x1="16" y1="17" x2="8" y2="17">
+                                        </line>
+                                        <polyline points="10,9 9,9 8,9"></polyline>
+                                    </svg>
+                                    View SPK File
+                                </a>
+                            @else
+                                <span class="text-muted">No SPK file uploaded</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Created Date -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Created Date</label>
+                        <div class="fw-bold">
+                            {{ $project->created_at ? $project->created_at->format('M d, Y') : 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Notes -->
+                @if ($project->note ?? false)
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Additional Notes</label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    {{ $project->note }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Client Persons list (from project_client_person) --}}
+                @if ($project->clientPersons && $project->clientPersons->isNotEmpty())
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Client Persons</label>
+                            <div class="list-group">
+                                @foreach ($project->clientPersons as $person)
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="fw-bold">{{ $person->name ?? '-' }}</div>
+                                                @if ($person->note)
+                                                    <div class="small text-muted">{{ $person->note }}</div>
+                                                @endif
+                                                <div class="small text-muted mt-1">
+                                                    Phone: {{ $person->phone ?? '-' }}
+                                                    @if ($person->email)
+                                                        | Email: {{ $person->email }}
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 
-    @if ($project->status != 'project-deal')
 
-        <div class="row row-cards mt-3">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" class="icon me-2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14,2 14,8 20,8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                            </svg>
-                            Project Files
-                        </h3>
+    @if ($project->status == 'on-going')
+        
+    <div class="card mb-4">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+                <li class="nav-item">
+                    <a href="#list-of-work" class="nav-link active" data-bs-toggle="tab">List Of Work</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#status-barang" class="nav-link" data-bs-toggle="tab">Status Barang</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#weekly-meeting" class="nav-link" data-bs-toggle="tab">Weekly Meeting</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane active show" id="list-of-work">
+                    <div>
+                        <x-project.wbs-list :project="$project" :wbsItems="$wbsItems" />
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-vcenter card-table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>File Type</th>
-                                        <th>Uploaded File</th>
-                                        <th class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $fileMap = [
-                                            'drawing_file' => 'Drawing',
-                                            'wbs_file' => 'WBS',
-                                            'project_schedule_file' => 'Project Schedule',
-                                            'purchase_schedule_file' => 'Purchase Schedule',
-                                            'pengajuan_material_project_file' => 'Pengajuan Material',
-                                            'pengajuan_tools_project_file' => 'Pengajuan Tools',
-                                        ];
-                                    @endphp
+                </div>
+                <div class="tab-pane" id="status-barang">
+                    <x-project.delivery-table :equipment="$equipment ?? []" />
+                </div>
+                <div class="tab-pane" id="weekly-meeting">
+                    <x-project.weekly-meeting />
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
 
-                                    @foreach ($fileMap as $key => $label)
-                                        <tr>
-                                            <td class="fw-bold">{{ $label }}</td>
-                                            <td>
-                                                @if (!empty($project->{$key}))
-                                                    <a href="{{ Storage::url($project->{$key}) }}"
-                                                        target="_blank">{{ basename($project->{$key}) }}</a>
-                                                @else
-                                                    <span class="text-muted">No file uploaded</span>
-                                                @endif
-                                            </td>
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" class="icon me-2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                </svg>
+                Project Files
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-striped">
+                    <thead>
+                        <tr>
+                            <th>File Type</th>
+                            <th>Uploaded File</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $fileMap = [
+                                'drawing_file' => 'Drawing',
+                                'wbs_file' => 'WBS',
+                                'project_schedule_file' => 'Project Schedule',
+                                'purchase_schedule_file' => 'Purchase Schedule',
+                                'pengajuan_material_project_file' => 'Pengajuan Material',
+                                'pengajuan_tools_project_file' => 'Pengajuan Tools',
+                            ];
+                        @endphp
 
-                                            <td class="text-center">
-                                                <div>
-                                                    {{-- 
+                        @foreach ($fileMap as $key => $label)
+                            <tr>
+                                <td class="fw-bold">{{ $label }}</td>
+                                <td>
+                                    @if (!empty($project->{$key}))
+                                        <a href="{{ Storage::url($project->{$key}) }}"
+                                            target="_blank">{{ basename($project->{$key}) }}</a>
+                                    @else
+                                        <span class="text-muted">No file uploaded</span>
+                                    @endif
+                                </td>
+
+                                <td class="text-center">
+                                    <div>
+                                        {{-- 
                                                 <button type="button" class="btn btn-sm btn-icon btn-primary open-upload-modal"
                                                     data-file-key="{{ $key }}"
                                                     data-file-label="{{ $label }}"
@@ -452,423 +464,93 @@
                                                         <line x1="12" y1="5" x2="12" y2="19"></line>
                                                     </svg>
                                                 </button> --}}
-                                                    <button type="button"
-                                                        class="btn btn-primary btn-5 d-none d-sm-inline-block open-upload-modal"
-                                                        data-file-key="{{ $key }}"
-                                                        data-file-label="{{ $label }}"
-                                                        title="Upload {{ $label }}" data-bs-toggle="modal"
-                                                        data-bs-target="#modal-report">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                                            height="24" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="icon icon-tabler icons-tabler-outline icon-tabler-upload">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                                            <path d="M7 9l5 -5l5 5" />
-                                                            <path d="M12 4l0 12" />
-                                                        </svg>
-                                                        Upload
-                                                    </button>
-
-
-                                                    @if (!empty($project->{$key}))
-                                                        <form
-                                                            action="{{ route('project.deleteFile', [$project->id, $key]) }}"
-                                                            method="POST" class="d-inline"
-                                                            onsubmit="return confirm('Are you sure you want to delete this file?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit    "
-                                                                class="btn btn-danger btn-5 d-none d-sm-inline-block ">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                                                    height="24" viewBox="0 0 24 24" fill="none"
-                                                                    stroke="currentColor" stroke-width="2"
-                                                                    stroke-linecap="round" stroke-linejoin="round"
-                                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
-                                                                    <path stroke="none" d="M0 0h24v24H0z"
-                                                                        fill="none" />
-                                                                    <path d="M4 7l16 0" />
-                                                                    <path d="M10 11l0 6" />
-                                                                    <path d="M14 11l0 6" />
-                                                                    <path
-                                                                        d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                                                    <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                                                </svg>
-                                                                Delete
-                                                            </button>
-                                                        </form>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row row-cards mt-3">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title">WBS / To-do</h3>
-                    </div>
-                    <div class="card-body">
-                        {{-- Create standalone task + create category forms --}}
-                        <div class="mb-3">
-                            <form action="{{ route('project.wbs-items.store', $project) }}" method="POST"
-                                class="d-flex align-items-center w-100">
-                                @csrf
-                                <input type="hidden" name="item_type" value="category">
-                                <input type="text" name="title" class="form-control me-2 flex-grow-1"
-                                    placeholder="New category title" required aria-label="New category title">
-                                <button class="btn btn-outline-primary" type="submit">Create Category</button>
-                            </form>
-                        </div>
-
-                        {{-- List categories and tasks --}}
-                        @php
-                            $categories = $wbsItems->where('item_type', 'category');
-                            $tasks = $wbsItems->where('item_type', 'task');
-                            $totalTasks = $tasks->count();
-                            $completedTasks = $tasks->where('is_done', 1)->count();
-                            $overallPercent = $totalTasks ? round(($completedTasks / $totalTasks) * 100) : 0;
-                        @endphp
-
-                        {{-- Overall progress --}}
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="text-muted">Overall Progress</small>
-                                <strong id="wbsOverallPercent">{{ $overallPercent }}%</strong>
-                            </div>
-                            <div class="progress" style="height:10px;">
-                                <div id="wbsOverallBar" class="progress-bar bg-primary" role="progressbar"
-                                    style="width: {{ $overallPercent }}%;" aria-valuenow="{{ $overallPercent }}"
-                                    aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </div>
-
-                        @if ($categories->isEmpty() && $tasks->isEmpty())
-                            <div class="text-muted">No items yet.</div>
-                        @else
-                            <div class="list-group">
-                                {{-- First list categories with their child tasks --}}
-                                @foreach ($categories as $cat)
-                                    @php
-                                        $catChildren = $tasks->where('parent_id', $cat->id);
-                                        $catTotal = $catChildren->count();
-                                        $catDone = $catChildren->where('is_done', 1)->count();
-                                        $catPercent = $catTotal ? round(($catDone / $catTotal) * 100) : 0;
-                                    @endphp
-                                    <div class="list-group-item wbs-cat" data-cat-id="{{ $cat->id }}">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <strong>{{ $cat->title }}</strong>
-                                                @if ($cat->note)
-                                                    <div class="small text-muted">{{ $cat->note }}</div>
-                                                @endif
-
-                                            </div>
-                                            <div class="d-flex align-items-center">
-                                                {{-- Add Task button for this category (opens modal) --}}
-
-                                                {{-- Delete category --}}
-                                                <form action="{{ route('project.wbs-items.destroy', $cat) }}"
-                                                    method="POST" class="d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-sm btn-outline-danger" type="submit"><svg
-                                                            xmlns="http://www.w3.org/2000/svg" width="24"
-                                                            height="24" viewBox="0 0 24 24" fill="none"
-                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
-                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                            <path d="M4 7l16 0" />
-                                                            <path d="M10 11l0 6" />
-                                                            <path d="M14 11l0 6" />
-                                                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                                        </svg></button>
-                                                </form>
-                                            </div>
-                                        </div>
-
-
-
-                                        {{-- child tasks --}}
-                                        @php $children = $tasks->where('parent_id', $cat->id); @endphp
-                                        @if ($children->isNotEmpty())
-                                            <div class="mt-2">
-                                                @foreach ($children as $child)
-                                                    <div class="card mb-2">
-                                                        <div
-                                                            class="card-body d-flex justify-content-between align-items-center p-2">
-                                                            <div class="w-100">
-                                                                <form
-                                                                    action="{{ route('project.wbs-items.update', $child) }}"
-                                                                    method="POST" class="d-inline wbs-toggle-form mb-0">
-                                                                    @csrf
-                                                                    @method('PUT')
-                                                                    <input type="hidden" name="title"
-                                                                        value="{{ $child->title }}">
-                                                                    <input type="hidden" name="item_type"
-                                                                        value="task">
-                                                                    <input type="hidden" name="parent_id"
-                                                                        value="{{ $child->parent_id }}">
-                                                                    <input type="hidden" name="note"
-                                                                        value="{{ $child->note }}">
-                                                                    {{-- hidden default for unchecked checkbox --}}
-                                                                    <input type="hidden" name="is_done" value="0">
-                                                                    <div class="form-check d-flex align-items-start mb-0">
-                                                                        <input type="checkbox"
-                                                                            id="wbs-child-{{ $child->id }}"
-                                                                            data-id="{{ $child->id }}"
-                                                                            data-title="{{ e($child->title) }}"
-                                                                            class="wbs-item-checkbox form-check-input me-2"
-                                                                            name="is_done" value="1"
-                                                                            {{ $child->is_done ? 'checked' : '' }}
-                                                                            onchange="toggleWbsItem(this)">
-
-                                                                        <div class="ms-2">
-                                                                            <label for="wbs-child-{{ $child->id }}"
-                                                                                class="mb-0"
-                                                                                data-title="{{ e($child->title) }}">
-                                                                                @if ($child->is_done)
-                                                                                    <span
-                                                                                        class="text-success">{{ $child->title }}</span>
-                                                                                @else
-                                                                                    {{ $child->title }}
-                                                                                @endif
-                                                                            </label>
-
-                                                                            @if ($child->note)
-                                                                                <div class="small text-muted mt-1">Note:
-                                                                                    {{ $child->note }}</div>
-                                                                            @endif
-                                                                        </div>
-                                                                    </div>
-                                                                </form>
-                                                            </div>
-                                                            <div class="ms-2">
-                                                                <form
-                                                                    action="{{ route('project.wbs-items.destroy', $child) }}"
-                                                                    method="POST" class="d-inline">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button class="btn btn-sm btn-outline-danger"><svg
-                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                            width="24" height="24"
-                                                                            viewBox="0 0 24 24" fill="none"
-                                                                            stroke="currentColor" stroke-width="2"
-                                                                            stroke-linecap="round" stroke-linejoin="round"
-                                                                            class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
-                                                                            <path stroke="none" d="M0 0h24v24H0z"
-                                                                                fill="none" />
-                                                                            <path d="M4 7l16 0" />
-                                                                            <path d="M10 11l0 6" />
-                                                                            <path d="M14 11l0 6" />
-                                                                            <path
-                                                                                d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                                                            <path
-                                                                                d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                                                        </svg></button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endif
                                         <button type="button"
-                                            class="btn  btn-outline-primary me-2 w-full open-add-task-modal"
-                                            data-cat-id="{{ $cat->id }}" data-cat-title="{{ e($cat->title) }}">Add
-                                            Task</button>
-                                    </div>
-                                @endforeach
+                                            class="btn btn-primary btn-5 d-none d-sm-inline-block open-upload-modal"
+                                            data-file-key="{{ $key }}" data-file-label="{{ $label }}"
+                                            title="Upload {{ $label }}" data-bs-toggle="modal"
+                                            data-bs-target="#modal-report">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-upload">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                                <path d="M7 9l5 -5l5 5" />
+                                                <path d="M12 4l0 12" />
+                                            </svg>
+                                            Upload
+                                        </button>
 
-                                {{-- Also list standalone tasks (without parent) --}}
-                                @foreach ($tasks->where('parent_id', null) as $task)
-                                    <div class="list-group-item d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <form action="{{ route('project.wbs-items.update', $task) }}" method="POST"
-                                                class="d-inline wbs-toggle-form">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="hidden" name="title" value="{{ $task->title }}">
-                                                <input type="hidden" name="item_type" value="task">
-                                                <input type="hidden" name="parent_id" value="">
-                                                <input type="hidden" name="note" value="{{ $task->note }}">
-                                                <input type="hidden" name="is_done" value="0">
-                                                <div class="d-flex align-items-start">
-                                                    <input type="checkbox" id="wbs-task-{{ $task->id }}"
-                                                        data-id="{{ $task->id }}" data-title="{{ e($task->title) }}"
-                                                        class="wbs-item-checkbox form-check-input me-2" name="is_done"
-                                                        value="1" {{ $task->is_done ? 'checked' : '' }}
-                                                        onchange="toggleWbsItem(this)">
 
-                                                    <div>
-                                                        <label for="wbs-task-{{ $task->id }}" class="mb-0"
-                                                            data-title="{{ e($task->title) }}">
-                                                            @if ($task->is_done)
-                                                                <s class="text-success">{{ $task->title }}</s>
-                                                            @else
-                                                                {{ $task->title }}
-                                                            @endif
-                                                        </label>
-
-                                                        @if ($task->note)
-                                                            <div class="small text-muted mt-1">{{ $task->note }}</div>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <div>
-                                            <form action="{{ route('project.wbs-items.destroy', $task) }}" method="POST"
-                                                class="d-inline">
+                                        @if (!empty($project->{$key}))
+                                            <form action="{{ route('project.deleteFile', [$project->id, $key]) }}"
+                                                method="POST" class="d-inline"
+                                                onsubmit="return confirm('Are you sure you want to delete this file?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                                <button type="submit    "
+                                                    class="btn btn-danger btn-5 d-none d-sm-inline-block ">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                        class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M4 7l16 0" />
+                                                        <path d="M10 11l0 6" />
+                                                        <path d="M14 11l0 6" />
+                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                                                    </svg>
+                                                    Delete
+                                                </button>
                                             </form>
-                                        </div>
+                                        @endif
                                     </div>
-                                @endforeach
-                            </div>
-                        @endif
-
-                        {{-- NOTE: Add Task buttons are displayed per-category in the category header --}}
-                    </div>
-                </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="modal fade" id="uploadProjectFileModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <form id="uploadProjectFileForm" method="POST" enctype="multipart/form-data"
-                        action="{{ route('project.uploadFile') }}">
-                        @csrf
-                        <input type="hidden" name="file_key" id="modalFileKey" value="">
-                        <input type="hidden" name="project_id" value="{{ $project->id }}">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="uploadModalTitle">Upload File</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">File</label>
-                                <input type="file" name="file" id="modalFileInput" class="form-control" required>
-                                <div class="form-text">Allowed types: PDF, DOC, DOCX, JPG, PNG. Max 5MB.</div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Upload</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal: Add Task -->
-        <div class="modal fade" id="addTaskModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <form id="addTaskForm" method="POST" action="{{ route('project.wbs-items.store', $project) }}">
-                        @csrf
-                        <input type="hidden" name="item_type" value="task">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Add Task</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Title</label>
-                                <input type="text" name="title" id="addTaskTitle" class="form-control" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Notes</label>
-                                <textarea name="note" id="addTaskNote" class="form-control" rows="3"></textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Parent Category (optional)</label>
-                                <select name="parent_id" id="addTaskParent" class="form-select" readonly>
-                                    <option value="">None (standalone task)</option>
-                                    @foreach ($categories as $cat)
-                                        <option value="{{ $cat->id }}">{{ $cat->title }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Add Task</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
+    </div>
     @endif
 
 
+    {{-- Add Task Modal Component --}}
 
-    <!-- Modal: Upload Project File -->
+    <div class="modal fade" id="uploadProjectFileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="uploadProjectFileForm" method="POST" enctype="multipart/form-data"
+                    action="{{ route('project.uploadFile') }}">
+                    @csrf
+                    <input type="hidden" name="file_key" id="modalFileKey" value="">
+                    <input type="hidden" name="project_id" value="{{ $project->id }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="uploadModalTitle">Upload File</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">File</label>
+                            <input type="file" name="file" id="modalFileInput" class="form-control" required>
+                            <div class="form-text">Allowed types: PDF, DOC, DOCX, JPG, PNG. Max 5MB.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <!-- WBS / To-do Card -->
-
+    </div>
 
 
 @endsection
-
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const addTaskModalEl = document.getElementById('addTaskModal');
-            if (!addTaskModalEl) return;
-
-            const addTaskModal = new bootstrap.Modal(addTaskModalEl);
-            const titleInput = document.getElementById('addTaskTitle');
-            const noteInput = document.getElementById('addTaskNote');
-            const parentSelect = document.getElementById('addTaskParent');
-
-            // open buttons are per-category with class .open-add-task-modal
-            document.querySelectorAll('.open-add-task-modal').forEach(function(btn) {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const catId = btn.getAttribute('data-cat-id') || '';
-                    const catTitle = btn.getAttribute('data-cat-title') || '';
-
-                    // reset text fields
-                    if (titleInput) titleInput.value = '';
-                    if (noteInput) noteInput.value = '';
-
-                    // preselect parent if provided
-                    if (parentSelect) {
-                        parentSelect.value = catId;
-                        // set placeholder/aria to indicate which cat
-                        if (catId) {
-                            titleInput.placeholder = `Add task to ${catTitle}`;
-                        } else {
-                            titleInput.placeholder = '';
-                        }
-                    }
-
-                    addTaskModal.show();
-                });
-            });
-        });
-    </script>
-@endpush
 
 @push('scripts')
     <script>

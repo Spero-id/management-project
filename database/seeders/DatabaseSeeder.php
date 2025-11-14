@@ -366,19 +366,22 @@ class DatabaseSeeder extends Seeder
                 // Create a Project linked to this Prospect
                 // Map prospect fields to project fields where appropriate
                 \App\Models\Project::create([
+                    'project_name' => 'Project for '.$prospect->customer_name,
                     'client_name' => $prospect->customer_name,
                     'client_email' => $prospect->email,
                     'client_phone' => $prospect->no_handphone,
                     'company' => $prospect->company,
                     'company_identity' => $prospect->company_identity,
-                    'target_from_month' => $prospect->target_from_month,
-                    'target_to_month' => $prospect->target_to_month,
-                    'status_id' => $prospect->status_id ?? 1,
+                    'project_name' => 'Project for '.$prospect->customer_name,
+                    'execution_time' => random_int(10, 100),
+                    // 'target_from_month' => $prospect->target_from_month,
+                    // 'target_to_month' => $prospect->target_to_month,
+                    // 'status_id' => $prospect->status_id ?? 1,
                     'description' => 'Project created from prospect: '.$prospect->customer_name,
                     'created_by' => $sales->id,
                     'prospect_id' => $prospect->id,
-                    'target_from_year' => $prospect->target_from_year,
-                    'target_to_year' => $prospect->target_to_year,
+                    // 'target_from_year' => $prospect->target_from_year,
+                    // 'target_to_year' => $prospect->target_to_year,
                 ]);
             }
         }

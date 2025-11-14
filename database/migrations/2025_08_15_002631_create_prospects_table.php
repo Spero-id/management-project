@@ -25,6 +25,10 @@ return new class extends Migration
             $table->foreignId('pre_sales')->constrained('users')->onDelete('cascade');
             $table->string('document')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            // buatkan untuk menandakan apakah prospect sudah diubah menjadi project
+            $table->boolean('is_converted_to_project')->default(false);
+
+            // $table->boolean('is_')->default(false);
             $table->timestamps();
         });
     }

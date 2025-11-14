@@ -134,7 +134,6 @@
                     <div class="col-3">
                         <select name="target_deal_to_month"
                             class="form-control @error('target_deal') is-invalid @enderror" required>
-                            <option value="">To Month</option>
                             @php
                                 // $toMonth = old('target_deal_to_month');
                             @endphp

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Accommodation;
+use App\Models\Installation;
 use App\Models\Project;
 use App\Models\Prospect;
 use App\Models\Quotation;
@@ -29,33 +31,31 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // Dashboard statistics from real database data
+        $user = Auth::user();
+
+        return match (true) {
+            $user->hasRole('SALES') => $this->dashboardSales(),
+            $user->hasRole('PROJECT') => $this->dashboardProject(),
+            // $user->hasRole('logistic') => $this->dashboardLogistic(),
+            // $user->hasRole('finance') => $this->dashboardFinance(),
+            default => $this->dashboardBOD(),
+        };
+    }
+
+    /**
+     * Dashboard for BOD role
+     */
+    private function dashboardBOD()
+    {
         $totalRevenue = $this->getTotalRevenue();
         $activeProjects = $this->getActiveProjectsCount();
         $completionRate = $this->getCompletionRate();
-
-        // Performance data from database
         $performanceData = $this->getPerformanceData();
-
-        // Monthly chart data from database
         $monthlyData = $this->getMonthlyData();
-
-        // Sales teams from database
         $salesTeams = $this->getSalesTeams();
+        $prospects = $this->getProspects();
 
-        // Get all prospects with their relationships
-        $isBOD = Auth::user()->hasRole('BOD');
-
-        if ($isBOD) {
-            $prospects = $this->getProspects();
-        } else {
-            $userId = Auth::id();
-            $prospects = $this->getProspects($userId);
-        }
-
-        $view = $isBOD ? 'dashboard.bod' : 'dashboard.sales';
-
-        return view($view, compact(
+        return view('dashboard.bod', compact(
             'totalRevenue',
             'activeProjects',
             'completionRate',
@@ -63,6 +63,96 @@ class HomeController extends Controller
             'monthlyData',
             'salesTeams',
             'prospects'
+        ));
+    }
+
+    /**
+     * Dashboard for Sales role
+     */
+    private function dashboardSales()
+    {
+        $userId = Auth::id();
+        $totalRevenue = $this->getSalesRevenue($userId);
+        $quotationCount = $this->getSalesQuotationCount($userId);
+        $acceptanceRate = $this->getSalesAcceptanceRate($userId);
+        $performanceData = $this->getSalesPerformanceData($userId);
+        $monthlyData = $this->getSalesMonthlyData($userId);
+        $prospects = $this->getProspects($userId);
+
+        return view('dashboard.sales', compact(
+            'totalRevenue',
+            'quotationCount',
+            'acceptanceRate',
+            'performanceData',
+            'monthlyData',
+            'prospects'
+        ));
+    }
+
+    /**
+     * Dashboard for Project role
+     */
+    private function dashboardProject()
+    {
+
+        $prospects = Prospect::all();
+        $projects = Project::all();
+        if (request()->get('project_id') == null) {
+            $selectedProject = $projects->first();
+        } else {
+            $selectedProject = Project::find(request()->get('project_id'));
+        }
+
+        return view('dashboard.project', compact(
+            'prospects',
+            'projects',
+            'selectedProject'
+        ));
+    }
+
+    /**
+     * Dashboard for Logistic role
+     */
+    private function dashboardLogistic()
+    {
+        $totalInstallations = $this->getTotalInstallations();
+        $pendingInstallations = $this->getPendingInstallations();
+        $completedInstallations = $this->getCompletedInstallations();
+        $installationSchedule = $this->getInstallationSchedule();
+        $accommodationStatus = $this->getAccommodationStatus();
+        $performanceMetrics = $this->getLogisticPerformanceMetrics();
+
+        return view('dashboard.logistic', compact(
+            'totalInstallations',
+            'pendingInstallations',
+            'completedInstallations',
+            'installationSchedule',
+            'accommodationStatus',
+            'performanceMetrics'
+        ));
+    }
+
+    /**
+     * Dashboard for Finance role
+     */
+    private function dashboardFinance()
+    {
+        $totalRevenue = $this->getTotalRevenue();
+        $totalExpenses = $this->getTotalExpenses();
+        $profitMargin = $this->getProfitMargin();
+        $invoiceStatus = $this->getInvoiceStatus();
+        $paymentAnalysis = $this->getPaymentAnalysis();
+        $quotationMetrics = $this->getQuotationMetrics();
+        $cashflowTrend = $this->getCashflowTrend();
+
+        return view('dashboard.finance', compact(
+            'totalRevenue',
+            'totalExpenses',
+            'profitMargin',
+            'invoiceStatus',
+            'paymentAnalysis',
+            'quotationMetrics',
+            'cashflowTrend'
         ));
     }
 
@@ -204,7 +294,7 @@ class HomeController extends Controller
     private function getSalesTeams()
     {
         return User::whereNotNull('no_quotation')
-        ->role('sales')
+            ->role('sales')
             ->where('no_quotation', '>', 0)
             ->select('id', 'name')
             ->get()
@@ -231,6 +321,374 @@ class HomeController extends Controller
         }
 
         return $query->orderBy('created_at', 'desc')->get();
+    }
+
+    /**
+     * ========== SALES ROLE METHODS ==========
+     */
+
+    /**
+     * Get total revenue for specific sales person
+     */
+    private function getSalesRevenue($userId)
+    {
+        return Quotation::where('created_by', $userId)
+            ->where('status', 'accepted')
+            ->sum('total_amount');
+    }
+
+    /**
+     * Get quotation count for specific sales person
+     */
+    private function getSalesQuotationCount($userId)
+    {
+        return Quotation::where('created_by', $userId)->count();
+    }
+
+    /**
+     * Get acceptance rate for specific sales person
+     */
+    private function getSalesAcceptanceRate($userId)
+    {
+        $total = Quotation::where('created_by', $userId)->count();
+        $accepted = Quotation::where('created_by', $userId)
+            ->where('status', 'accepted')
+            ->count();
+
+        return $total > 0 ? round(($accepted / $total) * 100, 1) : 0;
+    }
+
+    /**
+     * Get performance data for specific sales person
+     */
+    private function getSalesPerformanceData($userId)
+    {
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+
+        $companies = Prospect::whereHas('quotations', function ($query) use ($userId) {
+            $query->where('created_by', $userId);
+        })
+            ->select('company')
+            ->distinct()
+            ->whereNotNull('company')
+            ->get()
+            ->pluck('company');
+
+        $performanceData = [];
+
+        foreach ($companies as $company) {
+            $monthlyQuotations = Quotation::where('created_by', $userId)
+                ->whereHas('prospect', function ($query) use ($company) {
+                    $query->where('company', $company);
+                })
+                ->whereMonth('created_at', $currentMonth)
+                ->whereYear('created_at', $currentYear);
+
+            $monthlyTotal = $monthlyQuotations->where('status', 'accepted')->sum('total_amount');
+            $monthlyTarget = $monthlyTotal * 1.5;
+
+            $yearlyQuotations = Quotation::where('created_by', $userId)
+                ->whereHas('prospect', function ($query) use ($company) {
+                    $query->where('company', $company);
+                })
+                ->whereYear('created_at', $currentYear);
+
+            $yearlyTotal = $yearlyQuotations->where('status', 'accepted')->sum('total_amount');
+            $yearlyTarget = $yearlyTotal * 1.3;
+
+            $monthlyCompletionRate = $monthlyTarget > 0 ? round(($monthlyTotal / $monthlyTarget) * 100, 1) : 0;
+            $yearlyCompletionRate = $yearlyTarget > 0 ? round(($yearlyTotal / $yearlyTarget) * 100, 1) : 0;
+
+            $monthlyColor = $monthlyCompletionRate >= 80 ? 'green' : ($monthlyCompletionRate >= 60 ? 'blue' : 'yellow');
+            $yearlyColor = $yearlyCompletionRate >= 80 ? 'green' : ($yearlyCompletionRate >= 60 ? 'blue' : 'yellow');
+
+            $performanceData[] = [
+                'company' => $company,
+                'monthly_target' => $monthlyTarget,
+                'completion' => $monthlyTotal,
+                'monthly_completion_rate' => $monthlyCompletionRate,
+                'monthly_completion_color' => $monthlyColor,
+                'yearly_target' => $yearlyTarget,
+                'accumulative_total' => $yearlyTotal,
+                'yearly_completion_rate' => $yearlyCompletionRate,
+                'yearly_completion_color' => $yearlyColor,
+            ];
+        }
+
+        return $performanceData;
+    }
+
+    /**
+     * Get monthly chart data for specific sales person
+     */
+    private function getSalesMonthlyData($userId)
+    {
+        $currentYear = Carbon::now()->year;
+        $omsetData = [];
+        $grossProfitData = [];
+        $targetCompletionData = [];
+
+        // for ($month = 1; $month <= 12; $month++) {
+        //     $monthlyOmset = Quotation::where('created_by', $userId)
+        //         ->where('status', 'accepted')
+        //         ->whereMonth('created_at', $month)
+        //         ->whereYear('created_at', $currentYear)
+        //         ->sum('total_amount');
+        //
+        //     $monthlyGrossProfit = $monthlyOmset * 0.6;
+        //
+        //     $monthlyQuotations = Quotation::where('created_by', $userId)
+        //         ->whereMonth('created_at', $month)
+        //         ->whereYear('created_at', $currentYear)
+        //         ->count();
+        //
+        //     $acceptedQuotations = Quotation::where('created_by', $userId)
+        //         ->where('status', 'accepted')
+        //         ->whereMonth('created_at', $month)
+        //         ->whereYear('created_at', $currentYear)
+        //         ->count();
+        //
+        //     $targetCompletion = $monthlyQuotations > 0 ? round(($acceptedQuotations / $monthlyQuotations) * 100) : 0;
+        //
+        //     $omsetData[] = $monthlyOmset;
+        //     $grossProfitData[] = $monthlyGrossProfit;
+        //     $targetCompletionData[] = $targetCompletion;
+        // }
+
+        return [
+            'omset' => $omsetData,
+            'gross_profit' => $grossProfitData,
+            'target_completion' => $targetCompletionData,
+        ];
+    }
+
+    /**
+     * ========== PROJECT ROLE METHODS ==========
+     */
+
+    /**
+     * Get total projects count
+     */
+    private function getProjectCount()
+    {
+        return Project::count();
+    }
+
+    /**
+     * Get completed projects count
+     */
+    private function getCompletedProjectsCount()
+    {
+        return Project::where('status', 'completed')->count();
+    }
+
+    /**
+     * Get projects currently in progress
+     */
+    private function getProjectsInProgress()
+    {
+        return Project::where('status', 'in_progress')
+            ->with(['wbsItems'])
+            ->orderBy('updated_at', 'desc')
+            ->take(10)
+            ->get();
+    }
+
+    /**
+     * Get project timeline data
+     */
+    private function getProjectTimeline()
+    {
+        return Project::orderBy('created_at', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get team productivity metrics
+     */
+    private function getTeamProductivity()
+    {
+        // Implement based on your business logic
+        return [];
+    }
+
+    /**
+     * Get project budget status
+     */
+    private function getProjectBudgetStatus()
+    {
+        return Project::select('id', 'client_name', 'company', 'description')
+            ->get()
+            ->map(function ($project) {
+                return [
+                    'id' => $project->id,
+                    'client_name' => $project->client_name,
+                    'company' => $project->company,
+                    'description' => $project->description,
+                ];
+            });
+    }
+
+    /**
+     * ========== LOGISTIC ROLE METHODS ==========
+     */
+
+    /**
+     * Get total installations count
+     */
+    private function getTotalInstallations()
+    {
+        return Installation::count();
+    }
+
+    /**
+     * Get pending installations count
+     */
+    private function getPendingInstallations()
+    {
+        return Installation::where('status', 'pending')->count();
+    }
+
+    /**
+     * Get completed installations count
+     */
+    private function getCompletedInstallations()
+    {
+        return Installation::where('status', 'completed')->count();
+    }
+
+    /**
+     * Get installation schedule
+     */
+    private function getInstallationSchedule()
+    {
+        return Installation::select('id', 'name', 'scheduled_date', 'status')
+            ->orderBy('scheduled_date', 'asc')
+            ->take(10)
+            ->get();
+    }
+
+    /**
+     * Get accommodation status
+     */
+    private function getAccommodationStatus()
+    {
+        return Accommodation::select('id', 'name', 'capacity', 'status')
+            ->get();
+    }
+
+    /**
+     * Get logistic performance metrics
+     */
+    private function getLogisticPerformanceMetrics()
+    {
+        return [
+            'on_time_delivery_rate' => $this->getOnTimeDeliveryRate(),
+            'installation_efficiency' => $this->getInstallationEfficiency(),
+            'accommodation_utilization' => $this->getAccommodationUtilization(),
+        ];
+    }
+
+    /**
+     * Get on-time delivery rate
+     */
+    private function getOnTimeDeliveryRate()
+    {
+        $total = Installation::count();
+        $onTime = Installation::where('status', 'completed')
+            ->whereRaw('completed_date <= scheduled_date')
+            ->count();
+
+        return $total > 0 ? round(($onTime / $total) * 100, 1) : 0;
+    }
+
+    /**
+     * Get installation efficiency rate
+     */
+    private function getInstallationEfficiency()
+    {
+        // Implement based on your business logic
+        return 0;
+    }
+
+    /**
+     * Get accommodation utilization rate
+     */
+    private function getAccommodationUtilization()
+    {
+        // Implement based on your business logic
+        return 0;
+    }
+
+    /**
+     * ========== FINANCE ROLE METHODS ==========
+     */
+
+    /**
+     * Get total expenses
+     */
+    private function getTotalExpenses()
+    {
+        // Implement based on your expense tracking model
+        return 0;
+    }
+
+    /**
+     * Get profit margin
+     */
+    private function getProfitMargin()
+    {
+        $revenue = $this->getTotalRevenue();
+        $expenses = $this->getTotalExpenses();
+
+        if ($revenue === 0) {
+            return 0;
+        }
+
+        $profit = $revenue - $expenses;
+
+        return round(($profit / $revenue) * 100, 1);
+    }
+
+    /**
+     * Get invoice status
+     */
+    private function getInvoiceStatus()
+    {
+        // Implement based on your invoice model
+        return [];
+    }
+
+    /**
+     * Get payment analysis
+     */
+    private function getPaymentAnalysis()
+    {
+        // Implement based on your payment tracking
+        return [];
+    }
+
+    /**
+     * Get quotation metrics for finance
+     */
+    private function getQuotationMetrics()
+    {
+        return [
+            'total_quotations' => Quotation::count(),
+            'accepted_quotations' => Quotation::where('status', 'accepted')->count(),
+            'pending_quotations' => Quotation::where('status', 'pending')->count(),
+            'total_value' => Quotation::sum('total_amount'),
+        ];
+    }
+
+    /**
+     * Get cashflow trend
+     */
+    private function getCashflowTrend()
+    {
+        // Implement based on your business logic
+        return [];
     }
 
     /**

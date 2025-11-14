@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('projects', function (Blueprint $table) {
-            // Add new separate year fields
-            $table->string('target_from_year')->after('target_to_month');
-            $table->string('target_to_year')->after('target_from_year');
+            // $table->string('target_from_year')->after('target_to_month');
+            // $table->string('target_to_year')->after('target_from_year');
         });
     }
 
