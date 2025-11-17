@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Division;
 use App\Models\Product;
+use App\Models\ProjectWeeklyMeeting;
 use App\Models\Prospect;
 use App\Models\Quotation;
 use App\Models\User;
@@ -383,6 +384,64 @@ class DatabaseSeeder extends Seeder
                     // 'target_from_year' => $prospect->target_from_year,
                     // 'target_to_year' => $prospect->target_to_year,
                 ]);
+
+                $meetings = [
+                    [
+                        'project_id' => 1,
+                        'task' => 'Persiapan instalasi hardware',
+                        'petugas' => 'Arifin',
+                        'start_date' => '2025-01-06',
+                        'end_date' => '2025-01-10',
+                        'target_date' => '2025-01-12',
+                        'notes' => 'Persiapan hardware dan koordinasi dengan vendor',
+                        'status' => 0,
+                    ],
+                    [
+                        'project_id' => 1,
+                        'task' => 'Testing sistem audio',
+                        'petugas' => 'Renaldy',
+                        'start_date' => '2025-01-13',
+                        'end_date' => '2025-01-17',
+                        'target_date' => '2025-01-19',
+                        'notes' => 'Testing semua perangkat audio dan integrasi sistem',
+                        'status' => 0,
+                    ],
+                    [
+                        'project_id' => 1,
+                        'task' => 'Implementasi control system',
+                        'petugas' => 'Arifin',
+                        'start_date' => '2025-01-20',
+                        'end_date' => '2025-01-24',
+                        'target_date' => '2025-01-26',
+                        'notes' => 'Setup dan konfigurasi Crestron control system',
+                        'status' => 0,
+                    ],
+                    [
+                        'project_id' => 1,
+                        'task' => 'Training pengguna',
+                        'petugas' => 'Renaldy',
+                        'start_date' => '2025-01-27',
+                        'end_date' => '2025-02-07',
+                        'target_date' => '2025-02-09',
+                        'notes' => 'Training tim klien cara penggunaan sistem',
+                        'status' => 0,
+                    ],
+                    [
+                        'project_id' => 1,
+                        'task' => 'Dokumentasi dan handover',
+                        'petugas' => 'Arifin',
+                        'start_date' => '2025-02-10',
+                        'end_date' => '2025-02-14',
+                        'target_date' => '2025-02-16',
+                        'notes' => 'Persiapan dokumentasi lengkap dan serah terima proyek',
+                        'status' => 0,
+                    ],
+                ];
+
+                foreach ($meetings as $meeting) {
+                    ProjectWeeklyMeeting::create($meeting);
+                }
+
             }
         }
     }

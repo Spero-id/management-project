@@ -10,12 +10,14 @@
 
 <form action="{{ $route }}" method="POST" id="installationForm">
     @csrf
-    @if ($installation)
+    @if (!$quotation->installationItems?->isEmpty() )
         @method('PUT')
     @endif
+
     @if ($quotation)
         <input type="hidden" name="quotation_id" value="{{ $quotation->id }}">
     @endif
+    
     <input type="hidden" name="need_accommodation" id="need_accommodation_input"
         value="{{ old('need_accommodation') ? 1 : 0 }}">
     <input type="hidden" name="form_type" value="{{ $type }}">
@@ -78,53 +80,8 @@
                             </tr>
                         </thead>
                         <tbody id="installationTableBody">
-                            @php
-                                $items =
-                                    $installationCategories ??
-                                    \App\Models\Installation::all()->map(function ($i) {
-                                        return (object) [
-                                            'id' => $i->id,
-                                            'text' => $i->name ?? ($i->title ?? 'Installation'),
-                                            'proportional' => $i->proportional ?? null,
-                                        ];
-                                    });
-
-                            @endphp
-
-                            @if ($installation != null)
-                                @foreach ($installation as $idx => $item)
-                                    <tr class="installation-row">
-                                        <td>
-                                            <select readonly name="installations[{{ $idx }}][installation_id]"
-                                                class="form-select installation-select" required>
-                                                <option value="{{ $item->installation->id }}" selected>
-                                                    {{ $item->installation->name }}
-                                                </option>
-                                            </select>
-                                        </td>
-                                        <td>
-
-                                            <input type="number" name="installations[{{ $idx }}][quantity]"
-                                                class="form-control installation-quantity-input"
-                                                value="{{ $item->quantity }}" min="1" required>
-                                        </td>
-                                        <td>
-                                            <div class="input-group">
-                                                <input readonly type="text"
-                                                    name="installations[{{ $idx }}][unit_price]"
-                                                    class="form-control installation-unit-price-input"
-                                                    value="{{ old('installations.' . $idx . '.unit_price', number_format($item->unit_price, 0, ',', '.')) }}"
-                                                    placeholder="0" required>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control installation-subtotal-display"
-                                                value="{{ number_format($item->subtotal, 0, ',', '.') }}" readonly
-                                                style="background-color: #f8f9fa;">
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @else
+                         
+                         
                                 @php
                                     $initialIndex = 1;
                                     $installationPercentage = old(
@@ -134,10 +91,10 @@
                                     $productTotal = $quotation?->total_amount ?? 0;
                                     $installationTotal = $productTotal * ($installationPercentage / 100);
 
-                                    $serverRenderedCount = $items->count();
+                                    $serverRenderedCount = $installation->count();
 
                                     $sumProportional = 0;
-                                    foreach ($items as $it) {
+                                    foreach ($installation as $it) {
                                         $p =
                                             isset($it->proportional) && $it->proportional !== null
                                                 ? floatval($it->proportional)
@@ -152,7 +109,7 @@
                                         if ($sumProportional > 0) {
                                             $allocated = 0;
                                             $unpropIndexes = [];
-                                            foreach ($items as $idx => $it) {
+                                            foreach ($installation as $idx => $it) {
                                                 $p =
                                                     isset($it->proportional) && $it->proportional !== null
                                                         ? floatval($it->proportional)
@@ -173,14 +130,14 @@
                                             }
                                         } else {
                                             $perItem = $installationTotal / $serverRenderedCount;
-                                            foreach ($items as $idx => $it) {
+                                            foreach ($installation as $idx => $it) {
                                                 $allocations[$idx] = $perItem;
                                             }
                                         }
                                     }
                                 @endphp
 
-                                @foreach ($items as $idx => $item)
+                                @foreach ($installation as $idx => $item)
                                     @php
                                         $proportional =
                                             isset($item->proportional) && $item->proportional !== null
@@ -222,7 +179,6 @@
                                     </tr>
                                     @php $initialIndex++; @endphp
                                 @endforeach
-                            @endif
                         </tbody>
                     </table>
                     <script>

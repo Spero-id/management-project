@@ -9,10 +9,25 @@
         <input type="hidden" name="prospect_id" value="{{ $prospect->id }}">
     @endif
 
-    <input type="hidden" name="form_type" value="{{ $type  }}">
+    <input type="hidden" name="form_type" value="{{ $type }}">
 
 
     <div>
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <label class="form-label required">Quotation Name</label>
+                <input type="text" name="name" class="form-control" disabled value="{{ $quotation ? ($quotation->quotation_number === null ? $quotation->generateQuotationNumber(true) : $quotation->quotation_number) : '' }}">
+                
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end justify-content-end">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="1" id="isQuotation" name="is_quotation"
+                        {{ old('is_quotation', $quotation?->is_quotation) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="isQuotation">Quotation</label>
+                </div>
+            </div>
+        </div>
 
 
         <!-- Notes -->
@@ -27,8 +42,8 @@
             </div>
         </div>
 
-        <!-- Products Section -->
-        <div class="row">
+    <!-- Products Section -->
+    <div class="row" id="productsSection">
             <div class="col-12">
                 <label class="form-label required">Products</label>
 
@@ -70,7 +85,7 @@
                             </svg>
                             Select Products
                         </button>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                        {{-- <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                             data-bs-target="#productSelectionModal">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -86,7 +101,7 @@
                                     stroke-linejoin="round" />
                             </svg>
                             Upload Excel
-                        </button>
+                        </button> --}}
                         <button type="button" class="btn btn-outline-primary" onclick="addProductRow()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -147,13 +162,13 @@
     </div>
 
 
-        <div class=" mt-4 d-flex justify-content-end">
-            <div>
-                <button type="submit" class="btn btn-primary">
-                    Simpan Equipment
-                </button>
-            </div>
+    <div class=" mt-4 d-flex justify-content-end">
+        <div>
+            <button type="submit" class="btn btn-primary">
+                Simpan Equipment
+            </button>
         </div>
+    </div>
 </form>
 
 <!-- Product Selection Modal -->
@@ -759,9 +774,9 @@
                                     ${product.text}
                                 </div>
                                 ${product.price ? `<div class="text-muted small">
-                                                    <i class="ti ti-currency-dollar me-1"></i>
-                                                    Price: ${formatCurrency(product.price)}
-                                                </div>` : `<div class="text-muted small">Price not available</div>`}
+                                                            <i class="ti ti-currency-dollar me-1"></i>
+                                                            Price: ${formatCurrency(product.price)}
+                                                        </div>` : `<div class="text-muted small">Price not available</div>`}
                             </div>
                         </div>
                         <div class="col-auto">
@@ -905,6 +920,57 @@
         }
 
         $(document).ready(function() {
+            // Toggle products visibility and behavior when 'Quotation' checkbox is checked
+            function clearProductRowsAndDestroySelect2() {
+                // destroy select2 instances safely
+                document.querySelectorAll('.product-select').forEach(function(el) {
+                    try {
+                        $(el).select2('destroy');
+                    } catch (e) {
+                        // ignore
+                    }
+                });
+
+                // remove rows
+                const tableBody = document.getElementById('productTableBody');
+                if (tableBody) tableBody.innerHTML = '';
+
+                // reset row index and totals
+                productRowIndex = 1;
+                calculateTotal();
+                toggleEmptyState();
+                selectedProducts.clear();
+                updateSelectedProductsCount();
+            }
+
+            function toggleProductsForQuotation() {
+                const isQuoted = document.getElementById('isQuotation') && document.getElementById('isQuotation').checked;
+                const productsSection = document.getElementById('productsSection');
+
+                if (!productsSection) return;
+
+                if (isQuoted) {
+                    // hide products UI and clear any existing rows
+                    productsSection.style.display = 'none';
+                    clearProductRowsAndDestroySelect2();
+                } else {
+                    // show products UI
+                    productsSection.style.display = '';
+                    // ensure empty state is correct
+                    toggleEmptyState();
+                }
+            }
+
+            // initialize on load
+            toggleProductsForQuotation();
+
+            // listen for changes
+            const isQuotationEl = document.getElementById('isQuotation');
+            if (isQuotationEl) {
+                isQuotationEl.addEventListener('change', function() {
+                    toggleProductsForQuotation();
+                });
+            }
             @if ($quotation)
                 @php
                     $items = $quotation->items
@@ -1033,39 +1099,43 @@
             quotationForm.addEventListener('submit', function(e) {
                 let formValid = true;
                 const productRows = quotationForm.querySelectorAll('.product-row');
+                const isQuoted = document.getElementById('isQuotation') && document.getElementById('isQuotation').checked;
 
-                if (productRows.length === 0) {
-                    e.preventDefault();
-                    alert('Mohon tambahkan minimal satu produk ke dalam quotation.');
-                    return false;
-                }
-
-                // Validate each product row
-                productRows.forEach(row => {
-                    const productSelect = row.querySelector('.product-select');
-                    const quantityInput = row.querySelector('.quantity-input');
-                    const unitPriceInput = row.querySelector('.unit-price-input');
-
-                    if (!productSelect.value || productSelect.value === '') {
-                        productSelect.classList.add('is-invalid');
-                        formValid = false;
+                // If quotation mode is enabled, skip product validation entirely
+                if (!isQuoted) {
+                    if (productRows.length === 0) {
+                        e.preventDefault();
+                        alert('Mohon tambahkan minimal satu produk ke dalam quotation.');
+                        return false;
                     }
 
-                    if (!quantityInput.value || parseInt(quantityInput.value) <= 0) {
-                        quantityInput.classList.add('is-invalid');
-                        formValid = false;
-                    }
+                    // Validate each product row
+                    productRows.forEach(row => {
+                        const productSelect = row.querySelector('.product-select');
+                        const quantityInput = row.querySelector('.quantity-input');
+                        const unitPriceInput = row.querySelector('.unit-price-input');
 
-                    if (!unitPriceInput.value || parseRupiah(unitPriceInput.value) <= 0) {
-                        unitPriceInput.classList.add('is-invalid');
-                        formValid = false;
-                    }
-                });
+                        if (!productSelect.value || productSelect.value === '') {
+                            productSelect.classList.add('is-invalid');
+                            formValid = false;
+                        }
 
-                if (!formValid) {
-                    e.preventDefault();
-                    alert('Mohon lengkapi semua data produk dengan benar.');
-                    return false;
+                        if (!quantityInput.value || parseInt(quantityInput.value) <= 0) {
+                            quantityInput.classList.add('is-invalid');
+                            formValid = false;
+                        }
+
+                        if (!unitPriceInput.value || parseRupiah(unitPriceInput.value) <= 0) {
+                            unitPriceInput.classList.add('is-invalid');
+                            formValid = false;
+                        }
+                    });
+
+                    if (!formValid) {
+                        e.preventDefault();
+                        alert('Mohon lengkapi semua data produk dengan benar.');
+                        return false;
+                    }
                 }
 
                 // Show loading state

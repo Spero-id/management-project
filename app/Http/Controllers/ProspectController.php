@@ -8,11 +8,11 @@ use App\Models\Prospect;
 use App\Models\ProspectStatus;
 use App\Models\Quotation;
 use App\Models\User;
+use DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use DataTables;
 
 class ProspectController extends Controller
 {
@@ -38,11 +38,11 @@ class ProspectController extends Controller
      */
     public function indexApi(Request $request)
     {
-    //     $model = Prospect::query();
+        //     $model = Prospect::query();
 
-    //     return DataTables::eloquent($model)
-    //         ->addColumn('intro', 'Hi {{$name}}!')
-    //         ->toJson();
+        //     return DataTables::eloquent($model)
+        //         ->addColumn('intro', 'Hi {{$name}}!')
+        //         ->toJson();
     }
 
     /**
@@ -62,8 +62,8 @@ class ProspectController extends Controller
                 'pre_sales' => Auth::id(),
                 'target_from_month' => '',
                 'target_to_month' => '',
-                'target_from_year' => "",
-                'target_to_year' => "",
+                'target_from_year' => '',
+                'target_to_year' => '',
                 'note' => '',
                 'status_id' => 1,
                 'created_by' => Auth::id(),
@@ -130,6 +130,7 @@ class ProspectController extends Controller
             'target_deal_from_year' => 'required|integer|min:2025|max:2040',
             'target_deal_to_year' => 'required|integer|min:2025|max:2040',
             'note' => 'nullable|string|max:1000',
+            'product_offered' => 'nullable|string',
         ], [
             'customer_name.required' => 'Nama customer harus diisi',
             'no_handphone.required' => 'Nomor handphone harus diisi',
@@ -175,6 +176,7 @@ class ProspectController extends Controller
                 'target_to_year' => $validated['target_deal_to_year'],
                 'note' => $validated['note'],
                 'status_id' => 1,
+                'product_offered' => $validated['product_offer'] ?? null,
                 'created_by' => Auth::user()->id,
             ]);
             DB::commit();

@@ -41,14 +41,12 @@ Route::middleware('auth')->group(function () {
         Route::put('/{id}', [App\Http\Controllers\UserController::class, 'update'])->name('update');
         Route::delete('/{id}', [App\Http\Controllers\UserController::class, 'destroy'])->name('destroy');
     });
-    
 
     Route::group(['prefix' => 'sales-order', 'as' => 'sales-order.'], function () {
         Route::get('/create/{id}', [App\Http\Controllers\SalesOrderController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\SalesOrderController::class, 'store'])->name('store');
         Route::post('/mom', [App\Http\Controllers\SalesOrderController::class, 'saveMinuteOfMeeting'])->name('saveMinuteOfMeeting');
     });
-
 
     Route::group(['prefix' => 'prospect', 'as' => 'prospect.'], function () {
         Route::get('/', [App\Http\Controllers\ProspectController::class, 'index'])->name('index');
@@ -146,6 +144,18 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => 'settings', 'as' => 'settings.'], function () {
         Route::put('/currency-exchange', [App\Http\Controllers\SettingController::class, 'updateCurrencyExchange'])->name('currency-exchange.update');
+    });
+
+    Route::group(['prefix' => 'project-weekly-meetings', 'as' => 'project-weekly-meetings.'], function () {
+        Route::get('/', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'store'])->name('store');
+        Route::get('/{projectWeeklyMeeting}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'show'])->name('show');
+        Route::get('/{projectWeeklyMeeting}/edit', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'edit'])->name('edit');
+        Route::put('/{projectWeeklyMeeting}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'update'])->name('update');
+        Route::delete('/{projectWeeklyMeeting}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'destroy'])->name('destroy');
+
+        Route::get('/datatable/{projectId}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'datatable'])->name('datatable');
     });
 });
 

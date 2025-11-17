@@ -329,8 +329,6 @@
                                     <tr>
                                         <th>Product</th>
                                         <th>Quantity</th>
-                                        <th>Unit Price</th>
-                                        <th class="text-end">Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -343,14 +341,10 @@
                                                 @endif
                                             </td>
                                             <td>{{ number_format($item->quantity) }}</td>
-                                            <td>Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                                            <td class="text-end fw-bold">
-                                                Rp {{ number_format($item->subtotal, 0, ',', '.') }}
-                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center py-4">
+                                            <td colspan="2" class="text-center py-4">
                                                 <div class="empty">
                                                     <p class="empty-title">No items found</p>
                                                     <p class="empty-subtitle text-muted">
@@ -361,16 +355,7 @@
                                         </tr>
                                     @endforelse
                                 </tbody>
-                                @if ($quotation && $quotation->items->count() > 0)
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="3" class="text-end fw-bold">Products Total:</td>
-                                            <td class="text-end fw-bold text-success fs-5">
-                                                Rp {{ number_format($quotation->items->sum('subtotal'), 0, ',', '.') }}
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                @endif
+                                {{-- Prices and totals removed per request: no unit price/subtotal shown for items --}}
                             </table>
                         </div>
                     </div>
@@ -401,40 +386,26 @@
                             <div class="table-responsive">
                                 <table class="table table-vcenter card-table table-striped">
                                     <thead>
-                                        <tr>
-                                            <th>Installation Service</th>
-                                            <th>Quantity</th>
-                                            <th>Unit Price</th>
-                                            <th class="text-end">Subtotal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($quotation->installationItems as $item)
                                             <tr>
-                                                <td>
-                                                    <div class="fw-bold">{{ $item->installation->name }}</div>
-                                                    @if ($item->installation->description)
-                                                        <div class="text-muted small">
-                                                            {{ $item->installation->description }}</div>
-                                                    @endif
-                                                </td>
-                                                <td>{{ number_format($item->quantity) }}</td>
-                                                <td>Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                                                <td class="text-end fw-bold">
-                                                    Rp {{ number_format($item->subtotal, 0, ',', '.') }}
-                                                </td>
+                                                <th>Installation Service</th>
+                                                <th>Quantity</th>
                                             </tr>
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="3" class="text-end fw-bold">Installation Total:</td>
-                                            <td class="text-end fw-bold text-info fs-5">
-                                                Rp
-                                                {{ number_format($quotation->installationItems->sum('subtotal'), 0, ',', '.') }}
-                                            </td>
-                                        </tr>
-                                    </tfoot>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($quotation->installationItems as $item)
+                                                <tr>
+                                                    <td>
+                                                        <div class="fw-bold">{{ $item->installation->name }}</div>
+                                                        @if ($item->installation->description)
+                                                            <div class="text-muted small">
+                                                                {{ $item->installation->description }}</div>
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ number_format($item->quantity) }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                        {{-- Per-item prices and installation total removed --}}
                                 </table>
                             </div>
                         </div>
@@ -502,7 +473,6 @@
                                     <thead>
                                         <tr>
                                             <th>Accommodation</th>
-                                            <th class="text-end">Unit Price</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -511,12 +481,10 @@
                                                 <td>
                                                     <div class="fw-bold">{{ $item->name }}</div>
                                                 </td>
-                                                <td class="text-end">Rp
-                                                    {{ number_format($item->unit_price, 0, ',', '.') }}</td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="2" class="text-center py-4">
+                                                <td class="text-center py-4">
                                                     <div class="empty">
                                                         <p class="empty-title">No accommodation items found</p>
                                                         <p class="empty-subtitle text-muted">
@@ -527,17 +495,10 @@
                                             </tr>
                                         @endforelse
                                     </tbody>
-                                    @if ($quotation->accommodationItems->count() > 0)
-                                        <tfoot>
-                                            <tr>
-                                                <td class="text-end fw-bold">Accommodation Total:</td>
-                                                <td class="text-end fw-bold text-warning fs-5">
-                                                    Rp
-                                                    {{ number_format($quotation->accommodation_total_amount, 0, ',', '.') }}
-                                                </td>
-                                            </tr>
-                                        </tfoot>
-                                    @endif
+                                    {{-- Accommodation per-item prices and total removed --}}
+                                    
+                                    
+                                    
                                 </table>
                             </div>
                         </div>

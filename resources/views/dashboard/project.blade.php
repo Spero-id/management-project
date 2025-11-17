@@ -413,94 +413,89 @@
 @endsection
 
 @section('content')
-    <div class="container-xl">
-        <!-- Status Header Cards -->
+    <!-- Status Header Cards -->
 
-        <div class="row">
-            <!-- Left Column: Sales Team Selector -->
-            <div class="col-lg-4 mb-4">
-                <div class="sales-team-selector d-flex flex-column justify-content-between">
-                    <!-- Top: title and project list -->
-                    <div>
-                        <h5 class="mb-3 fw-bold">ON GOING PROJECT</h5>
-                        <div class="list-group list-group-flush">
-                            @foreach ($projects as $item)
-                                <a href="?project_id={{ $item->id }}"
-                                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0 py-2 {{ $item->id == $selectedProject->id ? 'active' : '' }}">
-                                    <span class="fw-bold">{{ $item->project_name }}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round" class="icon">
-                                        <path d="M9 6l6 6l-6 6"></path>
-                                    </svg>
-                                </a>
-                            @endforeach
-                        </div>
+    <div class="row">
+        <!-- Left Column: Sales Team Selector -->
+        <div class="col-lg-4 mb-4">
+            <div class="sales-team-selector d-flex flex-column justify-content-between">
+                <!-- Top: title and project list -->
+                <div>
+                    <h5 class="mb-3 fw-bold">ON GOING PROJECT</h5>
+                    <div class="list-group list-group-flush">
+                        @foreach ($projects as $item)
+                            <a href="?project_id={{ $item->id }}"
+                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0 py-2 {{ $item->id == $selectedProject->id ? 'active' : '' }}">
+                                <span class="fw-bold">{{ $item->project_name }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="icon">
+                                    <path d="M9 6l6 6l-6 6"></path>
+                                </svg>
+                            </a>
+                        @endforeach
                     </div>
                 </div>
-            </div>
-
-            <!-- Right Column: Status Cards and Performance Chart -->
-            <div class="col-lg-8 mb-4">
-                <div class="status-header">
-                    <div class="status-card">
-                        <h6>Persentase Progress Project</h6>
-                        <div class="status-value">70%</div>
-                    </div>
-                    <div class="status-card">
-                        <h6>Status Barang</h6>
-                        <div class="status-value">70%</div>
-                    </div>
-                    <div class="status-card">
-                        <h6>Deadline</h6>
-                        <div class="status-value">
-                            @php
-                                use Carbon\Carbon;
-                                $deadline = $selectedProject->created_at
-                                    ?->copy()
-                                    ->addDays((int) ($selectedProject->execution_time ?? 0));
-                                $diffDays = $deadline ? round(Carbon::now()->diffInDays($deadline)) : 0;
-                                echo $diffDays . ' hari';
-                            @endphp
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Navigation Tabs -->
-                <div class="tabs-section">
-                    <button class="tab-btn active" onclick="switchTab('list-works')">List of Works</button>
-                    <button class="tab-btn" onclick="switchTab('status-barang')">Status Barang</button>
-                    <button class="tab-btn" onclick="switchTab('weekly-meeting')">Weekly Meeting</button>
-                </div>
-
-                <!-- Work Table Section -->
-                <div class="work-table-section" id="list-works">
-                    <x-project.wbs-list :project="$selectedProject" :wbsItems="$selectedProject->wbsItems" />
-                </div>
-
-                <!-- Tab Content Placeholders -->
-                <div class="work-table-section" id="status-barang" style="display: none;">
-                    <x-project.delivery-table :equipment="$equipment ?? []" />
-                </div>
-
-                <div class="work-table-section" id="weekly-meeting" style="display: none;">
-                    <x-project.weekly-meeting />
-                </div>
-
             </div>
         </div>
 
+        <!-- Right Column: Status Cards and Performance Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="status-header">
+                <div class="status-card">
+                    <h6>Persentase Progress Project</h6>
+                    <div class="status-value">70%</div>
+                </div>
+                <div class="status-card">
+                    <h6>Status Barang</h6>
+                    <div class="status-value">70%</div>
+                </div>
+                <div class="status-card">
+                    <h6>Deadline</h6>
+                    <div class="status-value">
+                        @php
+                            use Carbon\Carbon;
+                            $deadline = $selectedProject->created_at
+                                ?->copy()
+                                ->addDays((int) ($selectedProject->execution_time ?? 0));
+                            $diffDays = $deadline ? round(Carbon::now()->diffInDays($deadline)) : 0;
+                            echo $diffDays . ' hari';
+                        @endphp
+                    </div>
+                </div>
+            </div>
 
+            <!-- Navigation Tabs -->
+            <div class="tabs-section">
+                <button class="tab-btn active" onclick="switchTab('list-works')">List of Works</button>
+                <button class="tab-btn" onclick="switchTab('status-barang')">Status Barang</button>
+                <button class="tab-btn" onclick="switchTab('weekly-meeting')">Weekly Meeting</button>
+            </div>
+
+            <!-- Work Table Section -->
+            <div class="work-table-section" id="list-works">
+                <x-project.wbs-list :project="$selectedProject" :wbsItems="$selectedProject->wbsItems" />
+            </div>
+
+            <!-- Tab Content Placeholders -->
+            <div class="work-table-section" id="status-barang" style="display: none;">
+                <x-project.delivery-table :equipment="$equipment ?? []" />
+            </div>
+
+            <div class="work-table-section" id="weekly-meeting" style="display: none;">
+                <x-project.weekly-meeting :projectId="$selectedProject->id" />
+            </div>
+
+        </div>
     </div>
+
+
 
 
     </div>
 @endsection
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         let monthlyChart;

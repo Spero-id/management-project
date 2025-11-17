@@ -371,89 +371,87 @@
 
 
     @if ($project->status == 'on-going')
-        
-    <div class="card mb-4">
-        <div class="card-header">
-            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
-                <li class="nav-item">
-                    <a href="#list-of-work" class="nav-link active" data-bs-toggle="tab">List Of Work</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#status-barang" class="nav-link" data-bs-toggle="tab">Status Barang</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#weekly-meeting" class="nav-link" data-bs-toggle="tab">Weekly Meeting</a>
-                </li>
-            </ul>
-        </div>
-        <div class="card-body">
-            <div class="tab-content">
-                <div class="tab-pane active show" id="list-of-work">
-                    <div>
-                        <x-project.wbs-list :project="$project" :wbsItems="$wbsItems" />
+        <div class="card mb-4">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+                    <li class="nav-item">
+                        <a href="#list-of-work" class="nav-link active" data-bs-toggle="tab">List Of Work</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#status-barang" class="nav-link" data-bs-toggle="tab">Status Barang</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#weekly-meeting" class="nav-link" data-bs-toggle="tab">Weekly Meeting</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane active show" id="list-of-work">
+                        <div>
+                            <x-project.wbs-list :project="$project" :wbsItems="$wbsItems" />
+                        </div>
                     </div>
-                </div>
-                <div class="tab-pane" id="status-barang">
-                    <x-project.delivery-table :equipment="$equipment ?? []" />
-                </div>
-                <div class="tab-pane" id="weekly-meeting">
-                    <x-project.weekly-meeting />
+                    <div class="tab-pane" id="status-barang">
+                        <x-project.delivery-table :equipment="$equipment ?? []" />
+                    </div>
+                    <div class="tab-pane" id="weekly-meeting">
+                        <x-project.weekly-meeting :projectId="$project->id" />
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    </div>
 
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round" class="icon me-2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14,2 14,8 20,8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                </svg>
-                Project Files
-            </h3>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-vcenter card-table table-striped">
-                    <thead>
-                        <tr>
-                            <th>File Type</th>
-                            <th>Uploaded File</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            $fileMap = [
-                                'drawing_file' => 'Drawing',
-                                'wbs_file' => 'WBS',
-                                'project_schedule_file' => 'Project Schedule',
-                                'purchase_schedule_file' => 'Purchase Schedule',
-                                'pengajuan_material_project_file' => 'Pengajuan Material',
-                                'pengajuan_tools_project_file' => 'Pengajuan Tools',
-                            ];
-                        @endphp
-
-                        @foreach ($fileMap as $key => $label)
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="icon me-2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14,2 14,8 20,8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                    </svg>
+                    Project Files
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-striped">
+                        <thead>
                             <tr>
-                                <td class="fw-bold">{{ $label }}</td>
-                                <td>
-                                    @if (!empty($project->{$key}))
-                                        <a href="{{ Storage::url($project->{$key}) }}"
-                                            target="_blank">{{ basename($project->{$key}) }}</a>
-                                    @else
-                                        <span class="text-muted">No file uploaded</span>
-                                    @endif
-                                </td>
+                                <th>File Type</th>
+                                <th>Uploaded File</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $fileMap = [
+                                    'drawing_file' => 'Drawing',
+                                    'wbs_file' => 'WBS',
+                                    'project_schedule_file' => 'Project Schedule',
+                                    'purchase_schedule_file' => 'Purchase Schedule',
+                                    'pengajuan_material_project_file' => 'Pengajuan Material',
+                                    'pengajuan_tools_project_file' => 'Pengajuan Tools',
+                                ];
+                            @endphp
 
-                                <td class="text-center">
-                                    <div>
-                                        {{-- 
+                            @foreach ($fileMap as $key => $label)
+                                <tr>
+                                    <td class="fw-bold">{{ $label }}</td>
+                                    <td>
+                                        @if (!empty($project->{$key}))
+                                            <a href="{{ Storage::url($project->{$key}) }}"
+                                                target="_blank">{{ basename($project->{$key}) }}</a>
+                                        @else
+                                            <span class="text-muted">No file uploaded</span>
+                                        @endif
+                                    </td>
+
+                                    <td class="text-center">
+                                        <div>
+                                            {{-- 
                                                 <button type="button" class="btn btn-sm btn-icon btn-primary open-upload-modal"
                                                     data-file-key="{{ $key }}"
                                                     data-file-label="{{ $label }}"
@@ -464,56 +462,58 @@
                                                         <line x1="12" y1="5" x2="12" y2="19"></line>
                                                     </svg>
                                                 </button> --}}
-                                        <button type="button"
-                                            class="btn btn-primary btn-5 d-none d-sm-inline-block open-upload-modal"
-                                            data-file-key="{{ $key }}" data-file-label="{{ $label }}"
-                                            title="Upload {{ $label }}" data-bs-toggle="modal"
-                                            data-bs-target="#modal-report">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                class="icon icon-tabler icons-tabler-outline icon-tabler-upload">
-                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                                <path d="M7 9l5 -5l5 5" />
-                                                <path d="M12 4l0 12" />
-                                            </svg>
-                                            Upload
-                                        </button>
+                                            <button type="button"
+                                                class="btn btn-primary btn-5 d-none d-sm-inline-block open-upload-modal"
+                                                data-file-key="{{ $key }}"
+                                                data-file-label="{{ $label }}" title="Upload {{ $label }}"
+                                                data-bs-toggle="modal" data-bs-target="#modal-report">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                    class="icon icon-tabler icons-tabler-outline icon-tabler-upload">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                                    <path d="M7 9l5 -5l5 5" />
+                                                    <path d="M12 4l0 12" />
+                                                </svg>
+                                                Upload
+                                            </button>
 
 
-                                        @if (!empty($project->{$key}))
-                                            <form action="{{ route('project.deleteFile', [$project->id, $key]) }}"
-                                                method="POST" class="d-inline"
-                                                onsubmit="return confirm('Are you sure you want to delete this file?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit    "
-                                                    class="btn btn-danger btn-5 d-none d-sm-inline-block ">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                                        class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
-                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                                        <path d="M4 7l16 0" />
-                                                        <path d="M10 11l0 6" />
-                                                        <path d="M14 11l0 6" />
-                                                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                                                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-                                                    </svg>
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                            @if (!empty($project->{$key}))
+                                                <form action="{{ route('project.deleteFile', [$project->id, $key]) }}"
+                                                    method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to delete this file?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit    "
+                                                        class="btn btn-danger btn-5 d-none d-sm-inline-block ">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                                            height="24" viewBox="0 0 24 24" fill="none"
+                                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M4 7l16 0" />
+                                                            <path d="M10 11l0 6" />
+                                                            <path d="M14 11l0 6" />
+                                                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                                                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                                                        </svg>
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+        </div>
     @endif
 
 

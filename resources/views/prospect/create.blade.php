@@ -84,10 +84,10 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#quotation" class="nav-link" data-bs-toggle="tab">Equipment</a>
+                    <a href="#quotation"  class="nav-link @if ($prospect->customer_name == null) disabled @endif" data-bs-toggle="tab">Equipment</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#installation" class="nav-link @if (!$quotation) disabled @endif"
+                    <a href="#installation" class="nav-link @if ($quotation->quotation_number == null) disabled @endif"
                         data-bs-toggle="tab"
                         @if (!$quotation) onclick="return false;" style="cursor: not-allowed; opacity: 0.5;" title="Create a quotation first" @endif>
                         Installation
@@ -115,7 +115,14 @@
                                         ? route('installation.update', $quotation->id)
                                         : route('installation.store');
                                 $installation =
-                                    $quotation->installationItems?->count() > 0 ? $quotation->installationItems : null;
+                                    $quotation->installationItems?->count() > 0 ? $quotation->installationItems :   \App\Models\Installation::all()->map(function ($i) {
+                                        return (object) [
+                                            'id' => $i->id,
+                                            'text' => $i->name ?? ($i->title ?? 'Installation'),
+                                            'proportional' => $i->proportional ?? null,
+                                        ];
+                                    });
+                                    
                             @endphp
                             <x-installation.form :route="$installationRoute" :quotation="$quotation" :installation="$installation" :installation-categories="$installationCategories"
                                 :accommodationCategory="$accommodationCategory" :accommodationItems="$quotation->accommodationItems" type="create" />

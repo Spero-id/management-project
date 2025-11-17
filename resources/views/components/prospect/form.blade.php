@@ -182,7 +182,8 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6 mb-3">
+        @if($type == 'create')
+        <div class="col mb-3">
             <label class="form-label">Status Progress </label>
             <select name="status_id" class="form-control @error('status_id') is-invalid @enderror">
                 <option value="">Pilih Status Progress </option>
@@ -199,7 +200,10 @@
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-        <div class="col-md-6 mb-3">
+        @else
+        <input type="hidden" name="status_id" value="{{ $prospect?->status_id }}">
+        @endif
+        <div class="col mb-3">
             <label class="form-label">Product yang ditawarkan</label>
             <input type="text" name="product_offered"
                 class="form-control @error('product_offered') is-invalid @enderror"

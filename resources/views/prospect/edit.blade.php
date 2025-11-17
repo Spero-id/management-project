@@ -87,7 +87,7 @@
                     <a href="#quotation" class="nav-link" data-bs-toggle="tab">Equipment</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#installation" class="nav-link @if (!$quotation) disabled @endif"
+                    <a href="#installation" class="nav-link @if ($quotation->items->isEmpty()) disabled @endif"
                         data-bs-toggle="tab"
                         @if (!$quotation) onclick="return false;" style="cursor: not-allowed; opacity: 0.5;" title="Create a quotation first" @endif>
                         Installation
@@ -98,7 +98,7 @@
         <div class="card-body">
             <div class="tab-content">
                 <div class="tab-pane active show" id="customer">
-                    <x-prospect.form :route="route('prospect.update', $prospect->id)" :sales-user="$salesUser" :prospect="$prospect" />
+                    <x-prospect.form type="edit" :route="route('prospect.update', $prospect->id)" :sales-user="$salesUser" :prospect="$prospect" />
                 </div>
                 <div class="tab-pane" id="quotation">
                     <div>
@@ -108,13 +108,29 @@
                 <div class="tab-pane" id="installation">
                     <div>
                         @php
+
                             $installationRoute =
-                                $quotation->installationItems?->count() > 0
+                                !$quotation->installationItems?->isEmpty() 
                                     ? route('installation.update', $quotation->id)
                                     : route('installation.store');
+                            $installation =
+                                $quotation->installationItems?->count() > 0
+                                    ? $quotation->installationItems
+                                    : \App\Models\Installation::all()->map(function ($i) {
+                                        return (object) [
+                                            'id' => $i->id,
+                                            'text' => $i->name ?? ($i->title ?? 'Installation'),
+                                            'installation_id' => $i->id,
+                                            'installation'=>$i,
+                                            'quantity' => 0,
+                                            'unit_price' => 0,
+                                            'subtotal' => 0,
+                                            'proportional' => $i->proportional ?? null,
+                                        ];
+                                    });
 
                         @endphp
-                        <x-installation.form :route="$installationRoute" :quotation="$quotation" :installation="$quotation->installationItems" :installation-categories="$installationCategories"
+                        <x-installation.form :route="$installationRoute" :quotation="$quotation" :installation="$installation" :installation-categories="$installationCategories"
                             :accommodationCategory="$accommodationCategory" :accommodationItems="$quotation->accommodationItems" />
                     </div>
                 </div>

@@ -8,6 +8,33 @@
     $overallPercent = $totalTasks ? round(($completedTasks / $totalTasks) * 100) : 0;
 @endphp
 
+<div class="mb-3 d-flex flex-wrap gap-2">
+    <button type="button" class="btn btn-success d-flex align-items-center" data-bs-toggle="modal"
+        data-bs-target="#importWbsModal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-upload">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+            <path d="M7 9l5 -5l5 5" />
+            <path d="M12 4l0 12" />
+        </svg>
+        <span>Import list of work</span>
+    </button>
+
+    <button type="button" class="btn btn-success d-flex align-items-center" id="exportWbsBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="icon icon-tabler icons-tabler-outline icon-tabler-download">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+            <path d="M7 11l5 5l5 -5" />
+            <path d="M12 4l0 12" />
+        </svg>
+        <span>Export list of work</span>
+    </button>
+</div>
+
 
 <div>
     <div class="mb-3">
@@ -33,18 +60,6 @@
         </div>
     </div>
 
-
-    <div class="mb-3">
-        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#importWbsModal">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-upload">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                <path d="M7 9l5 -5l5 5" />
-                <path d="M12 4l0 12" />
-            </svg>
-            Import WBS Items
-        </button>
-    </div>
 
     @if ($categories->isEmpty() && $tasks->isEmpty())
         <div class="text-muted">No items yet.</div>
@@ -119,10 +134,10 @@
                             <input type="hidden" name="note" value="{{ $task->note }}">
                             <input type="hidden" name="is_done" value="0">
                             <div class="d-flex align-items-start">
-                                <input type="checkbox" id="wbs-task-{{ $task->id }}" data-id="{{ $task->id }}"
-                                    data-title="{{ e($task->title) }}" class="wbs-item-checkbox form-check-input me-2"
-                                    name="is_done" value="1" {{ $task->is_done ? 'checked' : '' }}
-                                    onchange="toggleWbsItem(this)">
+                                <input type="checkbox" id="wbs-task-{{ $task->id }}"
+                                    data-id="{{ $task->id }}" data-title="{{ e($task->title) }}"
+                                    class="wbs-item-checkbox form-check-input me-2" name="is_done" value="1"
+                                    {{ $task->is_done ? 'checked' : '' }} onchange="toggleWbsItem(this)">
 
                                 <div>
                                     <label for="wbs-task-{{ $task->id }}" class="mb-0"
@@ -142,7 +157,8 @@
                         </form>
                     </div>
                     <div>
-                        <form action="{{ route('project.wbs-items.destroy', $task) }}" method="POST" class="d-inline">
+                        <form action="{{ route('project.wbs-items.destroy', $task) }}" method="POST"
+                            class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger" title="Delete task">
@@ -170,7 +186,8 @@
 <x-project.add-task-modal :project="$project" :categories="$categories" />
 
 {{-- Import WBS Items Modal --}}
-<div class="modal fade" id="importWbsModal" tabindex="-1" aria-labelledby="importWbsModalLabel" aria-hidden="true">
+<div class="modal fade" id="importWbsModal" tabindex="-1" aria-labelledby="importWbsModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -178,19 +195,23 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('project.wbs-items.import', $project->id) }}" method="POST" enctype="multipart/form-data" id="importWbsForm">
+                <form action="{{ route('project.wbs-items.import', $project->id) }}" method="POST"
+                    enctype="multipart/form-data" id="importWbsForm">
                     @csrf
                     <div class="mb-3">
                         <label for="wbsFile" class="form-label">Select File</label>
-                        <input type="file" class="form-control" id="wbsFile" name="file" accept=".xlsx,.xls,.csv" required>
+                        <input type="file" class="form-control" id="wbsFile" name="file"
+                            accept=".xlsx,.xls,.csv" required>
                         <small class="text-muted">Accepted formats: .xlsx, .xls, .csv</small>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" id="downloadTemplateBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-download">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-download">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                         <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
                         <path d="M7 11l5 5l5 -5" />
                         <path d="M12 4l0 12" />
@@ -199,8 +220,10 @@
                 </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" form="importWbsForm" class="btn btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-upload">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-upload">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                         <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
                         <path d="M7 9l5 -5l5 5" />
                         <path d="M12 4l0 12" />

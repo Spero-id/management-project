@@ -147,7 +147,16 @@ class QuotationController extends Controller
     public function update(Request $request, string $id)
     {
         $quotation = Quotation::findOrFail($id);
+        if ($request->is_quotation == true) {
+            if ($quotation->prospect) {
+                $quotation->prospect->is_quotation = false;
+                $quotation->prospect->save();
+            }
 
+            return redirect()->route('prospect.show', $quotation->id);
+        }
+
+        // dd($request->all());
         $validationRules = [
             'notes' => 'nullable|string',
             'products' => 'required|array|min:1',
@@ -173,13 +182,17 @@ class QuotationController extends Controller
             $updateData = [
                 'notes' => $request->notes,
                 'revision_number' => $quotation->quotation_number != null ? $quotation->revision_number + 1 : 0,
-               
+
             ];
 
             $quotation->update($updateData);
             $quotation->update([
-                 'quotation_number'=> $quotation->generateQuotationNumber($quotation->quotation_number == null),
+                'quotation_number' => $quotation->generateQuotationNumber($quotation->quotation_number == null),
             ]);
+
+            $quotation->prospect->is_quotation = true;
+
+            $quotation->prospect->save();
 
             $quotation->items()->delete();
 
@@ -198,6 +211,12 @@ class QuotationController extends Controller
         if ($request->form_type == 'create') {
             return redirect()->route('prospect.create', $id)
                 ->withFragment('installation');
+        }
+
+        // dd();
+        if (count($quotation->installationItems) == 0) {
+            return redirect()->back()->withFragment('installation')->with('success', 'Quotation berhasil disimpan.');
+
         }
 
         return redirect()->back()->withFragment('quotation')->with('success', 'Quotation berhasil disimpan.');
