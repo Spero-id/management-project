@@ -1,7 +1,31 @@
 @props(['projectId'])
 
-<!-- Add Task Button -->
-<div class="mb-1 d-flex justify-content-end">
+<!-- Action Buttons -->
+<div class="mb-3 d-flex justify-content-end gap-2">
+    <a href="{{ route('project-weekly-meetings.export', $projectId) }}" class="btn btn-success">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+            <path d="M12 11v6" />
+            <path d="M9.5 13.5l2.5 2.5l2.5 -2.5" />
+        </svg>
+        Export
+    </a>
+
+    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importWeeklyMeetingModal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+            <path d="M12 17v-6" />
+            <path d="M9.5 11.5l2.5 -2.5l2.5 2.5" />
+        </svg>
+        Import
+    </button>
+
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#weeklyMeetingModal">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
@@ -15,7 +39,7 @@
 <!-- Tasks Table -->
 <div class="table-responsive">
     <x-datatable id="weekly-meeting-table" title="Projects"
-        url="{{ route('project-weekly-meetings.datatable', $projectId) }}" :columns="['task', 'petugas', 'start_date', 'end_date', 'target_date', 'status', 'notes','action']"  />
+        url="{{ route('project-weekly-meetings.datatable', $projectId) }}" :columns="['task', 'petugas', 'start_date', 'end_date', 'target_date', 'status', 'notes', 'action']" />
 </div>
 
 <!-- Weekly Meeting Modal (Create) -->
@@ -105,19 +129,20 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label text-muted">Active Task</label>
-                            <input type="text" name="task" id="edit_task" class="form-control" 
+                            <input type="text" name="task" id="edit_task" class="form-control"
                                 placeholder="Enter task name" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label text-muted">Person in Charge</label>
-                            <input type="text" name="petugas" id="edit_petugas" class="form-control" 
+                            <input type="text" name="petugas" id="edit_petugas" class="form-control"
                                 placeholder="Select person" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label text-muted">Start Date</label>
-                            <input type="date" name="start_date" id="edit_start_date" class="form-control" required>
+                            <input type="date" name="start_date" id="edit_start_date" class="form-control"
+                                required>
                         </div>
 
                         <div class="col-md-6">
@@ -127,7 +152,8 @@
 
                         <div class="col-md-6">
                             <label class="form-label text-muted">Target Complete Date</label>
-                            <input type="date" name="target_date" id="edit_target_date" class="form-control" required>
+                            <input type="date" name="target_date" id="edit_target_date" class="form-control"
+                                required>
                         </div>
 
                         <div class="col-md-6">
@@ -138,8 +164,7 @@
 
                         <div class="col-md-12">
                             <label class="form-label text-muted">Catatan</label>
-                            <textarea name="notes" id="edit_notes" class="form-control" 
-                                placeholder="Catatan tambahan" rows="3"></textarea>
+                            <textarea name="notes" id="edit_notes" class="form-control" placeholder="Catatan tambahan" rows="3"></textarea>
                         </div>
                     </div>
                 </div>
@@ -157,96 +182,154 @@
     </div>
 </div>
 
+<!-- Import Weekly Meeting Modal -->
+<div class="modal modal-blur fade" id="importWeeklyMeetingModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title">Import Weekly Meeting Tasks</h5>
+            </div>
+
+            <form action="{{ route('project-weekly-meetings.import', $projectId) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Select Excel File</label>
+                        <input type="file" name="file" id="import_file" class="form-control"
+                            accept=".xlsx,.xls" required>
+                        <div class="form-text">Upload an Excel file (.xlsx or .xls) with weekly meeting tasks</div>
+                    </div>
+                    <div class="alert alert-info" role="alert">
+                        <h4 class="alert-title">Excel Format Required</h4>
+                        <div class="text-secondary">
+                            The file must have these columns:
+                            <ul class="mb-0">
+                                <li>Task</li>
+                                <li>Person in Charge</li>
+                                <li>Start Date</li>
+                                <li>Complete Date</li>
+                                <li>Target Complete Date</li>
+                                <li>Status</li>
+                                <li>Notes (optional)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="icon me-1">
+                            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                            <path d="M12 17v-6" />
+                            <path d="M9.5 11.5l2.5 -2.5l2.5 2.5" />
+                        </svg>
+                        Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle edit button click
-    $(document).on('click', '.edit-btn', function() {
-        const meetingId = $(this).data('id');
-        
-        // Fetch meeting data
-        $.ajax({
-            url: `/project-weekly-meetings/${meetingId}`,
-            method: 'GET',
-            success: function(response) {
-                // Populate form fields
-                $('#edit_meeting_id').val(response.data.id);
-                $('#edit_task').val(response.data.task);
-                $('#edit_petugas').val(response.data.petugas);
-                $('#edit_start_date').val(response.data.start_date);
-                $('#edit_end_date').val(response.data.end_date);
-                $('#edit_target_date').val(response.data.target_date);
-                $('#edit_status').val(response.data.status);
-                $('#edit_notes').val(response.data.notes);
-                
-                // Show modal
-                $('#editWeeklyMeetingModal').modal('show');
-            },
-            error: function(xhr) {
-                alert('Error fetching task data: ' + (xhr.responseJSON?.message || 'Unknown error'));
-            }
-        });
-    });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle edit button click
+        $(document).on('click', '.edit-btn', function() {
+            const meetingId = $(this).data('id');
 
-    // Handle edit form submission
-    $('#editWeeklyMeetingForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        const meetingId = $('#edit_meeting_id').val();
-        
-        $.ajax({
-            url: `/project-weekly-meetings/${meetingId}`,
-            method: 'PUT',
-            data: $(this).serialize(),
-            success: function(response) {
-                $('#editWeeklyMeetingModal').modal('hide');
-                $('#editWeeklyMeetingForm')[0].reset();
-                $('#weekly-meeting-table').DataTable().ajax.reload();
-                
-                // Show success message
-                if (response.message) {
-                    alert(response.message);
-                }
-            },
-            error: function(xhr) {
-                let errorMessage = 'Error updating task';
-                
-                if (xhr.responseJSON?.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.responseJSON?.errors) {
-                    // Display validation errors
-                    const errors = Object.values(xhr.responseJSON.errors).flat();
-                    errorMessage = errors.join('\n');
-                }
-                
-                alert(errorMessage);
-            }
-        });
-    });
-
-    // Handle delete button click
-    $(document).on('click', '.delete-btn', function() {
-        const meetingId = $(this).data('id');
-        
-        if (confirm('Are you sure you want to delete this task?')) {
+            // Fetch meeting data
             $.ajax({
                 url: `/project-weekly-meetings/${meetingId}`,
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
+                method: 'GET',
                 success: function(response) {
+                    // Populate form fields
+                    $('#edit_meeting_id').val(response.data.id);
+                    $('#edit_task').val(response.data.task);
+                    $('#edit_petugas').val(response.data.petugas);
+                    $('#edit_start_date').val(response.data.start_date);
+                    $('#edit_end_date').val(response.data.end_date);
+                    $('#edit_target_date').val(response.data.target_date);
+                    $('#edit_status').val(response.data.status);
+                    $('#edit_notes').val(response.data.notes);
+
+                    // Show modal
+                    $('#editWeeklyMeetingModal').modal('show');
+                },
+                error: function(xhr) {
+                    alert('Error fetching task data: ' + (xhr.responseJSON?.message ||
+                        'Unknown error'));
+                }
+            });
+        });
+
+        // Handle edit form submission
+        $('#editWeeklyMeetingForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const meetingId = $('#edit_meeting_id').val();
+
+            $.ajax({
+                url: `/project-weekly-meetings/${meetingId}`,
+                method: 'PUT',
+                data: $(this).serialize(),
+                success: function(response) {
+                    $('#editWeeklyMeetingModal').modal('hide');
+                    $('#editWeeklyMeetingForm')[0].reset();
                     $('#weekly-meeting-table').DataTable().ajax.reload();
-                    
+
                     // Show success message
                     if (response.message) {
                         alert(response.message);
                     }
                 },
                 error: function(xhr) {
-                    alert('Error deleting task: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                    let errorMessage = 'Error updating task';
+
+                    if (xhr.responseJSON?.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON?.errors) {
+                        // Display validation errors
+                        const errors = Object.values(xhr.responseJSON.errors).flat();
+                        errorMessage = errors.join('\n');
+                    }
+
+                    alert(errorMessage);
                 }
             });
-        }
+        });
+
+        // Handle delete button click
+        $(document).on('click', '.delete-btn', function() {
+            const meetingId = $(this).data('id');
+
+            if (confirm('Are you sure you want to delete this task?')) {
+                $.ajax({
+                    url: `/project-weekly-meetings/${meetingId}`,
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        $('#weekly-meeting-table').DataTable().ajax.reload();
+
+                        // Show success message
+                        if (response.message) {
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error deleting task: ' + (xhr.responseJSON?.message ||
+                            'Unknown error'));
+                    }
+                });
+            }
+        });
     });
-});
 </script>

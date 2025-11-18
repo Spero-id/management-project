@@ -39,12 +39,21 @@
 <div>
     <div class="mb-3">
         <form action="{{ route('project.wbs-items.store', $project) }}" method="POST"
-            class="d-flex align-items-center w-100">
+            class="d-flex flex-column gap-2">
             @csrf
             <input type="hidden" name="item_type" value="category">
-            <input type="text" name="title" class="form-control me-2 flex-grow-1" placeholder="New category title"
-                required aria-label="New category title">
-            <button class="btn btn-outline-primary" type="submit">Create Category</button>
+            
+            <div class="row">
+                <div class="col-md-9">
+                    <input type="text" name="title" class="form-control" placeholder="New category title"
+                        required aria-label="New category title">
+                </div>
+               <div class="col-md-3">
+                    <button class="btn btn-outline-primary w-100" type="submit">Create Category</button>
+                </div>
+            </div>
+
+          
         </form>
     </div>
 
@@ -74,10 +83,11 @@
                 @endphp
                 <div class="list-group-item wbs-cat" data-cat-id="{{ $cat->id }}">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <strong>{{ $cat->title }}</strong>
+                        <div class="flex-grow-1">
+                            <strong class="h2">{{ $cat->title }}</strong>
+                           
                             @if ($cat->note)
-                                <div class="small text-muted">{{ $cat->note }}</div>
+                                <div class="small text-muted mt-1">{{ $cat->note }}</div>
                             @endif
                         </div>
                         <div class="d-flex align-items-center">
@@ -105,15 +115,29 @@
 
                     {{-- Child tasks --}}
                     @if ($catChildren->isNotEmpty())
-                        <div class="mt-2">
-                            @foreach ($catChildren as $child)
-                                <x-project.wbs-task-item :task="$child" />
-                            @endforeach
+                        <div class="mt-2 table-responsive">
+                            <table class="table table-hover table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 50px;">Done</th>
+                                        <th>Task</th>
+                                        <th class="text-center">Type</th>
+                                        <th class="text-center">From</th>
+                                        <th class="text-center">To</th>
+                                        <th class="text-center" style="width: 80px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($catChildren as $child)
+                                        <x-project.wbs-task-item :task="$child" />
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     @endif
 
                     {{-- Add Task button for category --}}
-                    <button type="button" class="btn btn-outline-primary me-2 w-full open-add-task-modal"
+                    <button type="button" class="btn btn-outline-primary mt-4 w-full open-add-task-modal"
                         data-cat-id="{{ $cat->id }}" data-cat-title="{{ e($cat->title) }}">
                         Add Task
                     </button>
@@ -132,6 +156,9 @@
                             <input type="hidden" name="item_type" value="task">
                             <input type="hidden" name="parent_id" value="">
                             <input type="hidden" name="note" value="{{ $task->note }}">
+                            <input type="hidden" name="type" value="{{ $task->type }}">
+                            <input type="hidden" name="from" value="{{ $task->from }}">
+                            <input type="hidden" name="to" value="{{ $task->to }}">
                             <input type="hidden" name="is_done" value="0">
                             <div class="d-flex align-items-start">
                                 <input type="checkbox" id="wbs-task-{{ $task->id }}"
@@ -148,6 +175,11 @@
                                             {{ $task->title }}
                                         @endif
                                     </label>
+
+                                    <div class="small text-muted mt-1">
+                                        <span class="badge bg-secondary me-1">{{ $task->type }}</span>
+                                        <span>{{ $task->from }} - {{ $task->to }}</span>
+                                    </div>
 
                                     @if ($task->note)
                                         <div class="small text-muted mt-1">{{ $task->note }}</div>
@@ -234,3 +266,108 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Utility to escape HTML when inserting into label
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, function(m) {
+            return ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[m];
+        });
+    }
+
+    // Utility: recalculate overall and per-category WBS progress and update UI
+    function recalcWbsProgress() {
+        // overall
+        const allCheckboxes = Array.from(document.querySelectorAll('.wbs-item-checkbox'));
+        const total = allCheckboxes.length;
+        const done = allCheckboxes.filter(cb => cb.checked).length;
+        const overallPercent = total ? Math.round((done / total) * 100) : 0;
+        const overallBar = document.getElementById('wbsOverallBar');
+        const overallPercentEl = document.getElementById('wbsOverallPercent');
+        if (overallBar) overallBar.style.width = overallPercent + '%';
+        if (overallPercentEl) overallPercentEl.textContent = overallPercent + '%';
+
+        // per-category
+        document.querySelectorAll('.wbs-cat').forEach(function(catEl) {
+            const catId = catEl.dataset.catId;
+            const cbs = Array.from(catEl.querySelectorAll('.wbs-item-checkbox'));
+            const t = cbs.length;
+            const d = cbs.filter(cb => cb.checked).length;
+            const pct = t ? Math.round((d / t) * 100) : 0;
+            const bar = document.getElementById('wbs-cat-bar-' + catId);
+            const pctEl = document.getElementById('wbs-cat-percent-' + catId);
+            if (bar) bar.style.width = pct + '%';
+            if (pctEl) pctEl.textContent = pct + '%';
+        });
+    }
+
+    // Global function to toggle WBS item via AJAX. Called from checkbox onchange.
+    window.toggleWbsItem = async function(cb) {
+        if (!cb) return;
+
+        const csrf = document.querySelector('meta[name="csrf-token"]') ?
+            document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
+
+        const id = cb.dataset.id;
+        const checked = cb.checked ? 1 : 0;
+        const url = `/project/wbs-items/${id}/toggle`;
+
+        // Disable while processing
+        cb.disabled = true;
+
+        try {
+            const res = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf
+                },
+                body: JSON.stringify({
+                    is_done: checked
+                })
+            });
+
+            if (!res.ok) throw new Error('Network response was not ok');
+            const data = await res.json();
+
+            // update label content
+            const label = document.querySelector(
+                `label[for="wbs-child-${id}"], label[for="wbs-task-${id}"]`
+            );
+            const title = cb.dataset.title || (label ? label.dataset.title : '');
+            if (label) {
+                if (data.is_done) {
+                    // use <span> for inline strike
+                    label.innerHTML = `<span class="text-success">${escapeHtml(title)}</span>`;
+                } else {
+                    label.textContent = title;
+                }
+            }
+
+            // recalc progress bars
+            recalcWbsProgress();
+
+        } catch (err) {
+            // revert checkbox on failure
+            cb.checked = !cb.checked;
+            console.error(err);
+            alert('Failed to update task status.');
+        } finally {
+            cb.disabled = false;
+        }
+    };
+
+    // initial calculation on page load
+    recalcWbsProgress();
+});
+</script>
+@endpush

@@ -6,23 +6,31 @@ use App\Models\ProjectWBSItem;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithStartRow;
 
-final class WbsItemImport implements ToCollection, WithHeadingRow
+final class WbsItemImport implements ToCollection, WithHeadingRow, WithStartRow
 {
     public function __construct(
         private readonly int $projectId,
     ) {}
 
+    public function startRow(): int
+    {
+        return 2;
+    }
+
     public function collection(Collection $collection): void
     {
-
         $parentStack = [];
 
         foreach ($collection as $row) {
 
-            $level = $row['level'] ?? null;
-            $name = $row['name'] ?? null;
-            $quantity = $row['qty'] ?? null;
+            $level = $row['level'];
+            $name = $row['name'];
+            $type = $row['type'];
+            $from = $row['from'];
+            $to = $row['to'];
+            $quantity = $row['quantity'];
 
             if (empty($name)) {
                 continue;
@@ -30,13 +38,15 @@ final class WbsItemImport implements ToCollection, WithHeadingRow
 
             $hierarchyLevel = $this->getHierarchyLevel($level);
 
-
             if ($this->isCategory($level)) {
                 $item = ProjectWBSItem::create([
                     'project_id' => $this->projectId,
                     'title' => $this->normalizeName($name),
                     'item_type' => 'category',
                     'parent_id' => $this->getParentId($hierarchyLevel, $parentStack),
+                    'type' => $type,
+                    'from' => $from,
+                    'to' => $to,
                 ]);
 
                 $this->updateParentStack($hierarchyLevel, $item, $parentStack);
@@ -47,6 +57,10 @@ final class WbsItemImport implements ToCollection, WithHeadingRow
                     'item_type' => 'task',
                     'parent_id' => $this->getParentId($hierarchyLevel, $parentStack),
                     'note' => $this->buildNote($quantity),
+                    'type' => $type,
+                    'from' => $from,
+                    'to' => $to,
+                    'quantity' => $quantity,
                 ]);
             }
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\WbsItemExport;
 use App\Imports\WbsItemImport;
 use App\Models\Project;
 use App\Models\ProjectWBSItem;
@@ -20,6 +21,9 @@ class ProjectWbsItemController extends Controller
             'item_type' => 'required|in:category,task',
             'parent_id' => 'nullable|integer|exists:project_wbs_items,id',
             'note' => 'nullable|string',
+            'type' => 'required|string|max:255',
+            'from' => 'required|string|max:255',
+            'to' => 'required|string|max:255',
         ]);
 
         $item = ProjectWBSItem::create([
@@ -27,6 +31,9 @@ class ProjectWbsItemController extends Controller
             'parent_id' => $validated['parent_id'] ?? null,
             'title' => $validated['title'],
             'item_type' => $validated['item_type'],
+            'type' => $validated['type'],
+            'from' => $validated['from'],
+            'to' => $validated['to'],
             'is_done' => false,
             'note' => $validated['note'] ?? null,
         ]);
@@ -45,6 +52,9 @@ class ProjectWbsItemController extends Controller
             'parent_id' => 'nullable|integer|exists:project_wbs_items,id',
             'note' => 'nullable|string',
             'is_done' => 'nullable|boolean',
+            'type' => 'nullable|string|max:255',
+            'from' => 'nullable|string|max:255',
+            'to' => 'nullable|string|max:255',
         ]);
 
         $wbsItem->update([
@@ -53,6 +63,9 @@ class ProjectWbsItemController extends Controller
             'parent_id' => $validated['parent_id'] ?? null,
             'note' => $validated['note'] ?? null,
             'is_done' => $validated['is_done'] ?? $wbsItem->is_done,
+            'type' => $validated['type'] ?? $wbsItem->type,
+            'from' => $validated['from'] ?? $wbsItem->from,
+            'to' => $validated['to'] ?? $wbsItem->to,
         ]);
 
 
@@ -104,6 +117,20 @@ class ProjectWbsItemController extends Controller
             return redirect()->back()->with('success', 'WBS items imported successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors('Failed to import WBS items: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export WBS items to Excel file.
+     */
+    public function export(Project $project)
+    {
+        try {
+            $filename = 'wbs-items-' . $project->name . '-' . now()->format('Y-m-d') . '.xlsx';
+            
+            return Excel::download(new WbsItemExport($project->id), $filename);
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors('Failed to export WBS items: ' . $e->getMessage());
         }
     }
 }

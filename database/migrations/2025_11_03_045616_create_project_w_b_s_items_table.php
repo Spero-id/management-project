@@ -16,6 +16,10 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
             $table->foreignId('parent_id')->nullable()->constrained('project_wbs_items')->cascadeOnDelete();
             $table->string('title');
+            $table->string('type')->nullable();
+            $table->string('from')->nullable();
+            $table->string('to')->nullable();
+            $table->string('quantity')->nullable();
             $table->string('item_type')->default('task'); // 'category' atau 'task'
             $table->boolean('is_done')->default(false); // status DONE
             $table->text('note')->nullable();

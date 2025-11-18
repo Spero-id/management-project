@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\WeeklyMeetingExport;
+use App\Imports\WeeklyMeetingImport;
 use App\Models\ProjectWeeklyMeeting;
-use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Yajra\DataTables\Facades\DataTables;
 
 class ProjectWeeklyMeetingController extends Controller
 {
@@ -137,5 +140,40 @@ class ProjectWeeklyMeetingController extends Controller
             'success' => true,
             'message' => 'Weekly meeting deleted successfully'
         ]);
+    }
+
+    /**
+     * Export weekly meetings to Excel
+     */
+    public function export(int $projectId)
+    {
+        return Excel::download(
+            new WeeklyMeetingExport($projectId),
+            'weekly-meetings-project-' . $projectId . '.xlsx'
+        );
+    }
+
+    /**
+     * Import weekly meetings from Excel
+     */
+    public function import(Request $request, int $projectId)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls|max:2048',
+        ]);
+
+        try {
+            Excel::import(new WeeklyMeetingImport($projectId), $request->file('file'));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Weekly meetings imported successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Import failed: ' . $e->getMessage()
+            ], 422);
+        }
     }
 }

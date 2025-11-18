@@ -26,6 +26,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{project}', [App\Http\Controllers\ProjectController::class, 'destroy'])->name('destroy');
 
         Route::post('/{project}/wbs-items', [App\Http\Controllers\ProjectWbsItemController::class, 'store'])->name('wbs-items.store');
+        Route::get('/{project}/wbs-items/export', [App\Http\Controllers\ProjectWbsItemController::class, 'export'])
+            ->name('projects.wbs-items.export');
+
         Route::post('/{project}/wbs-items/import', [App\Http\Controllers\ProjectWbsItemController::class, 'import'])->name('wbs-items.import');
         Route::put('/wbs-items/{wbsItem}', [App\Http\Controllers\ProjectWbsItemController::class, 'update'])->name('wbs-items.update');
         Route::patch('/wbs-items/{wbsItem}/toggle', [App\Http\Controllers\ProjectWbsItemController::class, 'toggle'])->name('wbs-items.toggle');
@@ -156,6 +159,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{projectWeeklyMeeting}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'destroy'])->name('destroy');
 
         Route::get('/datatable/{projectId}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'datatable'])->name('datatable');
+        Route::get('/export/{projectId}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'export'])->name('export');
+        Route::post('/import/{projectId}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'import'])->name('import');
     });
 });
 

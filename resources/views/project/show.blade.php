@@ -671,8 +671,6 @@
                 });
             }
 
-
-
             // --- Change Status Modal and dynamic client-persons ---
             const changeModalEl = document.getElementById('addProjectLogModal');
             const addClientPersonBtn = document.getElementById('addClientPersonBtn');
@@ -695,105 +693,6 @@
                 if (prefill.notes) notesInput.value = prefill.notes;
                 clientPersonsWrapper.appendChild(clone);
             }
-
-            // utility to escape HTML when inserting into label
-            function escapeHtml(str) {
-                return String(str).replace(/[&<>"']/g, function(m) {
-                    return ({
-                        '&': '&amp;',
-                        '<': '&lt;',
-                        '>': '&gt;',
-                        '"': '&quot;',
-                        "'": '&#39;'
-                    })[m];
-                });
-            }
-
-            // Utility: recalculate overall and per-category WBS progress and update UI
-            function recalcWbsProgress() {
-                // overall
-                const allCheckboxes = Array.from(document.querySelectorAll('.wbs-item-checkbox'));
-                const total = allCheckboxes.length;
-                const done = allCheckboxes.filter(cb => cb.checked).length;
-                const overallPercent = total ? Math.round((done / total) * 100) : 0;
-                const overallBar = document.getElementById('wbsOverallBar');
-                const overallPercentEl = document.getElementById('wbsOverallPercent');
-                if (overallBar) overallBar.style.width = overallPercent + '%';
-                if (overallPercentEl) overallPercentEl.textContent = overallPercent + '%';
-
-                // per-category
-                document.querySelectorAll('.wbs-cat').forEach(function(catEl) {
-                    const catId = catEl.dataset.catId;
-                    const cbs = Array.from(catEl.querySelectorAll('.wbs-item-checkbox'));
-                    const t = cbs.length;
-                    const d = cbs.filter(cb => cb.checked).length;
-                    const pct = t ? Math.round((d / t) * 100) : 0;
-                    const bar = document.getElementById('wbs-cat-bar-' + catId);
-                    const pctEl = document.getElementById('wbs-cat-percent-' + catId);
-                    if (bar) bar.style.width = pct + '%';
-                    if (pctEl) pctEl.textContent = pct + '%';
-                });
-            }
-
-            // Global function to toggle WBS item via AJAX. Called from checkbox onchange.
-            window.toggleWbsItem = async function(cb) {
-                if (!cb) return;
-
-                const csrf = document.querySelector('meta[name="csrf-token"]') ?
-                    document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
-
-                const id = cb.dataset.id;
-                const checked = cb.checked ? 1 : 0;
-                const url = `/project/wbs-items/${id}/toggle`;
-
-                // Disable while processing
-                cb.disabled = true;
-
-                try {
-                    const res = await fetch(url, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': csrf
-                        },
-                        body: JSON.stringify({
-                            is_done: checked
-                        })
-                    });
-
-                    if (!res.ok) throw new Error('Network response was not ok');
-                    const data = await res.json();
-
-                    // update label content
-                    const label = document.querySelector(
-                        `label[for="wbs-child-${id}"], label[for="wbs-task-${id}"]`
-                    );
-                    const title = cb.dataset.title || (label ? label.dataset.title : '');
-                    if (label) {
-                        if (data.is_done) {
-                            // use <s> for inline strike
-                            label.innerHTML = `<span class="text-success">${escapeHtml(title)}</span>`;
-                        } else {
-                            label.textContent = title;
-                        }
-                    }
-
-                    // recalc progress bars
-                    recalcWbsProgress();
-
-                } catch (err) {
-                    // revert checkbox on failure
-                    cb.checked = !cb.checked;
-                    console.error(err);
-                    alert('Failed to update task status.');
-                } finally {
-                    cb.disabled = false;
-                }
-            };
-
-            // initial calculation on page load
-            recalcWbsProgress();
 
             // Add first empty row by default when modal opens
             if (changeModalEl) {

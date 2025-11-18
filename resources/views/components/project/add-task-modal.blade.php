@@ -17,6 +17,22 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <input type="text" name="type" id="addTaskType" class="form-control" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">From</label>
+                            <input type="text" name="from" id="addTaskFrom" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">To</label>
+                            <input type="text" name="to" id="addTaskTo" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Notes</label>
                         <textarea name="note" id="addTaskNote" class="form-control" rows="3"></textarea>
                     </div>
@@ -48,6 +64,9 @@
 
             const addTaskModal = new bootstrap.Modal(addTaskModalEl);
             const titleInput = document.getElementById('addTaskTitle');
+            const typeInput = document.getElementById('addTaskType');
+            const fromInput = document.getElementById('addTaskFrom');
+            const toInput = document.getElementById('addTaskTo');
             const noteInput = document.getElementById('addTaskNote');
             const parentSelect = document.getElementById('addTaskParent');
 
@@ -58,6 +77,9 @@
                     const catTitle = btn.getAttribute('data-cat-title') || '';
 
                     if (titleInput) titleInput.value = '';
+                    if (typeInput) typeInput.value = '';
+                    if (fromInput) fromInput.value = '';
+                    if (toInput) toInput.value = '';
                     if (noteInput) noteInput.value = '';
 
                     if (parentSelect) {
