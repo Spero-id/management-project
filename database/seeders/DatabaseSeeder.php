@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Division;
 use App\Models\Product;
+use App\Models\ProductStock;
 use App\Models\ProjectWeeklyMeeting;
 use App\Models\Prospect;
 use App\Models\Quotation;
@@ -19,9 +20,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         $this->call(RoleSeeder::class);
+        $this->call(InventorySeeder::class);
+        $this->call(BorrowingSeeder::class);
 
         $setting = [
             ['setting_name' => 'currency_exchange_rate', 'setting_value' => '15000'],
@@ -107,6 +108,7 @@ class DatabaseSeeder extends Seeder
                 'join_year' => '2025',
                 'division_id' => $division->id,
                 'password' => Hash::make('12345678'),
+                'foto' => null,
             ],
             [
                 'unique_id' => 'SIS-0002-0908-BOD',
@@ -118,6 +120,7 @@ class DatabaseSeeder extends Seeder
                 'join_year' => '2008',
                 'division_id' => $division->id,
                 'password' => Hash::make('12345678'),
+                'foto' => null,
             ],
             [
                 'unique_id' => 'SIS-0003-0908-BOD',
@@ -129,6 +132,7 @@ class DatabaseSeeder extends Seeder
                 'join_year' => '2008',
                 'division_id' => $division->id,
                 'password' => Hash::make('12345678'),
+                'foto' => null,
             ],
             [
                 'unique_id' => 'SIS-0004-0908-BOD',
@@ -140,6 +144,7 @@ class DatabaseSeeder extends Seeder
                 'join_year' => '2008',
                 'division_id' => $division->id,
                 'password' => Hash::make('12345678'),
+                'foto' => null,
             ],
         ];
 
@@ -162,7 +167,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($products as $productData) {
-            Product::create([
+            $product = Product::create([
                 'name' => $productData['brand'].' - '.$productData['type'],
                 'price' => $productData['price_list'],
                 'brand' => $productData['brand'],
@@ -173,6 +178,12 @@ class DatabaseSeeder extends Seeder
                 'weight' => $productData['weight'],
                 'shipping_fee_by_air' => $productData['shipping_fee_by_air'],
                 'dollar_base_price' => $productData['harga_dasar_dolar'],
+            ]);
+
+            // Create stock for each product
+            ProductStock::create([
+                'product_id' => $product->id,
+                'stock_quantity' => rand(10, 100),
             ]);
         }
 
@@ -237,6 +248,7 @@ class DatabaseSeeder extends Seeder
                 'division_id' => 2, // SALES & MARKETING division
                 'no_quotation' => $salesInfo['no_quotation'],
                 'password' => Hash::make('12345678'),
+                'foto' => null,
             ]);
 
             $sales->assignRole('SALES');
@@ -274,11 +286,47 @@ class DatabaseSeeder extends Seeder
                 'join_year' => $puser['join_year'],
                 'division_id' => $ptkDivision ? $ptkDivision->id : $division->id,
                 'password' => Hash::make('12345678'),
+                'foto' => null,
             ];
 
             $projUser = User::create($userData);
-            // assign PROJECT role if available
             $projUser->assignRole('PROJECT');
+        }
+
+        // Create logistic users (division GAF - General Affairs)
+        $gafDivision = Division::where('kode', 'GAF')->first();
+        $logisticUsers = [
+            [
+                'unique_id' => 'SIS-0012-0318-GAF',
+                'no_karyawan' => 'SIS-0012',
+                'name' => 'Andi Wijaya',
+                'email' => 'logistic1@example.com',
+                'join_month' => 'March',
+                'join_year' => '2018',
+            ],
+            [
+                'unique_id' => 'SIS-0013-0619-GAF',
+                'no_karyawan' => 'SIS-0013',
+                'name' => 'Siti Nurhaliza',
+                'email' => 'logistic2@example.com',
+                'join_month' => 'June',
+                'join_year' => '2019',
+            ],
+        ];
+
+        foreach ($logisticUsers as $logisticData) {
+            $logisticUser = User::create([
+                'unique_id' => $logisticData['unique_id'],
+                'no_karyawan' => $logisticData['no_karyawan'],
+                'name' => $logisticData['name'],
+                'email' => $logisticData['email'],
+                'join_month' => $logisticData['join_month'],
+                'join_year' => $logisticData['join_year'],
+                'division_id' => $gafDivision ? $gafDivision->id : $division->id,
+                'password' => Hash::make('12345678'),
+                'foto' => null,
+            ]);
+            $logisticUser->assignRole('LOGISTIC');
         }
 
         // Create 2 prospects and quotations for each sales user
@@ -385,62 +433,23 @@ class DatabaseSeeder extends Seeder
                     // 'target_to_year' => $prospect->target_to_year,
                 ]);
 
-                $meetings = [
-                    [
-                        'project_id' => 1,
-                        'task' => 'Persiapan instalasi hardware',
-                        'petugas' => 'Arifin',
-                        'start_date' => '2025-01-06',
-                        'end_date' => '2025-01-10',
-                        'target_date' => '2025-01-12',
-                        'notes' => 'Persiapan hardware dan koordinasi dengan vendor',
-                        'status' => 0,
-                    ],
-                    [
-                        'project_id' => 1,
-                        'task' => 'Testing sistem audio',
-                        'petugas' => 'Renaldy',
-                        'start_date' => '2025-01-13',
-                        'end_date' => '2025-01-17',
-                        'target_date' => '2025-01-19',
-                        'notes' => 'Testing semua perangkat audio dan integrasi sistem',
-                        'status' => 0,
-                    ],
-                    [
-                        'project_id' => 1,
-                        'task' => 'Implementasi control system',
-                        'petugas' => 'Arifin',
-                        'start_date' => '2025-01-20',
-                        'end_date' => '2025-01-24',
-                        'target_date' => '2025-01-26',
-                        'notes' => 'Setup dan konfigurasi Crestron control system',
-                        'status' => 0,
-                    ],
-                    [
-                        'project_id' => 1,
-                        'task' => 'Training pengguna',
-                        'petugas' => 'Renaldy',
-                        'start_date' => '2025-01-27',
-                        'end_date' => '2025-02-07',
-                        'target_date' => '2025-02-09',
-                        'notes' => 'Training tim klien cara penggunaan sistem',
-                        'status' => 0,
-                    ],
-                    [
-                        'project_id' => 1,
-                        'task' => 'Dokumentasi dan handover',
-                        'petugas' => 'Arifin',
-                        'start_date' => '2025-02-10',
-                        'end_date' => '2025-02-14',
-                        'target_date' => '2025-02-16',
-                        'notes' => 'Persiapan dokumentasi lengkap dan serah terima proyek',
-                        'status' => 0,
-                    ],
-                ];
+                // $meetings = [
+                //     [
+                //         'project_id' => 1,
+                //         'task' => 'Persiapan instalasi hardware',
+                //         'petugas' => 'Arifin',
+                //         'start_date' => '2025-01-06',
+                //         'end_date' => '2025-01-10',
+                //         'target_date' => '2025-01-12',
+                //         'notes' => 'Persiapan hardware dan koordinasi dengan vendor',
+                //         'status' => 0,
+                //     ],
+                   
+                // ];
 
-                foreach ($meetings as $meeting) {
-                    ProjectWeeklyMeeting::create($meeting);
-                }
+                // foreach ($meetings as $meeting) {
+                //     ProjectWeeklyMeeting::create($meeting);
+                // }
 
             }
         }

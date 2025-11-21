@@ -397,6 +397,23 @@
             background: #2563eb;
             border-color: #2563eb;
         }
+
+        /* Ensure modals and dropdowns appear above everything */
+        .modal {
+            z-index: 1050;
+        }
+
+        .modal-backdrop {
+            z-index: 1040;
+        }
+
+        .select2-container {
+            z-index: 1060 !important;
+        }
+
+        .select2-dropdown {
+            z-index: 1060 !important;
+        }
     </style>
 @endpush
 
@@ -444,11 +461,11 @@
             <div class="status-header">
                 <div class="status-card">
                     <h6>Persentase Progress Project</h6>
-                    <div class="status-value">70%</div>
+                    <div class="status-value">{{ $projectProgressPercentage ?? 0 }}%</div>
                 </div>
                 <div class="status-card">
                     <h6>Status Barang</h6>
-                    <div class="status-value">70%</div>
+                    <div class="status-value">{{ $statusBarangPercentage ?? 0 }}%</div>
                 </div>
                 <div class="status-card">
                     <h6>Deadline</h6>
@@ -479,7 +496,7 @@
 
             <!-- Tab Content Placeholders -->
             <div class="work-table-section" id="status-barang" style="display: none;">
-                <x-project.delivery-table :equipment="$equipment ?? []" />
+                <x-project.delivery-table :projectId="$selectedProject->id" />
             </div>
 
             <div class="work-table-section" id="weekly-meeting" style="display: none;">

@@ -46,6 +46,7 @@ class UserController extends Controller
             'division_id' => 'required|exists:divisions,id',
             'role' => 'required|exists:roles,name',
             'password' => 'required|string|min:8|confirmed',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'ktp' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'ijazah' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'sertifikat.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -59,9 +60,15 @@ class UserController extends Controller
         $uniqueId = 'SIS'.'-'.$noKaryawan.'-'.$request->join_year.'-'.$division->kode;
 
         // Handle file uploads
+        $fotoPath = null;
         $ktpPath = null;
         $ijazahPath = null;
         $sertifikatPaths = [];
+
+        if ($request->hasFile('foto')) {
+            $uniqueFilename = $this->generateUniqueFilename($request->file('foto'), 'documents/foto');
+            $fotoPath = $request->file('foto')->storeAs('documents/foto', $uniqueFilename, 'public');
+        }
 
         if ($request->hasFile('ktp')) {
             $uniqueFilename = $this->generateUniqueFilename($request->file('ktp'), 'documents/ktp');
@@ -91,6 +98,7 @@ class UserController extends Controller
             'join_year' => $request->join_year,
             'division_id' => $request->division_id,
             'password' => Hash::make($request->password),
+            'foto' => $fotoPath,
             'ktp' => $ktpPath,
             'ijazah' => $ijazahPath,
             'sertifikat' => $sertifikatPaths,
@@ -141,6 +149,7 @@ class UserController extends Controller
             'join_year' => 'required|string',
             'division_id' => 'required|exists:divisions,id',
             'role' => 'required|exists:roles,name',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'ktp' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'ijazah' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'sertifikat.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -155,9 +164,19 @@ class UserController extends Controller
         $request->validate($rules);
 
         // Handle file uploads
+        $fotoPath = $user->foto; // Keep existing if no new file
         $ktpPath = $user->ktp; // Keep existing if no new file
         $ijazahPath = $user->ijazah; // Keep existing if no new file
         $sertifikatPaths = $user->sertifikat ?? []; // Keep existing if no new files
+
+        if ($request->hasFile('foto')) {
+            // Delete old file if exists
+            if ($user->foto && Storage::disk('public')->exists($user->foto)) {
+                Storage::disk('public')->delete($user->foto);
+            }
+            $uniqueFilename = $this->generateUniqueFilename($request->file('foto'), 'documents/foto');
+            $fotoPath = $request->file('foto')->storeAs('documents/foto', $uniqueFilename, 'public');
+        }
 
         if ($request->hasFile('ktp')) {
             // Delete old file if exists
@@ -219,6 +238,7 @@ class UserController extends Controller
             'join_month' => $request->join_month,
             'join_year' => $request->join_year,
             'division_id' => $request->division_id,
+            'foto' => $fotoPath,
             'ktp' => $ktpPath,
             'ijazah' => $ijazahPath,
             'sertifikat' => $sertifikatPaths,
@@ -250,6 +270,10 @@ class UserController extends Controller
             $userName = $user->name;
 
             // Delete associated files
+            if ($user->foto && Storage::disk('public')->exists($user->foto)) {
+                Storage::disk('public')->delete($user->foto);
+            }
+
             if ($user->ktp && Storage::disk('public')->exists($user->ktp)) {
                 Storage::disk('public')->delete($user->ktp);
             }

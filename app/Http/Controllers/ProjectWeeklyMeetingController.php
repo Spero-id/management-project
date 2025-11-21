@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\WeeklyMeetingExport;
 use App\Imports\WeeklyMeetingImport;
 use App\Models\ProjectWeeklyMeeting;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
@@ -33,7 +34,7 @@ class ProjectWeeklyMeetingController extends Controller
 
         return DataTables::of($statuses)
             ->addColumn('action', function ($row) {
-                $editBtn = '<button type="button" class="btn  btn-primary edit-btn" data-id="' . $row->id . '" title="Edit">
+                $editBtn = '<button type="button" class="btn btn-icon edit-btn" data-id="'.$row->id.'" aria-label="Edit" title="Edit weekly meeting">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                         <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
@@ -41,8 +42,8 @@ class ProjectWeeklyMeetingController extends Controller
                         <path d="M16 5l3 3" />
                     </svg>
                 </button>';
-                
-                $deleteBtn = '<button type="button" class="btn  btn-danger delete-btn" data-id="' . $row->id . '" title="Delete">
+
+                $deleteBtn = '<button type="button" class="btn btn-icon delete-btn" data-id="'.$row->id.'" aria-label="Delete weekly meeting">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                         <path d="M4 7l16 0" />
@@ -52,8 +53,8 @@ class ProjectWeeklyMeetingController extends Controller
                         <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
                     </svg>
                 </button>';
-                
-                return $editBtn . ' ' . $deleteBtn;
+
+                return $editBtn.' '.$deleteBtn;
             })
             ->rawColumns(['action'])
             ->make(true);
@@ -72,7 +73,7 @@ class ProjectWeeklyMeetingController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'target_date' => 'required|date',
             'notes' => 'nullable|string',
-            'status' => 'required|string|max:50',
+            'progress' => 'required|integer|min:0|max:100',
         ]);
 
         ProjectWeeklyMeeting::create($validated);
@@ -86,10 +87,10 @@ class ProjectWeeklyMeetingController extends Controller
     public function show(string $id)
     {
         $meeting = ProjectWeeklyMeeting::findOrFail($id);
-        
+
         return response()->json([
             'success' => true,
-            'data' => $meeting
+            'data' => $meeting,
         ]);
     }
 
@@ -116,7 +117,7 @@ class ProjectWeeklyMeetingController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'target_date' => 'required|date',
             'notes' => 'nullable|string',
-            'status' => 'required|string|max:50',
+            'progress' => 'required|integer|min:0|max:100',
         ]);
 
         $meeting->update($validated);
@@ -124,7 +125,7 @@ class ProjectWeeklyMeetingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Weekly meeting updated successfully',
-            'data' => $meeting
+            'data' => $meeting,
         ]);
     }
 
@@ -138,7 +139,7 @@ class ProjectWeeklyMeetingController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Weekly meeting deleted successfully'
+            'message' => 'Weekly meeting deleted successfully',
         ]);
     }
 
@@ -149,7 +150,7 @@ class ProjectWeeklyMeetingController extends Controller
     {
         return Excel::download(
             new WeeklyMeetingExport($projectId),
-            'weekly-meetings-project-' . $projectId . '.xlsx'
+            'weekly-meetings-project-'.$projectId.'.xlsx'
         );
     }
 
@@ -164,16 +165,24 @@ class ProjectWeeklyMeetingController extends Controller
 
         try {
             Excel::import(new WeeklyMeetingImport($projectId), $request->file('file'));
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Weekly meetings imported successfully'
-            ]);
+            return redirect()->back()->with('success', 'Weekly meetings imported successfully');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Import failed: ' . $e->getMessage()
-            ], 422);
+            return redirect()->back()->with('error', 'Error importing weekly meetings: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Get list of users for dropdown
+     */
+    public function getUsers()
+    {
+        $users = User::select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $users,
+        ]);
     }
 }

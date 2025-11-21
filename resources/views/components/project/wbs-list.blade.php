@@ -223,7 +223,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="importWbsModalLabel">Import WBS Items</h5>
+                <h5 class="modal-title" id="importWbsModalLabel">Import List Of Work Items</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -231,26 +231,29 @@
                     enctype="multipart/form-data" id="importWbsForm">
                     @csrf
                     <div class="mb-3">
-                        <label for="wbsFile" class="form-label">Select File</label>
+                        <label for="wbsFile" class="form-label text-muted">Select Excel File</label>
                         <input type="file" class="form-control" id="wbsFile" name="file"
-                            accept=".xlsx,.xls,.csv" required>
-                        <small class="text-muted">Accepted formats: .xlsx, .xls, .csv</small>
+                            accept=".xlsx,.xls" required>
+                        <div class="form-text">Upload an Excel file (.xlsx or .xls) with list of work items</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <a href="{{ asset('template/Template List OF Work.xlsx') }}" 
+                           class="btn btn-outline-primary w-100" download>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="icon me-1">
+                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                <path d="M7 11l5 5l5 -5" />
+                                <path d="M12 4l0 12" />
+                            </svg>
+                            Download Template
+                        </a>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" id="downloadTemplateBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-download">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                        <path d="M7 11l5 5l5 -5" />
-                        <path d="M12 4l0 12" />
-                    </svg>
-                    Download Template
-                </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" form="importWbsForm" class="btn btn-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"

@@ -10,14 +10,14 @@
 
 <form action="{{ $route }}" method="POST" id="installationForm">
     @csrf
-    @if (!$quotation->installationItems?->isEmpty() )
+    @if (!$quotation->installationItems?->isEmpty())
         @method('PUT')
     @endif
 
     @if ($quotation)
         <input type="hidden" name="quotation_id" value="{{ $quotation->id }}">
     @endif
-    
+
     <input type="hidden" name="need_accommodation" id="need_accommodation_input"
         value="{{ old('need_accommodation') ? 1 : 0 }}">
     <input type="hidden" name="form_type" value="{{ $type }}">
@@ -32,7 +32,8 @@
                 <label class="form-label">Total Quantity Item </label>
                 <div class="input-group">
 
-                    <input class="form-control" disabled value="{{ \App\Helpers\CurrencyHelper::formatRupiah($quotation->total_amount) }}">
+                    <input class="form-control" disabled
+                        value="{{ \App\Helpers\CurrencyHelper::formatRupiah($quotation->total_amount) }}">
                 </div>
 
             </div>
@@ -80,105 +81,104 @@
                             </tr>
                         </thead>
                         <tbody id="installationTableBody">
-                         
-                         
+
+
+                            @php
+                                $initialIndex = 1;
+                                $installationPercentage = old(
+                                    'installation_percentage',
+                                    $quotation?->installation_percentage ?? 0,
+                                );
+                                $productTotal = $quotation?->total_amount ?? 0;
+                                $installationTotal = $productTotal * ($installationPercentage / 100);
+
+                                $serverRenderedCount = $installation->count();
+
+                                $sumProportional = 0;
+                                foreach ($installation as $it) {
+                                    $p =
+                                        isset($it->proportional) && $it->proportional !== null
+                                            ? floatval($it->proportional)
+                                            : 0;
+                                    if ($p > 0) {
+                                        $sumProportional += $p;
+                                    }
+                                }
+
+                                $allocations = [];
+                                if ($serverRenderedCount > 0) {
+                                    if ($sumProportional > 0) {
+                                        $allocated = 0;
+                                        $unpropIndexes = [];
+                                        foreach ($installation as $idx => $it) {
+                                            $p =
+                                                isset($it->proportional) && $it->proportional !== null
+                                                    ? floatval($it->proportional)
+                                                    : 0;
+                                            if ($p > 0) {
+                                                $unit = $installationTotal * ($p / 100);
+                                                $allocations[$idx] = $unit;
+                                                $allocated += $unit;
+                                            } else {
+                                                $unpropIndexes[] = $idx;
+                                            }
+                                        }
+                                        $remaining = $installationTotal - $allocated;
+                                        $perUnprop = count($unpropIndexes) > 0 ? $remaining / count($unpropIndexes) : 0;
+                                        foreach ($unpropIndexes as $u) {
+                                            $allocations[$u] = $perUnprop;
+                                        }
+                                    } else {
+                                        $perItem = $installationTotal / $serverRenderedCount;
+                                        foreach ($installation as $idx => $it) {
+                                            $allocations[$idx] = $perItem;
+                                        }
+                                    }
+                                }
+                            @endphp
+
+                            @foreach ($installation as $idx => $item)
                                 @php
-                                    $initialIndex = 1;
-                                    $installationPercentage = old(
-                                        'installation_percentage',
-                                        $quotation?->installation_percentage ?? 0,
-                                    );
-                                    $productTotal = $quotation?->total_amount ?? 0;
-                                    $installationTotal = $productTotal * ($installationPercentage / 100);
-
-                                    $serverRenderedCount = $installation->count();
-
-                                    $sumProportional = 0;
-                                    foreach ($installation as $it) {
-                                        $p =
-                                            isset($it->proportional) && $it->proportional !== null
-                                                ? floatval($it->proportional)
-                                                : 0;
-                                        if ($p > 0) {
-                                            $sumProportional += $p;
-                                        }
-                                    }
-
-                                    $allocations = [];
-                                    if ($serverRenderedCount > 0) {
-                                        if ($sumProportional > 0) {
-                                            $allocated = 0;
-                                            $unpropIndexes = [];
-                                            foreach ($installation as $idx => $it) {
-                                                $p =
-                                                    isset($it->proportional) && $it->proportional !== null
-                                                        ? floatval($it->proportional)
-                                                        : 0;
-                                                if ($p > 0) {
-                                                    $unit = $installationTotal * ($p / 100);
-                                                    $allocations[$idx] = $unit;
-                                                    $allocated += $unit;
-                                                } else {
-                                                    $unpropIndexes[] = $idx;
-                                                }
-                                            }
-                                            $remaining = $installationTotal - $allocated;
-                                            $perUnprop =
-                                                count($unpropIndexes) > 0 ? $remaining / count($unpropIndexes) : 0;
-                                            foreach ($unpropIndexes as $u) {
-                                                $allocations[$u] = $perUnprop;
-                                            }
-                                        } else {
-                                            $perItem = $installationTotal / $serverRenderedCount;
-                                            foreach ($installation as $idx => $it) {
-                                                $allocations[$idx] = $perItem;
-                                            }
-                                        }
-                                    }
+                                    $proportional =
+                                        isset($item->proportional) && $item->proportional !== null
+                                            ? floatval($item->proportional)
+                                            : 0;
+                                    $unitPrice = isset($allocations[$idx]) ? $allocations[$idx] : 0;
+                                    $quantity = 0;
+                                    $subtotal = $unitPrice * $quantity;
                                 @endphp
-
-                                @foreach ($installation as $idx => $item)
-                                    @php
-                                        $proportional =
-                                            isset($item->proportional) && $item->proportional !== null
-                                                ? floatval($item->proportional)
-                                                : 0;
-                                        $unitPrice = isset($allocations[$idx]) ? $allocations[$idx] : 0;
-                                        $quantity = 0;
-                                        $subtotal = $unitPrice * $quantity;
-                                    @endphp
-                                    <tr class="installation-row"
-                                        @if ($proportional > 0) data-proportional="{{ $proportional }}" @endif>
-                                        <td>
-                                            <select readonly name="installations[{{ $initialIndex }}][installation_id]"
-                                                class="form-select installation-select" required>
-                                                <option value="{{ $item->id }}" selected>
-                                                    {{ $item->text ?? ($item->name ?? ($item->title ?? 'Installation')) }}
-                                                </option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <input type="number" name="installations[{{ $initialIndex }}][quantity]"
-                                                class="form-control installation-quantity-input"
-                                                value="{{ $quantity }}" min="1" required>
-                                        </td>
-                                        <td>
-                                            <div class="input-group">
-                                                <input readonly type="text"
-                                                    name="installations[{{ $initialIndex }}][unit_price]"
-                                                    class="form-control installation-unit-price-input"
-                                                    value="{{ number_format(round($unitPrice)) }}" placeholder="0"
-                                                    required>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <input type="text" class="form-control installation-subtotal-display"
-                                                value="{{ number_format(round($subtotal)) }}" readonly
-                                                style="background-color: #f8f9fa;">
-                                        </td>
-                                    </tr>
-                                    @php $initialIndex++; @endphp
-                                @endforeach
+                                <tr class="installation-row"
+                                    @if ($proportional > 0) data-proportional="{{ $proportional }}" @endif>
+                                    <td>
+                                        <select readonly name="installations[{{ $initialIndex }}][installation_id]"
+                                            class="form-select installation-select" required>
+                                            <option value="{{ $item->id }}" selected>
+                                                {{ $item->text ?? ($item->name ?? ($item->title ?? 'Installation')) }}
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="installations[{{ $initialIndex }}][quantity]"
+                                            class="form-control installation-quantity-input"
+                                            value="{{ $quantity }}" min="1" required>
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <input readonly type="text"
+                                                name="installations[{{ $initialIndex }}][unit_price]"
+                                                class="form-control installation-unit-price-input"
+                                                value="{{ number_format(round($unitPrice)) }}" placeholder="0"
+                                                required>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control installation-subtotal-display"
+                                            value="{{ number_format(round($subtotal)) }}" readonly
+                                            style="background-color: #f8f9fa;">
+                                    </td>
+                                </tr>
+                                @php $initialIndex++; @endphp
+                            @endforeach
                         </tbody>
                     </table>
                     <script>
@@ -216,9 +216,9 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Jumlah Kamar Hotel</label>
-                                        <input type="number" id="accommodation_rooms"
+                                        <input type="number" id="accommodation_rooms" readonly
                                             name="accommodation_hotel_rooms"
-                                            class="form-control @error('accommodation_hotel_rooms') is-invalid @enderror"
+                                            class="form-control readonly  @error('accommodation_hotel_rooms') is-invalid @enderror"
                                             placeholder="Enter number of rooms"
                                             value="{{ old('accommodation_hotel_rooms', $quotation?->accommodation_hotel_rooms ?? 0) }}"
                                             readonly>

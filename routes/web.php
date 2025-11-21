@@ -150,6 +150,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::group(['prefix' => 'project-weekly-meetings', 'as' => 'project-weekly-meetings.'], function () {
+        Route::get('/users', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'getUsers'])->name('users');
         Route::get('/', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'index'])->name('index');
         Route::get('/create', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'store'])->name('store');
@@ -161,6 +162,49 @@ Route::middleware('auth')->group(function () {
         Route::get('/datatable/{projectId}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'datatable'])->name('datatable');
         Route::get('/export/{projectId}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'export'])->name('export');
         Route::post('/import/{projectId}', [App\Http\Controllers\ProjectWeeklyMeetingController::class, 'import'])->name('import');
+    });
+
+    // buatkan route untuk stock controller
+    Route::group(['prefix' => 'stock', 'as' => 'stock.'], function () {
+        Route::get('/', [App\Http\Controllers\StockController::class, 'index'])->name('index');
+        Route::get('/datatable', [App\Http\Controllers\StockController::class, 'datatable'])->name('datatable');
+        Route::get('/export', [App\Http\Controllers\StockController::class, 'export'])->name('export');
+        Route::post('/store', [App\Http\Controllers\StockController::class, 'store'])->name('store');
+        Route::get('/brands', [App\Http\Controllers\StockController::class, 'getBrands'])->name('brands');
+        Route::get('/types', [App\Http\Controllers\StockController::class, 'getTypes'])->name('types');
+        Route::get('/current', [App\Http\Controllers\StockController::class, 'getCurrentStock'])->name('current');
+    });
+
+    Route::group(['prefix' => 'inventory', 'as' => 'inventory.'], function () {
+        Route::get('/', [App\Http\Controllers\InventoryController::class, 'index'])->name('index');
+        Route::get('/{id}/edit', [App\Http\Controllers\InventoryController::class, 'edit'])->name('edit');
+        Route::put('/{id}/update', [App\Http\Controllers\InventoryController::class, 'update'])->name('update');
+        Route::get('/datatable', [App\Http\Controllers\InventoryController::class, 'datatable'])->name('datatable');
+    });
+
+    Route::group(['prefix' => 'borrowing', 'as' => 'borrowing.'], function () {
+        Route::get('/', [App\Http\Controllers\BorrowingController::class, 'index'])->name('index');
+        Route::get('/datatable', [App\Http\Controllers\BorrowingController::class, 'datatable'])->name('datatable');
+        Route::get('/create', [App\Http\Controllers\BorrowingController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\BorrowingController::class, 'store'])->name('store');
+        Route::get('/{id}', [App\Http\Controllers\BorrowingController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [App\Http\Controllers\BorrowingController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\BorrowingController::class, 'update'])->name('update');
+        Route::delete('/{id}', [App\Http\Controllers\BorrowingController::class, 'destroy'])->name('destroy');
+        Route::get('/data/users', [App\Http\Controllers\BorrowingController::class, 'getUsers'])->name('users');
+        Route::get('/data/brands', [App\Http\Controllers\BorrowingController::class, 'getBrands'])->name('brands');
+        Route::get('/data/types', [App\Http\Controllers\BorrowingController::class, 'getTypes'])->name('types');
+        Route::get('/data/current-stock', [App\Http\Controllers\BorrowingController::class, 'getCurrentStock'])->name('current-stock');
+        Route::get('/data/borrowed-items', [App\Http\Controllers\BorrowingController::class, 'getBorrowedItems'])->name('borrowed-items');
+        Route::get('/data/borrowing-detail/{id}', [App\Http\Controllers\BorrowingController::class, 'getBorrowingDetail'])->name('borrowing-detail');
+        Route::post('/return', [App\Http\Controllers\BorrowingController::class, 'returnItems'])->name('return');
+    });
+
+    Route::group(['prefix' => 'project-order', 'as' => 'project-order.'], function () {
+        Route::get('/', [App\Http\Controllers\ProjectOrderController::class, 'index'])->name('index');
+        Route::get('/datatable', [App\Http\Controllers\ProjectOrderController::class, 'datatable'])->name('datatable');
+        Route::get('/delivery-datatable', [App\Http\Controllers\ProjectOrderController::class, 'deliveryDatatable'])->name('delivery-datatable');
+        Route::post('/store', [App\Http\Controllers\ProjectOrderController::class, 'store'])->name('store');
     });
 });
 

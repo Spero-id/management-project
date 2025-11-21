@@ -29,6 +29,7 @@ class User extends Authenticatable
         'division_id',
         'type',
         'password',
+        'foto',
         'ktp',
         'ijazah',
         'sertifikat',

@@ -14,7 +14,11 @@ class ProjectWeeklyMeeting extends Model
         'end_date',
         'target_date',
         'notes',
-        'status',
+        'progress',
+    ];
+
+    protected $casts = [
+        'progress' => 'integer',
     ];
 
     public function project()

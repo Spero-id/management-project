@@ -393,7 +393,7 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="status-barang">
-                        <x-project.delivery-table :equipment="$equipment ?? []" />
+                        <x-project.delivery-table :projectId="$project->id" />
                     </div>
                     <div class="tab-pane" id="weekly-meeting">
                         <x-project.weekly-meeting :projectId="$project->id" />

@@ -28,7 +28,7 @@ final class WeeklyMeetingImport implements ToCollection, WithHeadingRow, WithSta
             $startDate = $row['start_date'] ?? null;
             $endDate = $row['complete_date'] ?? null;
             $targetDate = $row['target_complete_date'] ?? null;
-            $status = $row['status'] ?? null;
+            $progress = $row['progress'] ?? 0;
             $notes = $row['notes'] ?? null;
 
             if (empty($task) || empty($petugas) || empty($startDate) || empty($endDate) || empty($targetDate) ) {
@@ -43,7 +43,7 @@ final class WeeklyMeetingImport implements ToCollection, WithHeadingRow, WithSta
                 'start_date' => $this->parseDate($startDate),
                 'end_date' => $this->parseDate($endDate),
                 'target_date' => $this->parseDate($targetDate),
-                'status' => trim($status),
+                'progress' => (int) min(100, max(0, $progress)),
                 'notes' => $notes ? trim($notes) : null,
             ]);
         }

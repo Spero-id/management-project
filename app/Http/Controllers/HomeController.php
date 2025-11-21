@@ -103,11 +103,77 @@ class HomeController extends Controller
             $selectedProject = Project::find(request()->get('project_id'));
         }
 
+        // Calculate status barang percentage
+        $statusBarangPercentage = $this->calculateStatusBarangPercentage($selectedProject);
+        
+        // Calculate project progress percentage
+        $projectProgressPercentage = $this->calculateProjectProgress($selectedProject);
+
         return view('dashboard.project', compact(
             'prospects',
             'projects',
-            'selectedProject'
+            'selectedProject',
+            'statusBarangPercentage',
+            'projectProgressPercentage'
         ));
+    }
+
+    /**
+     * Calculate status barang (order items) completion percentage
+     */
+    private function calculateStatusBarangPercentage($project)
+    {
+        if (!$project) {
+            return 0;
+        }
+
+        $totalItems = $project->orderItems()->count();
+
+        if ($totalItems === 0) {
+            return 0;
+        }
+
+        // Count complete items
+        $completeItems = $project->orderItems()
+            ->where('order_status', 'complete')
+            ->count();
+
+        // Count partial items (weighted as 0.5)
+        $partialItems = $project->orderItems()
+            ->where('order_status', 'partial')
+            ->count();
+
+        // Calculate weighted completion
+        $weightedCompletion = $completeItems + ($partialItems * 0.5);
+
+        return round(($weightedCompletion / $totalItems) * 100, 1);
+    }
+
+    /**
+     * Calculate project progress percentage based on WBS items completion
+     */
+    private function calculateProjectProgress($project)
+    {
+        if (!$project) {
+            return 0;
+        }
+
+        // Get all WBS items that are tasks (not categories)
+        $totalTasks = $project->wbsItems()
+            ->where('item_type', 'task')
+            ->count();
+
+        if ($totalTasks === 0) {
+            return 0;
+        }
+
+        // Count completed tasks
+        $completedTasks = $project->wbsItems()
+            ->where('item_type', 'task')
+            ->where('is_done', true)
+            ->count();
+
+        return round(($completedTasks / $totalTasks) * 100, 1);
     }
 
     /**

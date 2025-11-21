@@ -78,4 +78,12 @@ class Project extends Model
     {
         return $this->hasMany(\App\Models\ProjectWBSItem::class, 'project_id');
     }
+
+    /**
+     * Get the order items related to the project.
+     */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(\App\Models\ProjectOrderItem::class, 'project_id');
+    }
 }

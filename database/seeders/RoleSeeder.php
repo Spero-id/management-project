@@ -58,6 +58,12 @@ class RoleSeeder extends Seeder
         Permission::create(['name' => 'VIEW_SETTING']);
         Permission::create(['name' => 'EDIT_SETTING']);
 
+
+        Permission::create(['name' => 'VIEW_STOCK']);
+        Permission::create(['name' => 'VIEW_INVENTORY']);
+        Permission::create(['name' => 'VIEW_PROJECT_ORDER']);
+        Permission::create(['name' => 'VIEW_BORROWING']);
+
         Role::create(['name' => 'SUPER_ADMIN'])->givePermissionTo(Permission::all());
         Role::create(['name' => 'BOD'])->givePermissionTo([
 
@@ -128,6 +134,13 @@ class RoleSeeder extends Seeder
             'EDIT_PROJECT',
             'DELETE_PROJECT',
 
+        ]);
+
+        Role::create(['name'=>'LOGISTIC'])->givePermissionTo([
+            "VIEW_STOCK",
+            "VIEW_INVENTORY",
+            "VIEW_PROJECT_ORDER",
+            "VIEW_BORROWING",
         ]);
 
     }

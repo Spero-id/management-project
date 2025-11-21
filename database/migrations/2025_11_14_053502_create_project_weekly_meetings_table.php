@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->date('target_date')->nullable();
             $table->text('notes')->nullable();
-            $table->integer('status')->default(0);
+            $table->integer('progress')->default(0)->comment('Progress percentage (0-100)');
             $table->timestamps();
         });
     }

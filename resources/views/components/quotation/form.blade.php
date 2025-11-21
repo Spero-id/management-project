@@ -23,7 +23,7 @@
             <div class="col-md-4 d-flex align-items-end justify-content-end">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" value="1" id="isQuotation" name="is_quotation"
-                        {{ old('is_quotation', $quotation?->is_quotation) ? 'checked' : '' }}>
+                        {{ old('is_quotation', $quotation?->is_quotation ?? true) ? 'checked' : '' }}>
                     <label class="form-check-label" for="isQuotation">Quotation</label>
                 </div>
             </div>
@@ -950,14 +950,14 @@
                 if (!productsSection) return;
 
                 if (isQuoted) {
-                    // hide products UI and clear any existing rows
-                    productsSection.style.display = 'none';
-                    clearProductRowsAndDestroySelect2();
-                } else {
                     // show products UI
                     productsSection.style.display = '';
                     // ensure empty state is correct
                     toggleEmptyState();
+                } else {
+                    // hide products UI and clear any existing rows
+                    productsSection.style.display = 'none';
+                    clearProductRowsAndDestroySelect2();
                 }
             }
 
@@ -1101,8 +1101,8 @@
                 const productRows = quotationForm.querySelectorAll('.product-row');
                 const isQuoted = document.getElementById('isQuotation') && document.getElementById('isQuotation').checked;
 
-                // If quotation mode is enabled, skip product validation entirely
-                if (!isQuoted) {
+                // If quotation mode is enabled, validate products
+                if (isQuoted) {
                     if (productRows.length === 0) {
                         e.preventDefault();
                         alert('Mohon tambahkan minimal satu produk ke dalam quotation.');

@@ -31,7 +31,7 @@ final class WeeklyMeetingExport implements FromCollection, WithHeadings, WithMap
             'Start Date',
             'Complete Date',
             'Target Complete Date',
-            'Status',
+            'Progress (%)',
             'Notes',
         ];
     }
@@ -44,7 +44,7 @@ final class WeeklyMeetingExport implements FromCollection, WithHeadings, WithMap
             $meeting->start_date,
             $meeting->end_date,
             $meeting->target_date,
-            (string)$meeting->status,
+            $meeting->progress,
             $meeting->notes ?? '',
         ];
     }

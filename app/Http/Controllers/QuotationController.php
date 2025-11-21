@@ -147,7 +147,7 @@ class QuotationController extends Controller
     public function update(Request $request, string $id)
     {
         $quotation = Quotation::findOrFail($id);
-        if ($request->is_quotation == true) {
+        if (!($request->is_quotation == true)) {
             if ($quotation->prospect) {
                 $quotation->prospect->is_quotation = false;
                 $quotation->prospect->save();

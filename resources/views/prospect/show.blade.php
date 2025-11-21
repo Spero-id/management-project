@@ -539,12 +539,7 @@
 
                                     <!-- File Upload Section (Shows when 100% status is selected) -->
                                     <div id="fileUploadSection" class="mb-3" style="display: none;">
-                                        <div class="alert   alert-info">
-                                            <h4 class="alert-title">Upload Required Documents</h4>
-                                            <div class="text-secondary">Status dengan progres 100% memerlukan upload file
-                                                PO dan SPK.</div>
-                                        </div>
-
+                                      
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <label for="po_file" class="form-label">File PO (Purchase Order)</label>

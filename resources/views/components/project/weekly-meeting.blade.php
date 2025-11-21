@@ -1,30 +1,34 @@
 @props(['projectId'])
 
 <!-- Action Buttons -->
-<div class="mb-3 d-flex justify-content-end gap-2">
-    <a href="{{ route('project-weekly-meetings.export', $projectId) }}" class="btn btn-success">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-            <path d="M12 11v6" />
-            <path d="M9.5 13.5l2.5 2.5l2.5 -2.5" />
-        </svg>
-        Export
-    </a>
+<div class="mb-3 d-flex justify-content-between gap-2">
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-success d-flex align-items-center" data-bs-toggle="modal"
+            data-bs-target="#importWeeklyMeetingModal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-upload">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                <path d="M7 9l5 -5l5 5" />
+                <path d="M12 4l0 12" />
+            </svg>
+            <span>Import list of work</span>
+        </button>
 
-    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importWeeklyMeetingModal">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-1">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-            <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-            <path d="M12 17v-6" />
-            <path d="M9.5 11.5l2.5 -2.5l2.5 2.5" />
-        </svg>
-        Import
-    </button>
+        <a type="button" class="btn btn-success d-flex align-items-center"
+            href="{{ route('project-weekly-meetings.export', $projectId) }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-download">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                <path d="M7 11l5 5l5 -5" />
+                <path d="M12 4l0 12" />
+            </svg>
+            <span>Export list of work</span>
+        </a>
+    </div>
 
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#weeklyMeetingModal">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -39,7 +43,7 @@
 <!-- Tasks Table -->
 <div class="table-responsive">
     <x-datatable id="weekly-meeting-table" title="Projects"
-        url="{{ route('project-weekly-meetings.datatable', $projectId) }}" :columns="['task', 'petugas', 'start_date', 'end_date', 'target_date', 'status', 'notes', 'action']" />
+        url="{{ route('project-weekly-meetings.datatable', $projectId) }}" :columns="['task', 'petugas', 'start_date', 'end_date', 'target_date', 'progress', 'notes', 'action']" />
 </div>
 
 <!-- Weekly Meeting Modal (Create) -->
@@ -65,8 +69,9 @@
 
                         <div class="col-md-6">
                             <label class="form-label text-muted">Person in Charge</label>
-                            <input type="text" name="petugas" class="form-control" placeholder="Select person"
-                                required>
+                            <select name="petugas" id="petugas" class="form-control" required>
+                                <option value="">Select person</option>
+                            </select>
                         </div>
 
                         <div class="col-md-6">
@@ -85,9 +90,9 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Status</label>
-                            <input type="text" name="status" class="form-control"
-                                placeholder="e.g., In Progress, Completed, Hold" required>
+                            <label class="form-label text-muted">Progress (%)</label>
+                            <input type="number" name="progress" class="form-control" min="0"
+                                max="100" placeholder="Enter progress (0-100)" required>
                         </div>
 
                         <div class="col-md-12">
@@ -135,8 +140,9 @@
 
                         <div class="col-md-6">
                             <label class="form-label text-muted">Person in Charge</label>
-                            <input type="text" name="petugas" id="edit_petugas" class="form-control"
-                                placeholder="Select person" required>
+                            <select name="petugas" id="edit_petugas" class="form-control" required>
+                                <option value="">Select person</option>
+                            </select>
                         </div>
 
                         <div class="col-md-6">
@@ -157,9 +163,9 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Status</label>
-                            <input type="text" name="status" id="edit_status" class="form-control"
-                                placeholder="e.g., In Progress, Completed, Hold" required>
+                            <label class="form-label text-muted">Progress (%)</label>
+                            <input type="number" name="progress" id="edit_progress" class="form-control"
+                                min="0" max="100" placeholder="Enter progress (0-100)" required>
                         </div>
 
                         <div class="col-md-12">
@@ -191,7 +197,8 @@
                 <h5 class="modal-title">Import Weekly Meeting Tasks</h5>
             </div>
 
-            <form action="{{ route('project-weekly-meetings.import', $projectId) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('project-weekly-meetings.import', $projectId) }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
@@ -200,20 +207,19 @@
                             accept=".xlsx,.xls" required>
                         <div class="form-text">Upload an Excel file (.xlsx or .xls) with weekly meeting tasks</div>
                     </div>
-                    <div class="alert alert-info" role="alert">
-                        <h4 class="alert-title">Excel Format Required</h4>
-                        <div class="text-secondary">
-                            The file must have these columns:
-                            <ul class="mb-0">
-                                <li>Task</li>
-                                <li>Person in Charge</li>
-                                <li>Start Date</li>
-                                <li>Complete Date</li>
-                                <li>Target Complete Date</li>
-                                <li>Status</li>
-                                <li>Notes (optional)</li>
-                            </ul>
-                        </div>
+
+                    <div class="mb-3">
+                        <a href="{{ asset('template/Template Weekly Report.xlsx') }}" 
+                           class="btn btn-outline-primary w-100" download>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="icon me-1">
+                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                <path d="M7 11l5 5l5 -5" />
+                                <path d="M12 4l0 12" />
+                            </svg>
+                            Download Template
+                        </a>
                     </div>
                 </div>
 
@@ -240,6 +246,94 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        let select2Initialized = false;
+
+        // Initialize Select2 for Person in Charge dropdowns
+        function initializeSelect2() {
+            if (select2Initialized) return;
+
+            // Destroy existing select2 if any
+            if ($('#petugas').hasClass('select2-hidden-accessible')) {
+                $('#petugas').select2('destroy');
+            }
+            if ($('#edit_petugas').hasClass('select2-hidden-accessible')) {
+                $('#edit_petugas').select2('destroy');
+            }
+
+            $('#petugas').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select person',
+                allowClear: true,
+                tags: true,
+                dropdownParent: $('#weeklyMeetingModal'),
+                width: '100%'
+            });
+
+            $('#edit_petugas').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select person',
+                allowClear: true,
+                tags: true,
+                dropdownParent: $('#editWeeklyMeetingModal'),
+                width: '100%'
+            });
+
+            select2Initialized = true;
+        }
+
+        // Load users for dropdown
+        function loadUsers() {
+            $.ajax({
+                url: '/project-weekly-meetings/users',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        const options = response.data.map(user =>
+                            `<option value="${user.name}">${user.name}</option>`
+                        ).join('');
+
+                        $('#petugas').html('<option value="">Select person</option>' + options);
+                        $('#edit_petugas').html('<option value="">Select person</option>' +
+                            options);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error loading users:', xhr);
+                }
+            });
+        }
+
+        // Load users on page load
+        loadUsers();
+
+        // Initialize Select2 when modal is about to be shown
+        $('#weeklyMeetingModal').on('show.bs.modal', function() {
+            setTimeout(function() {
+                initializeSelect2();
+            }, 100);
+        });
+
+        $('#editWeeklyMeetingModal').on('show.bs.modal', function() {
+            setTimeout(function() {
+                initializeSelect2();
+            }, 100);
+        });
+
+        // Reset Select2 when modal is closed
+        $('#weeklyMeetingModal').on('hidden.bs.modal', function() {
+            if ($('#petugas').hasClass('select2-hidden-accessible')) {
+                $('#petugas').val('').trigger('change');
+            }
+            $('#weeklyMeetingForm')[0].reset();
+        });
+
+        $('#editWeeklyMeetingModal').on('hidden.bs.modal', function() {
+            $('#editWeeklyMeetingForm')[0].reset();
+            if ($('#edit_petugas').hasClass('select2-hidden-accessible')) {
+                $('#edit_petugas').val('').trigger('change');
+            }
+        });
+
         // Handle edit button click
         $(document).on('click', '.edit-btn', function() {
             const meetingId = $(this).data('id');
@@ -252,11 +346,22 @@
                     // Populate form fields
                     $('#edit_meeting_id').val(response.data.id);
                     $('#edit_task').val(response.data.task);
-                    $('#edit_petugas').val(response.data.petugas);
+
+                    // Handle person in charge - add as option if not exists
+                    const petugasValue = response.data.petugas;
+                    if (petugasValue && $('#edit_petugas').find(
+                            `option[value="${petugasValue}"]`).length === 0) {
+                        // Create new option if it doesn't exist (freetext value)
+                        const newOption = new Option(petugasValue, petugasValue, true,
+                            true);
+                        $('#edit_petugas').append(newOption);
+                    }
+                    $('#edit_petugas').val(petugasValue).trigger('change');
+
                     $('#edit_start_date').val(response.data.start_date);
                     $('#edit_end_date').val(response.data.end_date);
                     $('#edit_target_date').val(response.data.target_date);
-                    $('#edit_status').val(response.data.status);
+                    $('#edit_progress').val(response.data.progress);
                     $('#edit_notes').val(response.data.notes);
 
                     // Show modal
@@ -284,10 +389,7 @@
                     $('#editWeeklyMeetingForm')[0].reset();
                     $('#weekly-meeting-table').DataTable().ajax.reload();
 
-                    // Show success message
-                    if (response.message) {
-                        alert(response.message);
-                    }
+
                 },
                 error: function(xhr) {
                     let errorMessage = 'Error updating task';
@@ -319,10 +421,7 @@
                     success: function(response) {
                         $('#weekly-meeting-table').DataTable().ajax.reload();
 
-                        // Show success message
-                        if (response.message) {
-                            alert(response.message);
-                        }
+
                     },
                     error: function(xhr) {
                         alert('Error deleting task: ' + (xhr.responseJSON?.message ||

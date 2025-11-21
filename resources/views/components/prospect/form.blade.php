@@ -103,13 +103,9 @@
                         <select name="target_deal_from_month"
                             class="form-control @error('target_deal') is-invalid @enderror" required>
                             <option value="">From Month</option>
-                            @php
-                                // $fromMonth = old('target_deal_from_month');
-                            @endphp
-
                             @foreach (['01' => 'January', '02' => 'February', '03' => 'March', '04' => 'April', '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August', '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'] as $value => $label)
                                 <option value="{{ $value }}"
-                                    {{ $prospect->target_from_month == $value ? 'selected' : '' }}>
+                                    {{ old('target_deal_from_month', $prospect?->target_from_month) == $value ? 'selected' : '' }}>
                                     {{ $label }}
                                 </option>
                             @endforeach
@@ -121,7 +117,7 @@
                             <option value="">From Year</option>
                             @php
                                 $currentYear = date('Y');
-                                $selectedFromYear = old('target_deal_from_year', $currentYear);
+                                $selectedFromYear = old('target_deal_from_year', $prospect?->target_from_year);
                             @endphp
                             @for ($year = $currentYear; $year <= $currentYear + 10; $year++)
                                 <option value="{{ $year }}"
@@ -134,11 +130,8 @@
                     <div class="col-3">
                         <select name="target_deal_to_month"
                             class="form-control @error('target_deal') is-invalid @enderror" required>
-                            @php
-                                // $toMonth = old('target_deal_to_month');
-                            @endphp
                             @foreach (['01' => 'January', '02' => 'February', '03' => 'March', '04' => 'April', '05' => 'May', '06' => 'June', '07' => 'July', '08' => 'August', '09' => 'September', '10' => 'October', '11' => 'November', '12' => 'December'] as $value => $label)
-                                <option value="{{ $value }}" {{ $prospect->target_to_month == $value ? 'selected' : '' }}>
+                                <option value="{{ $value }}" {{ old('target_deal_to_month', $prospect?->target_to_month) == $value ? 'selected' : '' }}>
                                     {{ $label }}
                                 </option>
                             @endforeach
@@ -150,7 +143,7 @@
                             <option value="">To Year</option>
                             @php
                                 $currentYear = date('Y');
-                                $selectedToYear = old('target_deal_to_year', $currentYear);
+                                $selectedToYear = old('target_deal_to_year', $prospect?->target_to_year);
                             @endphp
                             @for ($year = $currentYear; $year <= $currentYear + 10; $year++)
                                 <option value="{{ $year }}" {{ $selectedToYear == $year ? 'selected' : '' }}>
