@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('ktp')->nullable();
             $table->string('ijazah')->nullable();
             $table->json('sertifikat')->nullable();
+            $table->text('foto')->nullable();
             $table->integer('no_quotation')->nullable();
             $table->rememberToken();
             $table->timestamps();
