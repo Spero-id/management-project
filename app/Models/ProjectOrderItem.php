@@ -15,6 +15,9 @@ class ProjectOrderItem extends Model
         'stock_used',
         'estimated_arrival_date',
         'order_status',
+        'po_number',
+        'po_file_path',
+        "project_order_id",
     ];
 
     protected $casts = [

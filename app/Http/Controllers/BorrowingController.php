@@ -314,10 +314,8 @@ class BorrowingController extends Controller
                 return $query->where('no_peminjaman', 'like', "%{$search}%")
                     ->orWhere('penanggung_jawab', 'like', "%{$search}%");
             })
-            ->limit(10)
             ->get()
             ->map(function ($borrowing) {
-                // Filter items yang belum fully returned
                 $unreturned_items = $borrowing->items->filter(function ($item) {
                     return $item->jumlah_dikembalikan < $item->jumlah_barang;
                 })->map(function ($item) {

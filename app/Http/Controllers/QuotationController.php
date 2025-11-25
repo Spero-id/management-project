@@ -7,6 +7,7 @@ use App\Models\Installation;
 use App\Models\Prospect;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -137,8 +138,9 @@ class QuotationController extends Controller
                 'proportional' => $i->proportional ?? null,
             ];
         });
+        $totalJasaSetting = Setting::where('setting_name', 'total_jasa')->first()->setting_value ?? '0';
 
-        return view('quotation.edit', compact('prospect', 'accommodationCategory', 'quotation', 'installationCategories'));
+        return view('quotation.edit', compact('prospect', 'accommodationCategory', 'quotation', 'installationCategories', 'totalJasaSetting'));
     }
 
     /**

@@ -655,35 +655,30 @@
                     success: function(response) {
                         const data = response.data;
                         
-                        // Reset form terlebih dahulu
                         $('#borrowingForm')[0].reset();
                         $('#penanggung_jawab').empty().trigger('change');
                         $('#temp_brand').empty().trigger('change');
                         $('#temp_type').empty().trigger('change');
                         
-                        // Set form data
                         $('#borrowingId').val(data.id);
                         $('#tanggal').val(data.tanggal);
                         $('#no_peminjaman').val(data.no_peminjaman);
                         $('#keperluan').val(data.keperluan);
                         
-                        // Set penanggung jawab with Select2
                         const penanggungJawabOption = new Option(data.penanggung_jawab, data.penanggung_jawab, true, true);
                         $('#penanggung_jawab').append(penanggungJawabOption).trigger('change');
                         
-                        // Load items data
                         itemsData = data.items.map((item, index) => ({
                             id: index + 1,
                             brand: item.brand,
                             type: item.type,
                             stok_tersedia: item.stok_tersedia,
-                            jumlah_barang: item.jumlah_barang
+                            jumlah_barang: item.jumlah_barang - item.jumlah_dikembalikan
                         }));
                         itemCounter = itemsData.length;
                         
                         renderItemsTable();
                         
-                        // Set mode (view/edit)
                         if (viewOnly) {
                             $('#borrowingForm input, #borrowingForm select, #borrowingForm button[type="submit"], .remove-item, #addItemBtn').prop('disabled', true);
                             $('#temp_brand, #temp_type, #temp_jumlah').prop('disabled', true);
@@ -703,7 +698,6 @@
                 });
             }
             
-            // Delete borrowing
             $(document).on('click', '.delete-btn', function() {
                 const id = $(this).data('id');
                 

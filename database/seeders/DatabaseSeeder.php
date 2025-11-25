@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
 
         $setting = [
             ['setting_name' => 'currency_exchange_rate', 'setting_value' => '15000'],
+            ['setting_name' => 'total_jasa', 'setting_value' => '10'],
         ];
         foreach ($setting as $settingData) {
             \App\Models\Setting::create([
@@ -41,6 +42,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'GENERAL MANAGER', 'kode' => 'GEN', 'is_generate_sales_quotation_number' => false],
             ['name' => 'PROJECT & TECHNICAL', 'kode' => 'PTK', 'is_generate_sales_quotation_number' => false],
             ['name' => 'GENERAL AFFAIRS', 'kode' => 'GAF', 'is_generate_sales_quotation_number' => false],
+            ['name' => 'LOGISTIC', 'kode' => 'LGS', 'is_generate_sales_quotation_number' => false],
         ];
 
         foreach ($divisions as $divisionData) {
@@ -274,7 +276,6 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        // Create project/technical users (division PTK)
         $ptkDivision = Division::where('kode', 'PTK')->first();
         foreach ($projectUser as $puser) {
             $userData = [
@@ -293,8 +294,42 @@ class DatabaseSeeder extends Seeder
             $projUser->assignRole('PROJECT');
         }
 
-        // Create logistic users (division GAF - General Affairs)
-        $gafDivision = Division::where('kode', 'GAF')->first();
+        $finDivision = Division::where('kode', 'FIN')->first();
+        $financeUsers = [
+            [
+                'unique_id' => 'SIS-0014-0217-FIN',
+                'no_karyawan' => 'SIS-0014',
+                'name' => 'Bambang Hartono',
+                'email' => 'finance1@example.com',
+                'join_month' => 'February',
+                'join_year' => '2017',
+            ],
+            [
+                'unique_id' => 'SIS-0015-0820-FIN',
+                'no_karyawan' => 'SIS-0015',
+                'name' => 'Sri Mulyani',
+                'email' => 'finance2@example.com',
+                'join_month' => 'August',
+                'join_year' => '2020',
+            ],
+        ];
+
+        foreach ($financeUsers as $financeData) {
+            $financeUser = User::create([
+                'unique_id' => $financeData['unique_id'],
+                'no_karyawan' => $financeData['no_karyawan'],
+                'name' => $financeData['name'],
+                'email' => $financeData['email'],
+                'join_month' => $financeData['join_month'],
+                'join_year' => $financeData['join_year'],
+                'division_id' => $finDivision ? $finDivision->id : $division->id,
+                'password' => Hash::make('12345678'),
+                'foto' => null,
+            ]);
+            $financeUser->assignRole('FINANCE');
+        }
+
+        $gafDivision = Division::where('kode', 'LGS')->first();
         $logisticUsers = [
             [
                 'unique_id' => 'SIS-0012-0318-GAF',
@@ -414,7 +449,7 @@ class DatabaseSeeder extends Seeder
 
                 // Create a Project linked to this Prospect
                 // Map prospect fields to project fields where appropriate
-                \App\Models\Project::create([
+                $project = \App\Models\Project::create([
                     'project_name' => 'Project for '.$prospect->customer_name,
                     'client_name' => $prospect->customer_name,
                     'client_email' => $prospect->email,
@@ -444,13 +479,47 @@ class DatabaseSeeder extends Seeder
                 //         'notes' => 'Persiapan hardware dan koordinasi dengan vendor',
                 //         'status' => 0,
                 //     ],
-                   
+
                 // ];
 
                 // foreach ($meetings as $meeting) {
                 //     ProjectWeeklyMeeting::create($meeting);
                 // }
 
+            }
+        }
+
+        // Create Project Orders for the first 3 projects
+        $projects = \App\Models\Project::limit(3)->get();
+
+        foreach ($projects as $projectIndex => $project) {
+            // Create project order (alternating between confirmed and unconfirmed)
+            $isConfirmed = 0;
+
+            $projectOrder = \App\Models\ProjectOrder::create([
+                'project_id' => $project->id,
+                'is_confirmed' => $isConfirmed,
+            ]);
+
+            // Get quotation items for this project's prospect
+            $quotationItems = \App\Models\QuotationItem::whereHas('quotation', function ($query) use ($project) {
+                $query->where('prospect_id', $project->prospect_id);
+            })->get();
+
+            // Create project order items
+            foreach ($quotationItems as $quotationItem) {
+                \App\Models\ProjectOrderItem::create([
+                    'project_order_id' => $projectOrder->id,
+                    'project_id' => $project->id,
+                    'product_id' => $quotationItem->product_id,
+                    'quotation_item_id' => $quotationItem->id,
+                    'required_qty' => $quotationItem->quantity,
+                    'stock_used' => rand(0, $quotationItem->quantity),
+                    'estimated_arrival_date' => now()->addDays(rand(7, 30)),
+                    'order_status' => $isConfirmed ? 'complete' : 'pending',
+                    'po_number' => $isConfirmed ? 'PO-'.date('Y').'-'.str_pad($projectIndex + 1, 4, '0', STR_PAD_LEFT) : null,
+                    'po_file_path' => $isConfirmed ? 'po_files/po_'.$project->id.'_'.time().'.pdf' : null,
+                ]);
             }
         }
     }

@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('quotation_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->integer('quantity');
-            $table->integer('unit_price');
-            $table->integer('subtotal');
+            $table->unsignedBigInteger('quantity');
+            $table->unsignedBigInteger('unit_price');
+            $table->unsignedBigInteger('subtotal');
             $table->timestamps();
         });
     }

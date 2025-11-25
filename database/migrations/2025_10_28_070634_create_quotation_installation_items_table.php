@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('quotation_id')->constrained('quotations')->onDelete('cascade');
             $table->foreignId('installation_id')->constrained('installations')->onDelete('cascade');
             $table->integer('quantity')->default(1);
-            $table->decimal('unit_price', 15, 2)->default(0);
-            $table->decimal('subtotal', 15, 2)->default(0);
+            $table->decimal('unit_price', 20, 2)->default(0);
+            $table->decimal('subtotal', 20, 2)->default(0);
             $table->timestamps();
         });
     }

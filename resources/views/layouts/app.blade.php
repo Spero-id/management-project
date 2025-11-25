@@ -45,7 +45,6 @@
 
 
     <style>
-    
         .readonly {
             pointer-events: none;
             touch-action: none;
@@ -420,6 +419,71 @@
                             </li>
                         @endcan
 
+                        @can('VIEW_DELIVERY')
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('delivery-order.index') }}">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round"
+                                            class="icon icon-tabler icons-tabler-outline icon-tabler-truck">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                            <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                            <path d="M5 17h-2v-11a1 1 0 0 1 1 -1h9v12m-4 0h6m4 0h2v-6h-8m0 -5h5l3 5" />
+                                        </svg>
+                                    </span>
+                                    <span class="nav-link-title"> Delivery Order</span>
+                                </a>
+                            </li>
+                        @endcan
+
+                        @can('LOGISTIC_ORDER')
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('finance-project-order.index') }}">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round"
+                                            class="icon icon-tabler icons-tabler-outline icon-tabler-basket-dollar">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path d="M17 10l-2 -6" />
+                                            <path d="M7 10l2 -6" />
+                                            <path
+                                                d="M13 20h-5.756a3 3 0 0 1 -2.965 -2.544l-1.255 -7.152a2 2 0 0 1 1.977 -2.304h13.999a2 2 0 0 1 1.977 2.304" />
+                                            <path d="M10 14a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                            <path d="M21 15h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3h-2.5" />
+                                            <path d="M19 21v1m0 -8v1" />
+                                        </svg>
+                                    </span>
+                                    <span class="nav-link-title">Logistic Order </span>
+                                </a>
+                            </li>
+                        @endcan
+
+                        @can('PERHITUNGAN_PROJECT')
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('perhitungan-project.index') }}">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round"
+                                            class="icon icon-tabler icons-tabler-outline icon-tabler-file-analytics">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                            <path
+                                                d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                                            <path d="M9 17l0 -5" />
+                                            <path d="M12 17l0 -1" />
+                                            <path d="M15 17l0 -3" />
+                                        </svg>
+                                    </span>
+                                    <span class="nav-link-title">Perhitungan Project </span>
+                                </a>
+                            </li>
+                        @endcan
+
+
 
 
                         @can('VIEW_SETTING')
@@ -438,6 +502,26 @@
                                         </svg>
                                     </span>
                                     <span class="nav-link-title">Setting</span>
+                                </a>
+                            </li>
+                        @endcan
+
+                        @can('VIEW_SALES_TARGET')
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('setting.sales-target') }}">
+                                    <span
+                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round"
+                                            class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
+                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                            <path
+                                                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+                                            <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                                        </svg>
+                                    </span>
+                                    <span class="nav-link-title">Sales Target</span>
                                 </a>
                             </li>
                         @endcan

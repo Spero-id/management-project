@@ -131,7 +131,7 @@
 
                         @endphp
                         <x-installation.form :route="$installationRoute" :quotation="$quotation" :installation="$installation" :installation-categories="$installationCategories"
-                            :accommodationCategory="$accommodationCategory" :accommodationItems="$quotation->accommodationItems" />
+                            :accommodationCategory="$accommodationCategory" :accommodationItems="$quotation->accommodationItems" :total-jasa-setting="$totalJasaSetting" />
                     </div>
                 </div>
             </div>

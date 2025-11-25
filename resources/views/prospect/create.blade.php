@@ -125,7 +125,7 @@
                                     
                             @endphp
                             <x-installation.form :route="$installationRoute" :quotation="$quotation" :installation="$installation" :installation-categories="$installationCategories"
-                                :accommodationCategory="$accommodationCategory" :accommodationItems="$quotation->accommodationItems" type="create" />
+                                :accommodationCategory="$accommodationCategory" :accommodationItems="$quotation->accommodationItems" type="create" :total-jasa-setting="$totalJasaSetting" />
                         </div>
                     @else
                         <div class="alert  alert-important alert-info" role="alert">

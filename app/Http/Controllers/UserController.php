@@ -301,6 +301,39 @@ class UserController extends Controller
     }
 
     /**
+     * Upload additional document to user's sertifikat array.
+     */
+    public function uploadDocument(Request $request, string $id): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'document' => 'required|file|mimes:jpeg,png,jpg,pdf|max:2048',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $uniqueFilename = $this->generateUniqueFilename($file, 'documents/sertifikat');
+            $filePath = $file->storeAs('documents/sertifikat', $uniqueFilename, 'public');
+
+            // Get existing sertifikat array or initialize empty array
+            $sertifikatPaths = $user->sertifikat ?? [];
+            
+            // Add new document to array
+            $sertifikatPaths[] = $filePath;
+
+            // Update user with new sertifikat array
+            $user->update([
+                'sertifikat' => $sertifikatPaths,
+            ]);
+
+            return redirect()->route('user.show', $id)->with('success', 'Document uploaded successfully!');
+        }
+
+        return redirect()->route('user.show', $id)->with('error', 'Failed to upload document.');
+    }
+
+    /**
      * Generate nomor karyawan berdasarkan divisi
      */
     private function generateNoKaryawan($divisionName)

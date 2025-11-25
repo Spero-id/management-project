@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\ProjectOrder;
+use App\Models\ProjectOrderItem;
 use App\Models\Prospect;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -57,8 +59,10 @@ class SalesOrderController extends Controller
         ]);
 
         try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
 
             $prospect = Prospect::findOrFail($request->input('prospect_id'));
+            // dd();
             $prospect->update(['is_converted_to_project' => true]);
 
             $project = Project::create([
@@ -69,11 +73,6 @@ class SalesOrderController extends Controller
                 'company' => $prospect->company,
                 'company_identity' => $prospect->company_identity,
                 'project_name' => $request->input('project_name'),
-                // 'target_from_month' => $prospect->target_from_month,
-                // 'target_to_month' => $prospect->target_to_month,
-                // 'target_from_year' => $prospect->target_from_year,
-                // 'target_to_year' => $prospect->target_to_year,
-                // 'status_id' => $prospect->status_id,
                 'description' => '',
                 'status' => 'on-going',
                 'percentage' => 0,
@@ -97,7 +96,21 @@ class SalesOrderController extends Controller
                 $minuteOfMeeting->save();
             }
 
-            // tambahkan project client contacts
+            $projectOrder = ProjectOrder::create([
+                'project_id' => $project->id,
+                'is_confirmed' => false,
+            ]);
+
+            foreach ($prospect->quotations[0]->items as $item) {
+                ProjectOrderItem::create([
+                    'project_order_id' => $projectOrder->id,
+                    'project_id' => $project->id,
+                    'product_id' => $item->product_id,
+                    'quotation_item_id' => $item->id,
+                    'required_qty' => $item->quantity,
+                ]);
+            }
+
             foreach ($request->input('contacts') as $contactData) {
                 $project->clientPersons()->create([
                     'name' => $contactData['name'],
@@ -107,8 +120,15 @@ class SalesOrderController extends Controller
                 ]);
             }
 
+            \Illuminate\Support\Facades\DB::commit();
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'An error occurred while processing your request: '.$e->getMessage()])->withInput();
+            \Illuminate\Support\Facades\DB::rollBack();
+
+            dd($e);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'An error occurred while processing your request: '.$e->getMessage()])
+                ->withInput();
         }
 
         // Validation passed - return success response

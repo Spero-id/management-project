@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->date('tanggal');
             $table->string('no_peminjaman')->unique();
-            $table->enum('keperluan', ['POC', 'DEMO', 'BACKUP']);
+            $table->string('keperluan');
             $table->string('penanggung_jawab');
             $table->enum('status', ['borrowed', 'returned','outstanding'])->default('borrowed');
             $table->date("tanggal_pengembalian")->nullable();

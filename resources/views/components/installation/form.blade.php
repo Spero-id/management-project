@@ -6,6 +6,7 @@
     'accommodationCategory' => [],
     'accommodationItems' => [],
     'type' => 'edit',
+    'totalJasaSetting' => 0,
 ])
 
 <form action="{{ $route }}" method="POST" id="installationForm">
@@ -42,7 +43,7 @@
                 <div class="input-group">
                     <input type="number" name="installation_percentage" id="installationPercentage"
                         class="form-control" min="0" max="100" step="0.1"
-                        value="{{ old('installation_percentage', $quotation->installation_percentage ?? 0) }}">
+                        value="{{ old('installation_percentage', $quotation->installation_percentage ?? $totalJasaSetting) }}">
                     <span class="input-group-text">%</span>
                 </div>
                 @error('installation_percentage')

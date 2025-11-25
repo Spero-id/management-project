@@ -1,0 +1,544 @@
+@extends('layouts.app')
+
+@push('styles')
+    <style>
+        /* Project tabs styles */
+        .project-tabs {
+            display: flex;
+            gap: 10px;
+            padding: 12px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .project-tabs::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .project-tabs::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .project-tabs::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .project-tabs::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
+
+        .project-tab {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 28px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 50px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-decoration: none !important;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+            min-width: fit-content;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .project-tab:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+            color: #475569;
+            text-decoration: none !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .project-tab.active {
+            background: var(--tblr-primary);
+            border-color: var(--tblr-primary);
+            color: white;
+            text-decoration: none !important;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
+        }
+
+        .project-tab.active:hover {
+            background: var(--tblr-primary-darken);
+            border-color: var(--tblr-primary-darken);
+            color: white;
+            text-decoration: none !important;
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Content area */
+        .content-area {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            height: calc(100vh - 200px);
+            min-height: 500px;
+            overflow-y: auto;
+        }
+
+        .content-area h5 {
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #111827;
+            font-size: 1.2rem;
+        }
+
+        /* Custom styles for the new table design */
+        .card-table {
+            margin-bottom: 0;
+            font-size: 0.8rem;
+        }
+
+        .card-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 8px 10px;
+        }
+
+        .card-table td {
+            padding: 8px 10px;
+        }
+
+        .table-selectable .table-selectable-check:checked+.table-selectable-check-indicator {
+            background-color: var(--tblr-primary);
+            border-color: var(--tblr-primary);
+        }
+
+        .icon-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .badge {
+            font-size: 0.65em;
+        }
+
+        .dropdown-toggle::after {
+            margin-left: 0.5em;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 4rem;
+            color: #d1d5db;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h5 {
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #9ca3af;
+        }
+    </style>
+@endpush
+
+@section('header')
+    <div class="row g-2 align-items-center">
+        <div class="col">
+            <!-- Page pre-title -->
+            <div class="page-pretitle">Finance</div>
+            <h2 class="page-title">Items to order</h2>
+        </div>
+        <!-- Page title actions -->
+        <div class="col-auto ms-auto d-print-none">
+            <!-- PO Upload Modal -->
+            <div class="modal modal-blur fade" id="modal-po-upload" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="po-modal-title">Manage purchase order</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="po-upload-form" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" id="po-order-item-id">
+                            <div class="modal-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Brand</label>
+                                        <input type="text" class="form-control" id="po-brand" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Model/Type</label>
+                                        <input type="text" class="form-control" id="po-model" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Required quantity</label>
+                                        <input type="number" class="form-control" id="po-required" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Confirmed quantity</label>
+                                        <input type="number" class="form-control" id="po-confirmed" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Status</label>
+                                        <input type="text" class="form-control" id="po-status" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label required">PO number</label>
+                                        <input type="text" class="form-control" id="po-number" name="po_number"
+                                            placeholder="Enter PO number" required>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label" id="po-file-label">Upload PO file</label>
+                                        <input type="file" class="form-control" id="po-file" name="po_file"
+                                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                        <small class="text-muted">Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max:
+                                            5MB)</small>
+                                        <div id="current-po-file" class="mt-2" style="display: none;">
+                                            <span class="text-muted">Current file: </span>
+                                            <a href="#" id="po-file-link" target="_blank" class="text-primary">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                    class="icon">
+                                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                                    <path
+                                                        d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                                                </svg>
+                                                <span id="po-file-name"></span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary" id="save-po-upload">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" class="icon">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M5 12l5 5l10 -10" />
+                                    </svg>
+                                    Save PO
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('content')
+
+    <!-- Flash Messages -->
+    @if (session('success'))
+        <div class="alert alert-important alert-success alert-dismissible fade show" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-check me-2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M5 12l5 5l10 -10" />
+            </svg>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-important alert-danger alert-dismissible fade show" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-alert-circle me-2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                <path d="M12 8v4" />
+                <path d="M12 16h.01" />
+            </svg>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Project Tabs at the Top -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="project-tabs">
+                @forelse($projects as $project)
+                    <a href="javascript:void(0)" 
+                       class="project-tab project-item"
+                       data-project-id="{{ $project->id }}">
+                        {{ $project->project_name }}
+                    </a>
+                @empty
+                    <div class="text-center w-100 py-4">
+                        <p class="text-muted">No projects found</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area: Items to Order Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="content-area">
+                @forelse($projects as $index => $project)
+                    <div class="project-content" id="project-content-{{ $project->id }}" style="{{ $index === 0 ? '' : 'display: none;' }}">
+                        <h5>Items to order - {{ $project->project_name }}</h5>
+                        
+                        @if($project->orderItems->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-vcenter card-table">
+                                    <thead>
+                                        <tr>
+                                            <th rowspan="2" class="text-center">NO</th>
+                                            <th rowspan="2">Description</th>
+                                            <th rowspan="2" class="text-center">BRAND</th>
+                                            <th rowspan="2" class="text-center">TYPE</th>
+                                            <th rowspan="2" class="text-center">QTY</th>
+                                            <th rowspan="2" class="text-center">UNIT</th>
+                                            <th rowspan="2" class="text-center">PRICE</th>
+                                            <th rowspan="2" class="text-center">TOTAL PRICE</th>
+                                            <th colspan="2" class="text-center">HARGA DASAR</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center">HARGA DASAR</th>
+                                            <th class="text-center">TOTAL HARGA DASAR</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $no = 1;
+                                            $total = 0;
+                                            $totalDasar = 0;
+                                        @endphp
+                                        
+                                        @foreach($project->orderItems as $item)
+                                            @php
+                                                $product = $item->product;
+                                                $quotationItem = $item->quotationItem;
+                                                $qty = $item->required_qty;
+                                                $unitPrice = $quotationItem->unit_price ?? $product->price ?? 0;
+                                                $totalPrice = $qty * $unitPrice;
+                                                
+                                                // Calculate base price (assuming 48% discount from price)
+                                                $hargaDasar = $unitPrice * 0.52;
+                                                $totalHargaDasar = $qty * $hargaDasar;
+                                                
+                                                $total += $totalPrice;
+                                                $totalDasar += $totalHargaDasar;
+                                            @endphp
+                                            
+                                            <tr>
+                                                <td class="text-center">{{ $no++ }}</td>
+                                                <td>{{ $product->description ?? $product->name }}</td>
+                                                <td class="text-center">{{ $product->brand ?? '-' }}</td>
+                                                <td>{{ $product->type ?? '-' }}</td>
+                                                <td class="text-center">{{ $qty }}</td>
+                                                <td class="text-center">Unit</td>
+                                                <td class="text-end">Rp {{ number_format($unitPrice, 0, ',', '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($totalPrice, 0, ',', '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($hargaDasar, 0, ',', '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($totalHargaDasar, 0, ',', '.') }}</td>
+                                            </tr>
+                                        @endforeach
+                                        
+                                        <tr class="table-light">
+                                            <td colspan="6"></td>
+                                            <td class="text-end"><strong>TOTAL</strong></td>
+                                            <td class="text-end"><strong>Rp {{ number_format($total, 0, ',', '.') }}</strong></td>
+                                            <td class="text-end"><strong>TOTAL</strong></td>
+                                            <td class="text-end"><strong>Rp {{ number_format($totalDasar, 0, ',', '.') }}</strong></td>
+                                        </tr>
+                                        <tr class="table-light">
+                                            <td colspan="8"></td>
+                                            <td class="text-end"><strong>Ppn</strong></td>
+                                            <td class="text-end"><strong>Rp {{ number_format($totalDasar * 0.11, 0, ',', '.') }}</strong></td>
+                                        </tr>
+                                        <tr class="table-light">
+                                            <td colspan="7"></td>
+                                            <td class="text-end"><strong>GRAND TOTAL</strong></td>
+                                            <td class="text-end"><strong>GRAND TOTAL</strong></td>
+                                            <td class="text-end"><strong>Rp {{ number_format($totalDasar * 1.11, 0, ',', '.') }}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                </div>
+                                <h5>No items to order</h5>
+                                <p>This project doesn't have any items that need to be ordered yet.</p>
+                            </div>
+                        @endif
+                    </div>
+                @empty
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 7v11m0 0a2 2 0 002 2h14a2 2 0 002-2V7M3 18l3-3m12 3l3-3M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"></path>
+                            </svg>
+                        </div>
+                        <h5>No projects available</h5>
+                        <p>There are no projects with items to order at this time.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Set first project tab as active
+            $('.project-tab').first().addClass('active');
+
+            // Handle project tab click
+            $('.project-tab').on('click', function() {
+                const projectId = $(this).data('project-id');
+                
+                // Update active state in tabs
+                $('.project-tab').removeClass('active');
+                $(this).addClass('active');
+
+                // Hide all project contents
+                $('.project-content').hide();
+
+                // Show selected project content
+                $('#project-content-' + projectId).show();
+            });
+
+            // Handle manage PO button
+            $(document).on('click', '.btn-manage-po', function() {
+                const itemId = $(this).data('id');
+                const brand = $(this).data('brand');
+                const model = $(this).data('model');
+                const required = $(this).data('required');
+                const confirmed = $(this).data('confirmed');
+                const status = $(this).data('status');
+                const poNumber = $(this).data('po-number') || '';
+                const poFile = $(this).data('po-file') || '';
+                const poFileName = $(this).data('po-filename') || '';
+
+                // Populate modal
+                $('#po-order-item-id').val(itemId);
+                $('#po-brand').val(brand);
+                $('#po-model').val(model);
+                $('#po-required').val(required);
+                $('#po-confirmed').val(confirmed);
+                $('#po-status').val(status);
+                $('#po-number').val(poNumber);
+
+                // Update modal title and file input based on whether PO exists
+                if (poNumber && poFile) {
+                    $('#po-modal-title').text('Update purchase order');
+                    $('#po-file-label').html(
+                        'Upload new PO file <span class="text-muted">(optional)</span>');
+                    $('#po-file').removeAttr('required');
+                    $('#current-po-file').show();
+                    $('#po-file-link').attr('href', '/storage/' + poFile);
+                    $('#po-file-name').text(poFileName || poNumber);
+                } else {
+                    $('#po-modal-title').text('Add purchase order');
+                    $('#po-file-label').html('Upload PO file <span class="text-danger">*</span>');
+                    $('#po-file').attr('required', 'required');
+                    $('#current-po-file').hide();
+                }
+
+                $('#po-file').val('');
+
+                // Show modal
+                $('#modal-po-upload').modal('show');
+            });
+
+            // Handle PO upload form submission
+            $('#po-upload-form').on('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const itemId = $('#po-order-item-id').val();
+                formData.append('order_item_id', itemId);
+
+                const submitBtn = $('#save-po-upload');
+                const originalBtnText = submitBtn.html();
+
+                submitBtn.prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...'
+                );
+
+                $.ajax({
+                    url: '{{ route('finance-project-order.upload-po') }}',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            $('#modal-po-upload').modal('hide');
+
+                            const alertHtml = `
+                                <div class="alert alert-important alert-success alert-dismissible fade show" role="alert">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check me-2">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                        <path d="M5 12l5 5l10 -10" />
+                                    </svg>
+                                    ${response.message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            `;
+                            $('.row').first().before(alertHtml);
+
+                            $('html, body').animate({
+                                scrollTop: 0
+                            }, 300);
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'An error occurred while saving PO';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        alert(errorMessage);
+                    },
+                    complete: function() {
+                        submitBtn.prop('disabled', false).html(originalBtnText);
+                    }
+                });
+            });
+        });
+    </script>
+@endpush

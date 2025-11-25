@@ -7,6 +7,7 @@ use App\Models\Installation;
 use App\Models\Prospect;
 use App\Models\ProspectStatus;
 use App\Models\Quotation;
+use App\Models\Setting;
 use App\Models\User;
 use DataTables;
 use Illuminate\Http\Request;
@@ -109,8 +110,9 @@ class ProspectController extends Controller
                 'proportional' => $i->proportional ?? null,
             ];
         });
+        $totalJasaSetting = Setting::where('setting_name', 'total_jasa')->first()->setting_value ?? '0';
 
-        return view('prospect.create', compact('salesUser', 'prospect', 'accommodationCategory', 'quotation', 'installationCategories', 'prospectStatuses'));
+        return view('prospect.create', compact('salesUser', 'prospect', 'accommodationCategory', 'quotation', 'installationCategories', 'prospectStatuses', 'totalJasaSetting'));
     }
 
     /**
@@ -223,8 +225,9 @@ class ProspectController extends Controller
                 'proportional' => $i->proportional ?? null,
             ];
         });
+        $totalJasaSetting = Setting::where('setting_name', 'total_jasa')->first()->setting_value ?? '0';
 
-        return view('prospect.edit', compact('salesUser', 'prospect', 'accommodationCategory', 'quotation', 'installationCategories'));
+        return view('prospect.edit', compact('salesUser', 'prospect', 'accommodationCategory', 'quotation', 'installationCategories', 'totalJasaSetting'));
     }
 
     /**

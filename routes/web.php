@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/edit', [App\Http\Controllers\UserController::class, 'edit'])->name('edit');
         Route::put('/{id}', [App\Http\Controllers\UserController::class, 'update'])->name('update');
         Route::delete('/{id}', [App\Http\Controllers\UserController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/upload-document', [App\Http\Controllers\UserController::class, 'uploadDocument'])->name('upload-document');
     });
 
     Route::group(['prefix' => 'sales-order', 'as' => 'sales-order.'], function () {
@@ -143,10 +144,17 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => 'setting', 'as' => 'setting.'], function () {
         Route::get('/', [App\Http\Controllers\SettingController::class, 'index'])->name('index');
+        Route::get('/sales-target', [App\Http\Controllers\SalesTargetController::class, 'index'])->name('sales-target');
+    });
+
+    Route::group(['prefix' => 'sales-target', 'as' => 'sales-target.'], function () {
+        Route::post('/', [App\Http\Controllers\SalesTargetController::class, 'store'])->name('store');
+        Route::put('/{salesTarget}', [App\Http\Controllers\SalesTargetController::class, 'update'])->name('update');
     });
 
     Route::group(['prefix' => 'settings', 'as' => 'settings.'], function () {
         Route::put('/currency-exchange', [App\Http\Controllers\SettingController::class, 'updateCurrencyExchange'])->name('currency-exchange.update');
+        Route::put('/total-jasa', [App\Http\Controllers\SettingController::class, 'updateTotalJasa'])->name('total-jasa.update');
     });
 
     Route::group(['prefix' => 'project-weekly-meetings', 'as' => 'project-weekly-meetings.'], function () {
@@ -205,6 +213,27 @@ Route::middleware('auth')->group(function () {
         Route::get('/datatable', [App\Http\Controllers\ProjectOrderController::class, 'datatable'])->name('datatable');
         Route::get('/delivery-datatable', [App\Http\Controllers\ProjectOrderController::class, 'deliveryDatatable'])->name('delivery-datatable');
         Route::post('/store', [App\Http\Controllers\ProjectOrderController::class, 'store'])->name('store');
+        Route::post('/confirm/{projectId}', [App\Http\Controllers\ProjectOrderController::class, 'confirm'])->name('confirm');
+        Route::post('/upload-po-logistics', [App\Http\Controllers\ProjectOrderController::class, 'uploadPOLogistics'])->name('upload-po-logistics');
+    });
+
+    Route::group(['prefix' => 'finance/project-order', 'as' => 'finance-project-order.'], function () {
+        Route::get('/', [App\Http\Controllers\ProjectOrderController::class, 'FinanceIndex'])->name('index');
+        Route::get('/datatable', [App\Http\Controllers\ProjectOrderController::class, 'financeDatatable'])->name('datatable');
+        Route::post('/upload-po', [App\Http\Controllers\ProjectOrderController::class, 'uploadPO'])->name('upload-po');
+    });
+
+    Route::group(['prefix' => 'delivery-order', 'as' => 'delivery-order.'], function () {
+        Route::get('/', [App\Http\Controllers\DeliveryOrderController::class, 'index'])->name('index');
+        Route::get('/datatable', [App\Http\Controllers\DeliveryOrderController::class, 'datatable'])->name('datatable');
+        Route::post('/', [App\Http\Controllers\DeliveryOrderController::class, 'store'])->name('store');
+        Route::get('/project-items/{projectId}', [App\Http\Controllers\DeliveryOrderController::class, 'getProjectItems'])->name('project-items');
+        Route::get('/{id}', [App\Http\Controllers\DeliveryOrderController::class, 'show'])->name('show');
+    });
+
+    // perhitungan project
+    Route::group(['prefix' => 'perhitungan-project', 'as' => 'perhitungan-project.'], function () {
+        Route::get('/', [App\Http\Controllers\PerhitunganProjectController::class, 'index'])->name('index');
     });
 });
 
