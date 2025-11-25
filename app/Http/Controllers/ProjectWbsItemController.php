@@ -21,9 +21,9 @@ class ProjectWbsItemController extends Controller
             'item_type' => 'required|in:category,task',
             'parent_id' => 'nullable|integer|exists:project_wbs_items,id',
             'note' => 'nullable|string',
-            'type' => 'required|string|max:255',
-            'from' => 'required|string|max:255',
-            'to' => 'required|string|max:255',
+            'type' => 'nullable|string|max:255',
+            'from' => 'nullable|string|max:255',
+            'to' => 'nullable|string|max:255',
         ]);
 
         $item = ProjectWBSItem::create([
@@ -31,9 +31,9 @@ class ProjectWbsItemController extends Controller
             'parent_id' => $validated['parent_id'] ?? null,
             'title' => $validated['title'],
             'item_type' => $validated['item_type'],
-            'type' => $validated['type'],
-            'from' => $validated['from'],
-            'to' => $validated['to'],
+            'type' => $validated['type'] ?? null,
+            'from' => $validated['from'] ?? null,
+            'to' => $validated['to'] ?? null,
             'is_done' => false,
             'note' => $validated['note'] ?? null,
         ]);

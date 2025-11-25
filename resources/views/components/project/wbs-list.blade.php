@@ -52,8 +52,6 @@
                     <button class="btn btn-outline-primary w-100" type="submit">Create Category</button>
                 </div>
             </div>
-
-          
         </form>
     </div>
 

@@ -83,13 +83,15 @@
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label for="productName" class="form-label">Name</label>
-                                                    <input type="text" class="form-control" id="productName" name="name" required>
+                                                    <input type="text" class="form-control" id="productName" name="name"
+                                                        required>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label for="productBrand" class="form-label">Brand</label>
-                                                    <select class="form-select" id="productBrand" name="brand" required></select>
+                                                    <select class="form-select" id="productBrand" name="brand"
+                                                        required></select>
                                                 </div>
                                             </div>
                                         </div>
@@ -97,13 +99,16 @@
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label for="productType" class="form-label">Type</label>
-                                                    <select class="form-select" id="productType" name="type" required></select>
+                                                    <select class="form-select" id="productType" name="type"
+                                                        required></select>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label for="productDistributorOrigin" class="form-label">Distributor Origin</label>
-                                                    <input type="text" class="form-control" id="productDistributorOrigin" name="distributor_origin" required>
+                                                    <label for="productDistributorOrigin" class="form-label">Distributor
+                                                        Origin</label>
+                                                    <input type="text" class="form-control" id="productDistributorOrigin"
+                                                        name="distributor_origin" required>
                                                 </div>
                                             </div>
                                         </div>
@@ -113,17 +118,20 @@
                                                     <label for="productPrice" class="form-label">Price</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">Rp</span>
-                                                        <input type="text" class="form-control rupiah-format" id="productPrice" name="price_display" required>
+                                                        <input type="text" class="form-control rupiah-format"
+                                                            id="productPrice" name="price_display" required>
                                                         <input type="hidden" id="productPriceHidden" name="price">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label for="productDollarBasePrice" class="form-label">Dollar Base Price</label>
+                                                    <label for="productDollarBasePrice" class="form-label">Dollar Base
+                                                        Price</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">$</span>
-                                                        <input type="number" step="0.01" class="form-control" id="productDollarBasePrice" name="dollar_base_price" required>
+                                                        <input type="number" step="0.01" class="form-control"
+                                                            id="productDollarBasePrice" name="dollar_base_price" required>
                                                     </div>
                                                 </div>
                                             </div>
@@ -132,16 +140,21 @@
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label for="productWeight" class="form-label">Weight</label>
-                                                    <input type="text" class="form-control" id="productWeight" name="weight" required>
+                                                    <input type="text" class="form-control" id="productWeight"
+                                                        name="weight" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label for="productShippingFee" class="form-label">Shipping Fee (Air)</label>
+                                                    <label for="productShippingFee" class="form-label">Shipping Fee
+                                                        (Air)</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">Rp</span>
-                                                        <input type="text" class="form-control rupiah-format" id="productShippingFee" name="shipping_fee_by_air_display" required>
-                                                        <input type="hidden" id="productShippingFeeHidden" name="shipping_fee_by_air">
+                                                        <input type="text" class="form-control rupiah-format"
+                                                            id="productShippingFee" name="shipping_fee_by_air_display"
+                                                            required>
+                                                        <input type="hidden" id="productShippingFeeHidden"
+                                                            name="shipping_fee_by_air">
                                                     </div>
                                                 </div>
                                             </div>
@@ -294,7 +307,8 @@
                                                 required>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="editProductDollarBasePrice" class="form-label">Dollar Base Price</label>
+                                            <label for="editProductDollarBasePrice" class="form-label">Dollar Base
+                                                Price</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">$</span>
                                                 <input type="number" step="0.01" class="form-control"
@@ -459,7 +473,8 @@
                             </div>
 
                             <div class="d-flex align-items-center" style="min-width:220px;">
-                                <label for="filterDistributor" class="form-label me-2 mb-0 d-none d-sm-inline">Distributor</label>
+                                <label for="filterDistributor"
+                                    class="form-label me-2 mb-0 d-none d-sm-inline">Distributor</label>
                                 <select id="filterDistributor" class="form-select form-select-sm">
                                     <option value="">All Distributors</option>
                                 </select>
@@ -467,7 +482,8 @@
 
                             <div class="d-flex align-items-center" style="min-width:220px;">
                                 <label for="customSearch" class="form-label me-2 mb-0 d-none d-sm-inline">Search</label>
-                                <input type="text" id="customSearch" class="form-control form-control-sm" placeholder="Search product..." aria-label="Search Product">
+                                <input type="text" id="customSearch" class="form-control form-control-sm"
+                                    placeholder="Search product..." aria-label="Search Product">
                             </div>
                         </div>
 
@@ -580,37 +596,33 @@
                         "data": "weight"
                     },
                     @can('VIEW_ALL_INFO_PRODUCT')
-                    {
-                        "data": "dollar_base_price"
-                    },
-                    {
-                        "data": null,
-                        "render": function(data) {
-                            const hargaDasarRupiahLuarNegeri =
-                                {{ $currencyExchangeRateSettingValue }} * data
-                                .dollar_base_price;
-                            return formatRupiah(hargaDasarRupiahLuarNegeri);
-                        }
-                    },
-                    {
-                        "data": null,
-                        "render": function(data) {
-                            const hargaDasarRupiahLuarNegeri =
-                                {{ $currencyExchangeRateSettingValue }} * data
-                                .dollar_base_price;
-                            const hargaDasarRupiahJakarta = hargaDasarRupiahLuarNegeri + (data
-                                .shipping_fee_by_air * data.weight);
-                            return formatRupiah(hargaDasarRupiahJakarta);
-                        }
-                    },
-                    {
-                        "data": "shipping_fee_by_air",
-                        "render": function(data) {
-                            return formatRupiah(data);
-                        }
-                    },
-                    @endcan
-                    {
+                        {
+                            "data": "dollar_base_price"
+                        }, {
+                            "data": null,
+                            "render": function(data) {
+                                const hargaDasarRupiahLuarNegeri =
+                                    {{ $currencyExchangeRateSettingValue }} * data
+                                    .dollar_base_price;
+                                return formatRupiah(hargaDasarRupiahLuarNegeri);
+                            }
+                        }, {
+                            "data": null,
+                            "render": function(data) {
+                                const hargaDasarRupiahLuarNegeri =
+                                    {{ $currencyExchangeRateSettingValue }} * data
+                                    .dollar_base_price;
+                                const hargaDasarRupiahJakarta = hargaDasarRupiahLuarNegeri + (data
+                                    .shipping_fee_by_air * data.weight);
+                                return formatRupiah(hargaDasarRupiahJakarta);
+                            }
+                        }, {
+                            "data": "shipping_fee_by_air",
+                            "render": function(data) {
+                                return formatRupiah(data);
+                            }
+                        },
+                    @endcan {
                         "data": "description"
                     },
                     {
@@ -909,7 +921,7 @@
                 var productWeight = $(this).data('product-weight');
                 var productDollarBasePrice = $(this).data('product-dollar-base-price');
                 var productShippingFee = $(this).data('product-shipping-fee');
-                
+
                 $('#editProductName').val(productName);
                 $('#editProductDescription').val(productDescription);
                 $('#editProductPrice').val(formatRupiahInput(productPrice));
