@@ -59,41 +59,45 @@
                             <h5 class="modal-title" id="po-modal-title">Manage purchase order</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form id="po-upload-form" enctype="multipart/form-data">
+                        <form id="po-upload-form" method="POST" action="{{ route('finance-project-order.upload-po') }}" enctype="multipart/form-data">
                             @csrf
-                            <input type="hidden" id="po-order-item-id">
+                            <input type="hidden" id="po-order-item-id" name="order_item_id">
                             <div class="modal-body">
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Brand</label>
-                                        <input type="text" class="form-control" id="po-brand" readonly>
+                                        <input type="text" class="form-control" id="po-brand" disabled>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Model/Type</label>
-                                        <input type="text" class="form-control" id="po-model" readonly>
+                                        <input type="text" class="form-control" id="po-model" disabled>
                                     </div>
                                 </div>
 
                                 <div class="row mb-3">
                                     <div class="col-md-4">
                                         <label class="form-label">Required quantity</label>
-                                        <input type="number" class="form-control" id="po-required" readonly>
+                                        <input type="number" class="form-control" id="po-required" disabled>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Confirmed quantity</label>
-                                        <input type="number" class="form-control" id="po-confirmed" readonly>
+                                        <input type="number" class="form-control" id="po-confirmed" disabled>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label">Status</label>
-                                        <input type="text" class="form-control" id="po-status" readonly>
+                                        <label class="form-label">To order</label>
+                                        <input type="number" class="form-control" id="po-to-order" disabled>
                                     </div>
                                 </div>
 
                                 <div class="row mb-3">
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <label class="form-label required">PO number</label>
                                         <input type="text" class="form-control" id="po-number" name="po_number"
                                             placeholder="Enter PO number" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label required">Estimated arrival date</label>
+                                        <input type="date" class="form-control" id="po-eta" name="estimated_arrival_date" required>
                                     </div>
                                 </div>
 
@@ -131,7 +135,7 @@
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                         <path d="M5 12l5 5l10 -10" />
                                     </svg>
-                                    Save PO
+                                    <span id="save-po-text">Save PO</span>
                                 </button>
                             </div>
                         </form>
@@ -143,35 +147,6 @@
 @endsection
 
 @section('content')
-    <!-- Flash Messages -->
-    @if (session('success'))
-        <div class="alert  alert-important alert-success alert-dismissible fade show" role="alert">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-check me-2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M5 12l5 5l10 -10" />
-            </svg>
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert  alert-important alert-danger alert-dismissible fade show" role="alert">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-alert-circle me-2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-                <path d="M12 8v4" />
-                <path d="M12 16h.01" />
-            </svg>
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card">
@@ -219,7 +194,6 @@
                                                 'label' => 'To Order',
                                             ],
                                             ['data' => 'unit', 'name' => 'unit', 'label' => 'Unit'],
-                                            ['data' => 'status', 'name' => 'status', 'label' => 'Status'],
                                             ['data' => 'ead', 'name' => 'ead', 'label' => 'ETA'],
                                             [
                                                 'data' => 'action',
@@ -267,6 +241,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(document).ready(function() {
@@ -300,10 +275,11 @@
                 const model = $(this).data('model');
                 const required = $(this).data('required');
                 const confirmed = $(this).data('confirmed');
-                const status = $(this).data('status');
+                const toOrder = $(this).data('to-order');
                 const poNumber = $(this).data('po-number') || '';
                 const poFile = $(this).data('po-file') || '';
                 const poFileName = $(this).data('po-filename') || '';
+                const eta = $(this).data('eta') || '';
 
                 // Populate modal
                 $('#po-order-item-id').val(itemId);
@@ -311,20 +287,27 @@
                 $('#po-model').val(model);
                 $('#po-required').val(required);
                 $('#po-confirmed').val(confirmed);
-                $('#po-status').val(status);
+                $('#po-to-order').val(toOrder);
                 $('#po-number').val(poNumber);
+                $('#po-eta').val(eta);
 
                 // Update modal title and file input based on whether PO exists
-                if (poNumber && poFile) {
-                    $('#po-modal-title').text('Update purchase order');
+                if (poNumber) {
+                    $('#po-modal-title').text('Edit purchase order');
+                    $('#save-po-text').text('Update PO');
                     $('#po-file-label').html(
                         'Upload new PO file <span class="text-muted">(optional)</span>');
                     $('#po-file').removeAttr('required');
-                    $('#current-po-file').show();
-                    $('#po-file-link').attr('href', '/storage/' + poFile);
-                    $('#po-file-name').text(poFileName || poNumber);
+                    if (poFile) {
+                        $('#current-po-file').show();
+                        $('#po-file-link').attr('href', '/storage/' + poFile);
+                        $('#po-file-name').text(poFileName || poNumber);
+                    } else {
+                        $('#current-po-file').hide();
+                    }
                 } else {
                     $('#po-modal-title').text('Add purchase order');
+                    $('#save-po-text').text('Save PO');
                     $('#po-file-label').html('Upload PO file <span class="text-danger">*</span>');
                     $('#po-file').attr('required', 'required');
                     $('#current-po-file').hide();
@@ -336,67 +319,68 @@
                 $('#modal-po-upload').modal('show');
             });
 
-            // Handle PO upload form submission
+            // Handle form submission with AJAX
             $('#po-upload-form').on('submit', function(e) {
                 e.preventDefault();
 
                 const formData = new FormData(this);
-                const itemId = $('#po-order-item-id').val();
-                formData.append('order_item_id', itemId);
-
                 const submitBtn = $('#save-po-upload');
-                const originalBtnText = submitBtn.html();
+                const originalText = $('#save-po-text').text();
 
-                submitBtn.prop('disabled', true).html(
-                    '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...'
-                );
+                // Disable submit button
+                submitBtn.prop('disabled', true);
+                $('#save-po-text').text('Saving...');
 
                 $.ajax({
-                    url: '{{ route('finance-project-order.upload-po') }}',
+                    url: $(this).attr('action'),
                     type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        if (response.success) {
-                            $('#modal-po-upload').modal('hide');
+                        // Close modal
+                        $('#modal-po-upload').modal('hide');
 
-                            const alertHtml = `
-                                <div class="alert alert-important alert-success alert-dismissible fade show" role="alert">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check me-2">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                        <path d="M5 12l5 5l10 -10" />
-                                    </svg>
-                                    ${response.message}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            `;
-                            $('.card').first().before(alertHtml);
+                        // Show success alert
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message || 'Purchase order has been saved successfully',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
 
-                            // Reload current datatable
-                            const activeTable = $('.tab-pane.active').find(
-                                '[id^="finance-project-order-table-"]');
-                            if (activeTable.length) {
-                                const tableId = activeTable.attr('id');
-                                if (datatables[tableId]) {
-                                    datatables[tableId].ajax.reload(null, false);
-                                }
+                        // Reset form
+                        $('#po-upload-form')[0].reset();
+
+                        // Reload all datatables
+                        Object.keys(datatables).forEach(function(tableId) {
+                            if (datatables[tableId]) {
+                                datatables[tableId].ajax.reload(null, false);
                             }
-
-                            $('html, body').animate({
-                                scrollTop: 0
-                            }, 300);
-                        }
+                        });
                     },
                     error: function(xhr) {
-                        let errorMessage = 'An error occurred while saving PO';
+                        let errorMessage = 'An error occurred while saving the purchase order';
+
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
+                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            const errors = Object.values(xhr.responseJSON.errors).flat();
+                            errorMessage = errors.join('<br>');
                         }
-                        alert(errorMessage);
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            html: errorMessage,
+                            confirmButtonText: 'OK'
+                        });
                     },
                     complete: function() {
-                        submitBtn.prop('disabled', false).html(originalBtnText);
+                        // Re-enable submit button
+                        submitBtn.prop('disabled', false);
+                        $('#save-po-text').text(originalText);
                     }
                 });
             });

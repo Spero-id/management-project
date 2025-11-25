@@ -129,11 +129,13 @@ class ProjectOrderController extends Controller
                         'product_id' => $item->product_id,
                         'brand' => $item->product->brand ?? '-',
                         'model_type' => $item->product->type ?? $item->product->name ?? '-',
+                        'qty_needed' => $item->quantity,
+                        'qty_ready' => $currentStockUsed,
+                        'remaining_qty' => max(0, $remainingQty),
                         'qty' => $item->quantity,
                         'unit' => 'unit',
                         'stok' => $item->product->stock->stock_quantity ?? 0,
                         'stock_used_so_far' => $currentStockUsed,
-                        'remaining_qty' => max(0, $remainingQty), // Ensure non-negative
                         'existing_ead' => $existingOrder && $existingOrder->estimated_arrival_date ? $existingOrder->estimated_arrival_date->format('Y-m-d') : '',
                         'ead' => '-',
                         'status' => $status,
@@ -190,9 +192,11 @@ class ProjectOrderController extends Controller
                         data-model="'.$row['model_type'].'" 
                         data-product="'.htmlspecialchars($productName).'" 
                         data-stock="'.$row['stok'].'" 
-                        data-qty="'.$row['remaining_qty'].'" 
+                        data-qty="'.$row['qty_needed'].'" 
+                        data-qty-ready="'.$row['qty_ready'].'" 
+                        data-qty-remaining="'.$row['remaining_qty'].'" 
                         data-stock-used="'.$row['stock_used_so_far'].'" 
-                        data-ead="'.$row['existing_ead'].'"
+                        data-ead="'.$row['existing_ead'].'" 
                         data-is-complete="'.($isComplete ? '1' : '0').'">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
                             '.$buttonIcon.'
@@ -298,12 +302,12 @@ class ProjectOrderController extends Controller
             })
             ->addColumn('action', function ($row) {
                 // Hide button if PO file already exists
-                if (!empty($row['po_file_path'])) {
+                if (! empty($row['po_file_path'])) {
                     return '-';
                 }
-                
+
                 $isComplete = $row['status'] === 'complete';
-                
+
                 // Status badge for display
                 $statusBadge = match ($row['status']) {
                     'complete' => '<span class="badge bg-success text-white">Ready stok</span>',
@@ -311,13 +315,13 @@ class ProjectOrderController extends Controller
                     'pending' => '<span class="badge bg-secondary text-white">Indent</span>',
                     default => '<span class="badge bg-info text-white">'.ucfirst($row['status']).'</span>'
                 };
-                
+
                 // Get PO file name from path
                 $poFileName = $row['po_file_path'] ? basename($row['po_file_path']) : '';
-                
+
                 // Manage PO button
                 $buttonClass = $isComplete ? 'btn-success' : 'btn-primary';
-                $buttonText = $isComplete ? 'View PO' : 'Manage PO';
+                $buttonText = $isComplete ? 'View PO' : (! empty($row['po_number']) ? 'Edit' : 'Manage PO');
                 $buttonIcon = $isComplete
                     ? '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />'
                     : '<path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" />';
@@ -329,10 +333,12 @@ class ProjectOrderController extends Controller
                         data-model="'.$row['model_type'].'" 
                         data-required="'.$row['qty'].'" 
                         data-confirmed="'.$row['stock_used_so_far'].'" 
+                        data-to-order="'.$row['remaining_qty'].'"
                         data-status="'.htmlspecialchars($statusBadge).'"
                         data-po-number="'.$row['po_number'].'"
                         data-po-file="'.$row['po_file_path'].'"
-                        data-po-filename="'.$poFileName.'">
+                        data-po-filename="'.$poFileName.'"
+                        data-eta="'.$row['existing_ead'].'">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
                             '.$buttonIcon.'
                         </svg>
@@ -544,7 +550,7 @@ class ProjectOrderController extends Controller
     {
         try {
             $projectOrder = ProjectOrder::where('project_id', $projectId)->firstOrFail();
-            
+
             $projectOrder->update(['is_confirmed' => true]);
 
             return response()->json([
@@ -591,6 +597,7 @@ class ProjectOrderController extends Controller
         $request->validate([
             'order_item_id' => 'required|exists:quotation_items,id',
             'po_number' => 'required|string|max:255',
+            'estimated_arrival_date' => 'required|date',
             'po_file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120', // 5MB max
         ]);
 
@@ -621,13 +628,13 @@ class ProjectOrderController extends Controller
             $orderItem->update([
                 'po_number' => $poNumber,
                 'po_file_path' => $poFilePath,
+                'estimated_arrival_date' => $request->estimated_arrival_date,
             ]);
 
             DB::commit();
 
             return response()->json([
-                'success' => true,
-                'message' => 'Purchase order updated successfully',
+                'message' => 'Purchase order has been saved successfully',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

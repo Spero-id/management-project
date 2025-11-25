@@ -37,6 +37,9 @@
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
     <!-- END SELECT2 CSS -->
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <!-- END SweetAlert2 CSS -->
     <!-- BEGIN CUSTOM FONT -->
     <style>
         @import url("https://rsms.me/inter/inter.css");
@@ -235,8 +238,14 @@
                 </div>
                 <div class="collapse navbar-collapse" id="navbar-menu">
                     <!-- BEGIN NAVBAR MENU -->
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
+                    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 960px; scrollbar-width: none; -ms-overflow-style: none;">
+                        <style>
+                            #navbar-menu > div::-webkit-scrollbar {
+                                display: none;
+                            }
+                        </style>
+                        <ul class="navbar-nav flex-nowrap">
+                            <li class="nav-item" style="white-space: nowrap;">
                             <a class="nav-link" href="{{ route('home') }}">
                                 <span
                                     class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/home -->
@@ -252,7 +261,7 @@
                         </li>
 
                         @can('VIEW_USER')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('user.index') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -274,7 +283,7 @@
                         @endcan
 
                         @can('VIEW_PROSPECT')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('prospect.index') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -297,7 +306,7 @@
                         @endcan
 
                         @can('VIEW_PRODUCT')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('product.index') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -318,7 +327,7 @@
                         @endcan
 
                         @can('VIEW_PROJECT')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('project.index') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -335,7 +344,7 @@
 
 
                         @can('VIEW_STOCK')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('stock.index') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -356,7 +365,7 @@
                             </li>
                         @endcan
                         @can('VIEW_INVENTORY')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('inventory.index') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -376,7 +385,7 @@
                             </li>
                         @endcan
                         @can('VIEW_PROJECT_ORDER')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('project-order.index') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -398,7 +407,7 @@
                             </li>
                         @endcan
                         @can('VIEW_BORROWING')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('borrowing.index') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -420,7 +429,7 @@
                         @endcan
 
                         @can('VIEW_DELIVERY')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('delivery-order.index') }}">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -439,7 +448,7 @@
                         @endcan
 
                         @can('LOGISTIC_ORDER')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('finance-project-order.index') }}">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -462,7 +471,7 @@
                         @endcan
 
                         @can('PERHITUNGAN_PROJECT')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('perhitungan-project.index') }}">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -487,7 +496,7 @@
 
 
                         @can('VIEW_SETTING')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('setting.index') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -507,7 +516,7 @@
                         @endcan
 
                         @can('VIEW_SALES_TARGET')
-                            <li class="nav-item">
+                            <li class="nav-item" style="white-space: nowrap;">
                                 <a class="nav-link" href="{{ route('setting.sales-target') }}">
                                     <span
                                         class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
@@ -527,6 +536,7 @@
                         @endcan
 
                     </ul>
+                    </div>
                     <!-- END NAVBAR MENU -->
                 </div>
             </div>
@@ -587,6 +597,9 @@
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.js"></script>
+    
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 

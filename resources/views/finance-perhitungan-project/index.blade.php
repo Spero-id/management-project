@@ -98,6 +98,7 @@
         .card-table {
             margin-bottom: 0;
             font-size: 0.8rem;
+            border: 1px solid #dee2e6;
         }
 
         .card-table th {
@@ -105,10 +106,20 @@
             font-weight: 600;
             text-transform: uppercase;
             padding: 8px 10px;
+            border: 1px solid #dee2e6;
         }
 
         .card-table td {
             padding: 8px 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        .card-table td.text-end {
+            white-space: nowrap;
+        }
+
+        .card-table tbody tr {
+            border: 1px solid #dee2e6;
         }
 
         .table-selectable .table-selectable-check:checked+.table-selectable-check-indicator {
@@ -308,9 +319,9 @@
             <div class="content-area">
                 @forelse($projects as $index => $project)
                     <div class="project-content" id="project-content-{{ $project->id }}" style="{{ $index === 0 ? '' : 'display: none;' }}">
-                        <h5>Items to order - {{ $project->project_name }}</h5>
+                        <h5>{{ $project->project_name }}</h5>
                         
-                        @if($project->orderItems->count() > 0)
+                        @if($project->quotationItemsGrouped && $project->quotationItemsGrouped->count() > 0)
                             <div class="table-responsive">
                                 <table class="table table-bordered table-vcenter card-table">
                                     <thead>
@@ -337,13 +348,12 @@
                                             $totalDasar = 0;
                                         @endphp
                                         
-                                        @foreach($project->orderItems as $item)
+                                        @foreach($project->quotationItemsGrouped as $groupedItem)
                                             @php
-                                                $product = $item->product;
-                                                $quotationItem = $item->quotationItem;
-                                                $qty = $item->required_qty;
-                                                $unitPrice = $quotationItem->unit_price ?? $product->price ?? 0;
-                                                $totalPrice = $qty * $unitPrice;
+                                                $product = $groupedItem['product'];
+                                                $qty = $groupedItem['total_qty'];
+                                                $unitPrice = $groupedItem['unit_price'];
+                                                $totalPrice = $groupedItem['total_price'];
                                                 
                                                 // Calculate base price (assuming 48% discount from price)
                                                 $hargaDasar = $unitPrice * 0.52;

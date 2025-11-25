@@ -101,6 +101,30 @@ class ProductController extends Controller
     }
 
     /**
+     * Return distinct types for select filters.
+     */
+    public function types(Request $request)
+    {
+        $brand = $request->get('brand');
+        
+        $query = Product::query()
+            ->whereNotNull('type')
+            ->where('type', '<>', '')
+            ->select('type')
+            ->distinct()
+            ->orderBy('type');
+        
+        // Filter by brand if provided
+        if ($brand) {
+            $query->where('brand', $brand);
+        }
+        
+        $types = $query->pluck('type');
+
+        return response()->json($types);
+    }
+
+    /**
      * Search products for Select2
      */
     public function search(Request $request)
@@ -153,6 +177,12 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'brand' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:255',
+            'distributor_origin' => 'nullable|string|max:255',
+            'weight' => 'nullable|numeric|min:0',
+            'shipping_fee_by_air' => 'nullable|numeric|min:0',
+            'dollar_base_price' => 'nullable|numeric|min:0',
         ]);
 
         Product::create($validated);
@@ -191,6 +221,12 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
+            'brand' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:255',
+            'distributor_origin' => 'nullable|string|max:255',
+            'weight' => 'nullable|numeric|min:0',
+            'shipping_fee_by_air' => 'nullable|numeric|min:0',
+            'dollar_base_price' => 'nullable|numeric|min:0',
         ]);
 
         $product->update($validated);

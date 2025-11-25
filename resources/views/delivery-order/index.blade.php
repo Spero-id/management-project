@@ -147,9 +147,6 @@
                                 <label class="form-label required">Project</label>
                                 <select class="form-select" id="do-project-id" name="project_id" required>
                                     <option value="">Select project</option>
-                                    @foreach ($projects as $project)
-                                        <option value="{{ $project->id }}">{{ $project->project_name }}</option>
-                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -200,17 +197,38 @@
 @endsection
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
-    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.js"></script>
-
     <script>
         $(document).ready(function() {
             let currentProjectItems = [];
 
+            // Initialize Select2 for project dropdown
+            $('#do-project-id').select2({
+                dropdownParent: $('#modal-create-delivery-order'),
+                theme: 'bootstrap-5',
+                placeholder: 'Select project',
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: '{{ route('delivery-order.projects') }}',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            q: params.term,
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                }
+            });
+
             // Load project items when project is selected
-            $('#do-project-id').on('change', function() {
+            $('#do-project-id').on('select2:select select2:clear', function(e) {
                 const projectId = $(this).val();
                 if (!projectId) {
                     $('#items-container').html(
@@ -481,6 +499,7 @@
 
             $('#modal-create-delivery-order').on('hidden.bs.modal', function() {
                 $('#delivery-order-form')[0].reset();
+                $('#do-project-id').val(null).trigger('change');
                 $('#items-container').html(
                     '<div class="alert alert-info">' +
                     '<svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">' +

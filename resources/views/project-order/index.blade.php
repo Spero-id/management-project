@@ -68,28 +68,39 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Product</label>
-                                    <input type="text" class="form-control" id="stock-product-name" readonly>
+                                    <input type="text" class="form-control" id="stock-product-name" disabled>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Brand</label>
-                                    <input type="text" class="form-control" id="stock-brand" readonly>
+                                    <input type="text" class="form-control" id="stock-brand" disabled>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Model/Type</label>
-                                    <input type="text" class="form-control" id="stock-model" readonly>
+                                    <input type="text" class="form-control" id="stock-model" disabled>
                                 </div>
                             </div>
                             
                             <div class="row mb-3">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
+                                    <label class="form-label">QTY needed</label>
+                                    <input type="number" class="form-control" id="stock-qty-needed" disabled>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">QTY ready</label>
+                                    <input type="number" class="form-control" id="stock-qty-ready" disabled>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">QTY remaining</label>
+                                    <input type="number" class="form-control" id="stock-qty-remaining" disabled>
+                                </div>
+                                <div class="col-md-3">
                                     <label class="form-label">Available stock</label>
-                                    <input type="number" class="form-control" id="stock-available" readonly>
+                                    <input type="number" class="form-control" id="stock-available" disabled>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Required quantity</label>
-                                    <input type="number" class="form-control" id="stock-required" readonly>
-                                </div>
-                                <div class="col-md-4">
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-12">
                                     <label class="form-label required">Use stock quantity</label>
                                     <input type="number" class="form-control" id="stock-use-qty" min="0" placeholder="Enter quantity">
                                     <small class="text-muted">Max: <span id="stock-max-value">0</span></small>
@@ -162,34 +173,6 @@
 @endsection
 
 @section('content')
-    <!-- Flash Messages -->
-    @if (session('success'))
-        <div class="alert  alert-important alert-success alert-dismissible fade show" role="alert">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-check me-2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M5 12l5 5l10 -10" />
-            </svg>
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert  alert-important alert-danger alert-dismissible fade show" role="alert">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="icon icon-tabler icons-tabler-outline icon-tabler-alert-circle me-2">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-                <path d="M12 8v4" />
-                <path d="M12 16h.01" />
-            </svg>
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
 
     <div class="row justify-content-center">
         <div class="col-md-12">
@@ -225,7 +208,9 @@
                                     :columns="[
                                         ['data' => 'brand', 'name' => 'brand', 'label' => 'Brand'],
                                         ['data' => 'model_type', 'name' => 'model_type', 'label' => 'Model/Type'],
-                                        ['data' => 'remaining_qty', 'name' => 'remaining_qty', 'label' => 'QTY'],
+                                        ['data' => 'qty_needed', 'name' => 'qty_needed', 'label' => 'QTY needed'],
+                                        ['data' => 'qty_ready', 'name' => 'qty_ready', 'label' => 'QTY ready'],
+                                        ['data' => 'remaining_qty', 'name' => 'remaining_qty', 'label' => 'QTY remaining'],
                                         ['data' => 'unit', 'name' => 'unit', 'label' => 'Unit'],
                                         ['data' => 'status', 'name' => 'status', 'label' => 'Status'],
                                         ['data' => 'bobot', 'name' => 'bobot', 'label' => 'BOBOT', 'orderable' => false, 'searchable' => false],
@@ -295,6 +280,26 @@
 
     <script>
         $(document).ready(function() {
+            // Show SweetAlert for session messages
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '{{ session('error') }}',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            @endif
             // Initialize DataTables for all tabs
             let datatables = {};
 
@@ -382,40 +387,41 @@
                 const submitBtn = $(this);
                 const originalBtnText = submitBtn.html();
                 
-                if (!confirm('Are you sure you want to confirm this order? This action will notify Finance to process the items.')) {
-                    return false;
-                }
-                
-                submitBtn.prop('disabled', true).html(
-                    '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Confirming...'
-                );
-                
-                $.ajax({
-                    url: '/project-order/confirm/' + projectId,
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    },
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'This action will notify Finance to process the items.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, confirm it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+                    
+                    submitBtn.prop('disabled', true).html(
+                        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Confirming...'
+                    );
+                    
+                    $.ajax({
+                        url: '/project-order/confirm/' + projectId,
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
                     success: function(response) {
                         if (response.success) {
-                            const alertHtml = `
-                                <div class="alert alert-important alert-success alert-dismissible fade show" role="alert">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check me-2">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                        <path d="M5 12l5 5l10 -10" />
-                                    </svg>
-                                    ${response.message}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            `;
-                            $('.card').first().before(alertHtml);
-                            
-                            // Reload page after 1 second to reflect changes
-                            setTimeout(function() {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                showConfirmButton: false,
+                                timer: 2000
+                            }).then(() => {
                                 location.reload();
-                            }, 1000);
-                            
-                            $('html, body').animate({ scrollTop: 0 }, 300);
+                            });
                         }
                     },
                     error: function(xhr) {
@@ -424,23 +430,16 @@
                             errorMessage = xhr.responseJSON.message;
                         }
                         
-                        const alertHtml = `
-                            <div class="alert alert-important alert-danger alert-dismissible fade show" role="alert">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-alert-circle me-2">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-                                    <path d="M12 8v4" />
-                                    <path d="M12 16h.01" />
-                                </svg>
-                                ${errorMessage}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        `;
-                        $('.card').first().before(alertHtml);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: errorMessage,
+                            showConfirmButton: true
+                        });
                         
                         submitBtn.prop('disabled', false).html(originalBtnText);
-                        $('html, body').animate({ scrollTop: 0 }, 300);
                     }
+                });
                 });
             });
 
@@ -455,6 +454,8 @@
                 const productName = $(this).data('product');
                 const stock = parseInt($(this).data('stock')) || 0;
                 const qty = parseInt($(this).data('qty')) || 0;
+                const qtyReady = parseInt($(this).data('qty-ready')) || 0;
+                const qtyRemaining = parseInt($(this).data('qty-remaining')) || 0;
                 const stockUsed = parseInt($(this).data('stock-used')) || 0;
                 const projectId = $(this).data('project-id');
                 const isComplete = $(this).data('is-complete') == '1';
@@ -464,6 +465,8 @@
                     projectId: projectId,
                     stock: stock,
                     qty: qty,
+                    qtyReady: qtyReady,
+                    qtyRemaining: qtyRemaining,
                     isComplete: isComplete
                 };
                 
@@ -473,19 +476,21 @@
                 $('#stock-product-name').val(productName);
                 $('#stock-brand').val(brand);
                 $('#stock-model').val(model);
+                $('#stock-qty-needed').val(qty);
+                $('#stock-qty-ready').val(qtyReady);
+                $('#stock-qty-remaining').val(qtyRemaining);
                 $('#stock-available').val(stock);
-                $('#stock-required').val(qty);
-                $('#stock-use-qty').val(stockUsed).attr('max', Math.min(stock, qty));
-                $('#stock-max-value').text(Math.min(stock, qty));
+                $('#stock-use-qty').val(stockUsed).attr('max', Math.min(stock, qtyRemaining));
+                $('#stock-max-value').text(Math.min(stock, qtyRemaining));
                 
                 // Update modal based on complete status
                 if (isComplete) {
                     $('#stock-modal-title').text('View stock details');
-                    $('#stock-use-qty').prop('readonly', true);
+                    $('#stock-use-qty').prop('disabled', true);
                     $('#save-stock-usage').hide();
                 } else {
                     $('#stock-modal-title').text(stockUsed > 0 ? 'Edit stock management' : 'Stock management');
-                    $('#stock-use-qty').prop('readonly', false);
+                    $('#stock-use-qty').prop('disabled', false);
                     $('#save-stock-usage').show();
                 }
                 
@@ -499,7 +504,7 @@
                 if (currentStockItem.isComplete) return; // Prevent editing if complete
                 
                 const value = parseInt($(this).val()) || 0;
-                const maxAllowed = Math.min(currentStockItem.stock, currentStockItem.qty);
+                const maxAllowed = Math.min(currentStockItem.stock, currentStockItem.qtyRemaining);
                 
                 if (value > maxAllowed) {
                     $(this).val(maxAllowed);
@@ -515,7 +520,12 @@
                 const stockUseQty = parseInt($('#stock-use-qty').val()) || 0;
                 
                 if (stockUseQty <= 0) {
-                    alert('Please enter a valid stock quantity');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Invalid quantity',
+                        text: 'Please enter a valid stock quantity',
+                        showConfirmButton: true
+                    });
                     return;
                 }
                 
@@ -542,18 +552,13 @@
                         if (response.success) {
                             $('#modal-stock-management').modal('hide');
                             
-                            // Show success alert
-                            const alertHtml = `
-                                <div class="alert alert-important alert-success alert-dismissible fade show" role="alert">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check me-2">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                        <path d="M5 12l5 5l10 -10" />
-                                    </svg>
-                                    ${response.message}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            `;
-                            $('.card').first().before(alertHtml);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
                             
                             // Reload datatable
                             const tableId = 'project-order-table-' + currentStockItem.projectId;
@@ -563,8 +568,6 @@
                             
                             // Update delivery percentage
                             updateDeliveryPercentage(currentStockItem.projectId);
-                            
-                            $('html, body').animate({ scrollTop: 0 }, 300);
                         }
                     },
                     error: function(xhr) {
@@ -572,7 +575,12 @@
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
                         }
-                        alert(errorMessage);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: errorMessage,
+                            showConfirmButton: true
+                        });
                     },
                     complete: function() {
                         submitBtn.prop('disabled', false).html(originalBtnText);

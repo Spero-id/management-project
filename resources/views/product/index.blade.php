@@ -70,7 +70,7 @@
                     <!-- BEGIN MODAL CREATE PRODUCT -->
                     <div class="modal modal-blur fade" id="modal-create-product" tabindex="-1" role="dialog"
                         aria-hidden="true">
-                        <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+                        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
                             <div class="modal-content">
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 <div class="modal-header">
@@ -79,51 +79,76 @@
                                 <form method="POST" action="{{ route('product.store') }}">
                                     @csrf
                                     <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label for="productName" class="form-label">Name</label>
-                                            <input type="text" class="form-control" id="productName" name="name" required>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="productName" class="form-label">Name</label>
+                                                    <input type="text" class="form-control" id="productName" name="name" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="productBrand" class="form-label">Brand</label>
+                                                    <select class="form-select" id="productBrand" name="brand" required></select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="productType" class="form-label">Type</label>
+                                                    <select class="form-select" id="productType" name="type" required></select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="productDistributorOrigin" class="form-label">Distributor Origin</label>
+                                                    <input type="text" class="form-control" id="productDistributorOrigin" name="distributor_origin" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="productPrice" class="form-label">Price</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">Rp</span>
+                                                        <input type="text" class="form-control rupiah-format" id="productPrice" name="price_display" required>
+                                                        <input type="hidden" id="productPriceHidden" name="price">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="productDollarBasePrice" class="form-label">Dollar Base Price</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" class="form-control" id="productDollarBasePrice" name="dollar_base_price" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="productWeight" class="form-label">Weight</label>
+                                                    <input type="text" class="form-control" id="productWeight" name="weight" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="productShippingFee" class="form-label">Shipping Fee (Air)</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">Rp</span>
+                                                        <input type="text" class="form-control rupiah-format" id="productShippingFee" name="shipping_fee_by_air_display" required>
+                                                        <input type="hidden" id="productShippingFeeHidden" name="shipping_fee_by_air">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="mb-3">
                                             <label for="productDescription" class="form-label">Description</label>
                                             <textarea class="form-control" id="productDescription" name="description" rows="3" required></textarea>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="productPrice" class="form-label">Price</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">Rp</span>
-                                                <input type="text" class="form-control rupiah-format" id="productPrice"
-                                                    name="price_display" required>
-                                                <input type="hidden" id="productPriceHidden" name="price">
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="productBrand" class="form-label">Brand</label>
-                                            <input type="text" class="form-control" id="productBrand" name="brand"
-                                                required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="productType" class="form-label">Type</label>
-                                            <input type="text" class="form-control" id="productType" name="type" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="productDistributorOrigin" class="form-label">Distributor Origin</label>
-                                            <input type="text" class="form-control" id="productDistributorOrigin"
-                                                name="distributor_origin" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="productWeight" class="form-label">Weight</label>
-                                            <input type="text" class="form-control" id="productWeight" name="weight"
-                                                required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="productShippingFee" class="form-label">Shipping Fee (Air)</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">Rp</span>
-                                                <input type="text" class="form-control rupiah-format"
-                                                    id="productShippingFee" name="shipping_fee_by_air_display" required>
-                                                <input type="hidden" id="productShippingFeeHidden"
-                                                    name="shipping_fee_by_air">
-                                            </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -267,6 +292,14 @@
                                             <label for="editProductWeight" class="form-label">Weight</label>
                                             <input type="text" class="form-control" id="editProductWeight" name="weight"
                                                 required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editProductDollarBasePrice" class="form-label">Dollar Base Price</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" step="0.01" class="form-control"
+                                                    id="editProductDollarBasePrice" name="dollar_base_price" required>
+                                            </div>
                                         </div>
                                         <div class="mb-3">
                                             <label for="editProductShippingFee" class="form-label">Shipping Fee (Air)</label>
@@ -505,6 +538,7 @@
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('utils.js') }}"></script>
 
     <script>
@@ -586,7 +620,7 @@
                         "render": function(data, type, row) {
                             let actions = '';
                             @can('EDIT_PRODUCT')
-                                actions += `<a href="" class="btn btn-icon edit-product-btn" data-bs-toggle="modal" data-bs-target="#modal-edit-product" data-product-id="${row.id}" data-product-name="${row.name}" data-product-description="${row.description}" data-product-price="${row.price}" data-product-brand="${row.brand}" data-product-type="${row.type}" data-product-distributor-origin="${row.distributor_origin}" data-product-weight="${row.weight}" data-product-shipping-fee="${row.shipping_fee_by_air}" aria-label="Edit Product" title="Edit Product">
+                                actions += `<a href="" class="btn btn-icon edit-product-btn" data-bs-toggle="modal" data-bs-target="#modal-edit-product" data-product-id="${row.id}" data-product-name="${row.name}" data-product-description="${row.description}" data-product-price="${row.price}" data-product-brand="${row.brand}" data-product-type="${row.type}" data-product-distributor-origin="${row.distributor_origin}" data-product-weight="${row.weight}" data-product-dollar-base-price="${row.dollar_base_price}" data-product-shipping-fee="${row.shipping_fee_by_air}" aria-label="Edit Product" title="Edit Product">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-edit"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
                             </a>`;
                             @endcan
@@ -703,6 +737,69 @@
                 table.ajax.reload();
             }, 250));
 
+            // Initialize Select2 for Brand in create modal with tags (freetext) support
+            $('#productBrand').select2({
+                theme: 'bootstrap-5',
+                dropdownParent: $('#modal-create-product'),
+                tags: true,
+                placeholder: 'Select or type a brand',
+                allowClear: true,
+                ajax: {
+                    url: brandsUrl,
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function(data) {
+                        return {
+                            results: data.map(function(item) {
+                                return {
+                                    id: item,
+                                    text: item
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            // Initialize Select2 for Type in create modal with tags (freetext) support
+            var typesUrl = '{{ url('/product/types') }}';
+            $('#productType').select2({
+                theme: 'bootstrap-5',
+                dropdownParent: $('#modal-create-product'),
+                tags: true,
+                placeholder: 'Select or type a type',
+                allowClear: true,
+                ajax: {
+                    url: typesUrl,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            q: params.term,
+                            brand: $('#productBrand').val()
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.map(function(item) {
+                                return {
+                                    id: item,
+                                    text: item
+                                };
+                            })
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            // When brand changes, clear and reload type options
+            $('#productBrand').on('change', function() {
+                var $typeSelect = $('#productType');
+                $typeSelect.val(null).trigger('change');
+            });
+
             // Custom Table Info
             function updateTableInfo() {
                 var info = table.page.info();
@@ -810,19 +907,18 @@
                 var productType = $(this).data('product-type');
                 var productDistributorOrigin = $(this).data('product-distributor-origin');
                 var productWeight = $(this).data('product-weight');
+                var productDollarBasePrice = $(this).data('product-dollar-base-price');
                 var productShippingFee = $(this).data('product-shipping-fee');
-
-                // Update modal form fields
+                
                 $('#editProductName').val(productName);
                 $('#editProductDescription').val(productDescription);
-
-                // Format price for display
                 $('#editProductPrice').val(formatRupiahInput(productPrice));
                 $('#editProductPriceHidden').val(productPrice);
                 $('#editProductBrand').val(productBrand);
                 $('#editProductType').val(productType);
                 $('#editProductDistributorOrigin').val(productDistributorOrigin);
                 $('#editProductWeight').val(productWeight);
+                $('#editProductDollarBasePrice').val(productDollarBasePrice);
                 $('#editProductShippingFee').val(formatRupiahInput(productShippingFee));
                 $('#editProductShippingFeeHidden').val(productShippingFee);
 

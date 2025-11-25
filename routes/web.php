@@ -87,15 +87,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/trashed', [App\Http\Controllers\ProductController::class, 'trashed'])->name('trashed');
         Route::post('/', [App\Http\Controllers\ProductController::class, 'store'])->name('store');
         Route::post('/import', [App\Http\Controllers\ProductController::class, 'importProduct'])->name('import');
+        Route::get('/search', [App\Http\Controllers\ProductController::class, 'search'])->name('search');
+        Route::get('/brands', [App\Http\Controllers\ProductController::class, 'brands'])->name('brands');
+        Route::get('/distributors', [App\Http\Controllers\ProductController::class, 'distributors'])->name('distributors');
+        Route::get('/types', [App\Http\Controllers\ProductController::class, 'types'])->name('types');
         Route::put('/{id}', [App\Http\Controllers\ProductController::class, 'update'])->name('update');
         Route::delete('/{id}', [App\Http\Controllers\ProductController::class, 'destroy'])->name('destroy');
         Route::patch('/{id}/restore', [App\Http\Controllers\ProductController::class, 'restore'])->name('restore');
         Route::delete('/{id}/force-delete', [App\Http\Controllers\ProductController::class, 'forceDelete'])->name('force-delete');
+      
         Route::get('/datatable/api', [App\Http\Controllers\ProductController::class, 'dataTableAPI'])->name('datatable.api');
-        Route::get('/search', [App\Http\Controllers\ProductController::class, 'search'])->name('search');
-        // Select options endpoints for filters
-        Route::get('/brands', [App\Http\Controllers\ProductController::class, 'brands'])->name('brands');
-        Route::get('/distributors', [App\Http\Controllers\ProductController::class, 'distributors'])->name('distributors');
     });
 
     Route::group(['prefix' => 'division', 'as' => 'division.'], function () {
@@ -226,6 +227,7 @@ Route::middleware('auth')->group(function () {
     Route::group(['prefix' => 'delivery-order', 'as' => 'delivery-order.'], function () {
         Route::get('/', [App\Http\Controllers\DeliveryOrderController::class, 'index'])->name('index');
         Route::get('/datatable', [App\Http\Controllers\DeliveryOrderController::class, 'datatable'])->name('datatable');
+        Route::get('/projects', [App\Http\Controllers\DeliveryOrderController::class, 'getProjects'])->name('projects');
         Route::post('/', [App\Http\Controllers\DeliveryOrderController::class, 'store'])->name('store');
         Route::get('/project-items/{projectId}', [App\Http\Controllers\DeliveryOrderController::class, 'getProjectItems'])->name('project-items');
         Route::get('/{id}', [App\Http\Controllers\DeliveryOrderController::class, 'show'])->name('show');

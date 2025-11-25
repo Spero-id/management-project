@@ -17,8 +17,31 @@ final class DeliveryOrderController extends Controller
 {
     public function index(): View
     {
-        $projects = Project::orderBy('project_name')->get();
-        return view('delivery-order.index', compact('projects'));
+        return view('delivery-order.index');
+    }
+
+    public function getProjects(Request $request): JsonResponse
+    {
+        $search = $request->get('q', '');
+        
+        $projects = \App\Models\ProjectOrder::with('project')
+            ->where('is_confirmed', true)
+            ->whereHas('project', function ($query) use ($search) {
+                if ($search) {
+                    $query->where('project_name', 'LIKE', "%{$search}%");
+                }
+            })
+            ->get()
+            ->map(function ($projectOrder) {
+                return [
+                    'id' => $projectOrder->project_id,
+                    'text' => $projectOrder->project->project_name ?? 'N/A',
+                ];
+            })
+            ->unique('id')
+            ->values();
+
+        return response()->json($projects);
     }
 
     public function datatable(Request $request): JsonResponse
