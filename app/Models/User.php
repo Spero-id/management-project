@@ -33,7 +33,7 @@ class User extends Authenticatable
         'ktp',
         'ijazah',
         'sertifikat',
-        'sales_target',
+        'ttd_img',
     ];
 
     /**

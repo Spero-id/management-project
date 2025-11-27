@@ -84,13 +84,21 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#quotation"  class="nav-link @if ($prospect->customer_name == null) disabled @endif" data-bs-toggle="tab">Equipment</a>
+                    <a href="#quotation" class="nav-link @if ($prospect->customer_name == null) disabled @endif"
+                        data-bs-toggle="tab">Equipment</a>
                 </li>
                 <li class="nav-item">
                     <a href="#installation" class="nav-link @if ($quotation->quotation_number == null) disabled @endif"
                         data-bs-toggle="tab"
                         @if (!$quotation) onclick="return false;" style="cursor: not-allowed; opacity: 0.5;" title="Create a quotation first" @endif>
                         Installation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#quotation-conditions" class="nav-link @if ($quotation->quotation_number == null) disabled @endif"
+                        data-bs-toggle="tab"
+                        @if (!$quotation) onclick="return false;" style="cursor: not-allowed; opacity: 0.5;" title="Create a quotation first" @endif>
+                        Quotation Conditions
                     </a>
                 </li>
             </ul>
@@ -115,14 +123,25 @@
                                         ? route('installation.update', $quotation->id)
                                         : route('installation.store');
                                 $installation =
-                                    $quotation->installationItems?->count() > 0 ? $quotation->installationItems :   \App\Models\Installation::all()->map(function ($i) {
-                                        return (object) [
-                                            'id' => $i->id,
-                                            'text' => $i->name ?? ($i->title ?? 'Installation'),
-                                            'proportional' => $i->proportional ?? null,
-                                        ];
-                                    });
-                                    
+                                    $quotation->installationItems?->count() > 0
+                                        ? $quotation->installationItems->map(function ($item) {
+                                            return (object) [
+                                                'id' => $item->installation->id,
+                                                'text' =>
+                                                    $item->installation->name ??
+                                                    ($item->installation->title ?? 'Installation'),
+                                                'proportional' => $item->installation->proportional ?? null,
+                                                'quantity' => $item->quantity,
+                                            ];
+                                        })
+                                        : \App\Models\Installation::all()->map(function ($i) {
+                                            return (object) [
+                                                'id' => $i->id,
+                                                'text' => $i->name ?? ($i->title ?? 'Installation'),
+                                                'proportional' => $i->proportional ?? null,
+                                                'quantity' => 0,
+                                            ];
+                                        });
                             @endphp
                             <x-installation.form :route="$installationRoute" :quotation="$quotation" :installation="$installation" :installation-categories="$installationCategories"
                                 :accommodationCategory="$accommodationCategory" :accommodationItems="$quotation->accommodationItems" type="create" :total-jasa-setting="$totalJasaSetting" />
@@ -142,6 +161,32 @@
                                 <div class="ms-2">
                                     <strong>No quotation found</strong>
                                     <p class="mb-0">Please create a quotation first before adding installation details.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                <div class="tab-pane" id="quotation-conditions">
+                    @if ($quotation)
+                        <div>
+                            <x-quotation-conditions.form type="create" :quotation="$quotation" :route="route('quotation.updateConditions', ['prospect' => $quotation->prospect_id])" />
+                        </div>
+                    @else
+                        <div class="alert  alert-important alert-info" role="alert">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" class="icon alert-icon">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                                    </svg>
+                                </div>
+                                <div class="ms-2">
+                                    <strong>No quotation found</strong>
+                                    <p class="mb-0">Please create a quotation first before adding quotation conditions.
                                     </p>
                                 </div>
                             </div>

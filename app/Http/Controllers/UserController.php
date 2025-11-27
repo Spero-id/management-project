@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Division;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
@@ -50,7 +51,7 @@ class UserController extends Controller
             'ktp' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'ijazah' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'sertifikat.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'sales_target' => 'nullable|string|max:255',
+            'ttd_img' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $noKaryawan = $this->generateNoKaryawan($request->type);
@@ -63,6 +64,7 @@ class UserController extends Controller
         $fotoPath = null;
         $ktpPath = null;
         $ijazahPath = null;
+        $ttdImgPath = null;
         $sertifikatPaths = [];
 
         if ($request->hasFile('foto')) {
@@ -78,6 +80,11 @@ class UserController extends Controller
         if ($request->hasFile('ijazah')) {
             $uniqueFilename = $this->generateUniqueFilename($request->file('ijazah'), 'documents/ijazah');
             $ijazahPath = $request->file('ijazah')->storeAs('documents/ijazah', $uniqueFilename, 'public');
+        }
+
+        if ($request->hasFile('ttd_img')) {
+            $uniqueFilename = $this->generateUniqueFilename($request->file('ttd_img'), 'documents/ttd');
+            $ttdImgPath = $request->file('ttd_img')->storeAs('documents/ttd', $uniqueFilename, 'public');
         }
 
         if ($request->hasFile('sertifikat')) {
@@ -101,8 +108,8 @@ class UserController extends Controller
             'foto' => $fotoPath,
             'ktp' => $ktpPath,
             'ijazah' => $ijazahPath,
+            'ttd_img' => $ttdImgPath,
             'sertifikat' => $sertifikatPaths,
-            'sales_target' => $request->target,
         ]);
 
         // Assign role to user
@@ -152,8 +159,8 @@ class UserController extends Controller
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'ktp' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'ijazah' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'ttd_img' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'sertifikat.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'sales_target' => 'nullable|string|max:255',
         ];
 
         // Only validate password if it's provided
@@ -167,6 +174,7 @@ class UserController extends Controller
         $fotoPath = $user->foto; // Keep existing if no new file
         $ktpPath = $user->ktp; // Keep existing if no new file
         $ijazahPath = $user->ijazah; // Keep existing if no new file
+        $ttdImgPath = $user->ttd_img; // Keep existing if no new file
         $sertifikatPaths = $user->sertifikat ?? []; // Keep existing if no new files
 
         if ($request->hasFile('foto')) {
@@ -194,6 +202,15 @@ class UserController extends Controller
             }
             $uniqueFilename = $this->generateUniqueFilename($request->file('ijazah'), 'documents/ijazah');
             $ijazahPath = $request->file('ijazah')->storeAs('documents/ijazah', $uniqueFilename, 'public');
+        }
+
+        if ($request->hasFile('ttd_img')) {
+            // Delete old file if exists
+            if ($user->ttd_img && Storage::disk('public')->exists($user->ttd_img)) {
+                Storage::disk('public')->delete($user->ttd_img);
+            }
+            $uniqueFilename = $this->generateUniqueFilename($request->file('ttd_img'), 'documents/ttd');
+            $ttdImgPath = $request->file('ttd_img')->storeAs('documents/ttd', $uniqueFilename, 'public');
         }
 
         if ($request->hasFile('sertifikat')) {
@@ -241,8 +258,8 @@ class UserController extends Controller
             'foto' => $fotoPath,
             'ktp' => $ktpPath,
             'ijazah' => $ijazahPath,
+            'ttd_img' => $ttdImgPath,
             'sertifikat' => $sertifikatPaths,
-            'sales_target' => $request->target,
         ];
 
         // Only update password if it's provided
@@ -282,6 +299,10 @@ class UserController extends Controller
                 Storage::disk('public')->delete($user->ijazah);
             }
 
+            if ($user->ttd_img && Storage::disk('public')->exists($user->ttd_img)) {
+                Storage::disk('public')->delete($user->ttd_img);
+            }
+
             if ($user->sertifikat) {
                 foreach ($user->sertifikat as $filePath) {
                     if (Storage::disk('public')->exists($filePath)) {
@@ -298,6 +319,68 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('user.index')->with('error', 'Gagal menghapus user. Silakan coba lagi.');
         }
+    }
+
+    /**
+     * Upload profile photo for authenticated user.
+     */
+    public function uploadProfilePhoto(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'profile_photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        if ($request->hasFile('profile_photo')) {
+            // Delete old profile photo if exists
+            if ($user->foto && Storage::disk('public')->exists($user->foto)) {
+                Storage::disk('public')->delete($user->foto);
+            }
+
+            $uniqueFilename = $this->generateUniqueFilename($request->file('profile_photo'), 'documents/foto');
+            $fotoPath = $request->file('profile_photo')->storeAs('documents/foto', $uniqueFilename, 'public');
+
+            // Update user profile photo
+            $user->update([
+                'foto' => $fotoPath,
+            ]);
+
+            return redirect()->route('profile.index')->with('success', 'Profile photo updated successfully!');
+        }
+
+        return redirect()->route('profile.index')->with('error', 'Failed to upload profile photo.');
+    }
+
+    /**
+     * Upload signature for authenticated user.
+     */
+    public function uploadSignature(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'signature' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        if ($request->hasFile('signature')) {
+            // Delete old signature if exists
+            if ($user->ttd_img && Storage::disk('public')->exists($user->ttd_img)) {
+                Storage::disk('public')->delete($user->ttd_img);
+            }
+
+            $uniqueFilename = $this->generateUniqueFilename($request->file('signature'), 'documents/ttd');
+            $ttdPath = $request->file('signature')->storeAs('documents/ttd', $uniqueFilename, 'public');
+
+            // Update user signature
+            $user->update([
+                'ttd_img' => $ttdPath,
+            ]);
+
+            return redirect()->route('profile.index')->with('success', 'Signature updated successfully!');
+        }
+
+        return redirect()->route('profile.index')->with('error', 'Failed to upload signature.');
     }
 
     /**

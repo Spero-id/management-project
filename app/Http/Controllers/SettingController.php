@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\QuotationCondition;
 use App\Models\Setting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
@@ -112,5 +114,91 @@ class SettingController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Get QuotationCondition datatable data.
+     */
+    public function quotationConditionDatatable(Request $request): JsonResponse
+    {
+        $columns = ['id', 'condition', 'created_at'];
+
+        $totalData = QuotationCondition::count();
+        $totalFiltered = $totalData;
+
+        $limit = $request->input('length');
+        $start = $request->input('start');
+        $order = $columns[$request->input('order.0.column')];
+        $dir = $request->input('order.0.dir');
+
+        $query = QuotationCondition::query();
+
+        if (!empty($request->input('search.value'))) {
+            $search = $request->input('search.value');
+            $query->where('condition', 'LIKE', "%{$search}%");
+            $totalFiltered = $query->count();
+        }
+
+        $quotationConditions = $query->offset($start)
+            ->limit($limit)
+            ->orderBy($order, $dir)
+            ->get();
+
+        $data = [];
+        foreach ($quotationConditions as $quotationCondition) {
+            $data[] = [
+                'id' => $quotationCondition->id,
+                'condition' => $quotationCondition->condition,
+            ];
+        }
+
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => intval($totalData),
+            'recordsFiltered' => intval($totalFiltered),
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * Store a newly created QuotationCondition.
+     */
+    public function storeQuotationCondition(Request $request)
+    {
+        $request->validate([
+            'condition' => 'required|string|max:255',
+        ]);
+
+        QuotationCondition::create([
+            'condition' => $request->input('condition'),
+        ]);
+
+        return redirect()->back()->with('success', 'Quotation condition created successfully.');
+    }
+
+    /**
+     * Update the specified QuotationCondition.
+     */
+    public function updateQuotationCondition(Request $request, QuotationCondition $quotationCondition)
+    {
+        $request->validate([
+            'condition' => 'required|string|max:255',
+        ]);
+
+        $quotationCondition->update([
+            'condition' => $request->input('condition'),
+        ]);
+
+        return redirect()->back()->with('success', 'Quotation condition updated successfully.');
+    }
+
+    /**
+     * Remove the specified QuotationCondition.
+     */
+    public function destroyQuotationCondition(QuotationCondition $quotationCondition)
+    {
+        $quotationCondition->delete();
+
+        return redirect()->back()->with('success', 'Quotation condition deleted successfully.');
     }
 }

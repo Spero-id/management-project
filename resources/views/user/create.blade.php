@@ -247,7 +247,7 @@
                             </div>
 
                             <!-- Sertifikat Images (Multiple Upload) -->
-                            <div class="col-md-12 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">Sertifikat Images</label>
                                 <input type="file" name="sertifikat[]"
                                     class="form-control @error('sertifikat.*') is-invalid @enderror" accept="image/*"
@@ -257,6 +257,17 @@
                                 @enderror
                                 <small class="form-hint">Accepted formats: JPG, PNG, JPEG. Max size: 2MB per file. Multiple
                                     files allowed.</small>
+                            </div>
+
+                            <!-- Tanda Tangan -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tanda Tangan</label>
+                                <input type="file" name="ttd_img"
+                                    class="form-control @error('ttd_img') is-invalid @enderror" accept="image/*">
+                                @error('ttd_img')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-hint">Accepted formats: JPG, PNG, JPEG. Max size: 2MB</small>
                             </div>
 
                           

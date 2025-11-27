@@ -99,8 +99,8 @@
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label for="productType" class="form-label">Type</label>
-                                                    <select class="form-select" id="productType" name="type"
-                                                        required></select>
+                                                    <input type="text" class="form-control" id="productType" name="type"
+                                                        required>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
@@ -115,23 +115,22 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label for="productPrice" class="form-label">Price</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">Rp</span>
-                                                        <input type="text" class="form-control rupiah-format"
-                                                            id="productPrice" name="price_display" required>
-                                                        <input type="hidden" id="productPriceHidden" name="price">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
                                                     <label for="productDollarBasePrice" class="form-label">Dollar Base
                                                         Price</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">$</span>
                                                         <input type="number" step="0.01" class="form-control"
                                                             id="productDollarBasePrice" name="dollar_base_price" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="productUpPercentage" class="form-label">Up Percentage</label>
+                                                    <div class="input-group">
+                                                        <input type="number" step="0.01" class="form-control"
+                                                            id="productUpPercentage" name="margin_percentage" required>
+                                                        <span class="input-group-text">%</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -256,7 +255,7 @@
                 @can('EDIT_PRODUCT')
                     <div class="modal modal-blur fade" id="modal-edit-product" tabindex="-1" role="dialog"
                         aria-hidden="true">
-                        <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+                        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
                             <div class="modal-content">
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Close"></button>
@@ -267,63 +266,88 @@
                                     @csrf
                                     @method('PUT')
                                     <div class="modal-body">
-                                        <div class="mb-3">
-                                            <label for="editProductName" class="form-label">Name</label>
-                                            <input type="text" class="form-control" id="editProductName" name="name"
-                                                required>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="editProductName" class="form-label">Name</label>
+                                                    <input type="text" class="form-control" id="editProductName" name="name"
+                                                        required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="editProductBrand" class="form-label">Brand</label>
+                                                    <select class="form-select" id="editProductBrand" name="brand"
+                                                        required></select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="editProductType" class="form-label">Type</label>
+                                                    <input type="text" class="form-control" id="editProductType" name="type"
+                                                        required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="editProductDistributorOrigin" class="form-label">Distributor
+                                                        Origin</label>
+                                                    <input type="text" class="form-control" id="editProductDistributorOrigin"
+                                                        name="distributor_origin" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="editProductDollarBasePrice" class="form-label">Dollar Base
+                                                        Price</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" class="form-control"
+                                                            id="editProductDollarBasePrice" name="dollar_base_price" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="editProductUpPercentage" class="form-label">Up Percentage</label>
+                                                    <div class="input-group">
+                                                        <input type="number" step="0.01" class="form-control"
+                                                            id="editProductUpPercentage" name="margin_percentage" required>
+                                                        <span class="input-group-text">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="editProductWeight" class="form-label">Weight</label>
+                                                    <input type="text" class="form-control" id="editProductWeight"
+                                                        name="weight" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="editProductShippingFee" class="form-label">Shipping Fee
+                                                        (Air)</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">Rp</span>
+                                                        <input type="text" class="form-control rupiah-format"
+                                                            id="editProductShippingFee" name="shipping_fee_by_air_display"
+                                                            required>
+                                                        <input type="hidden" id="editProductShippingFeeHidden"
+                                                            name="shipping_fee_by_air">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="mb-3">
                                             <label for="editProductDescription" class="form-label">Description</label>
                                             <textarea class="form-control" id="editProductDescription" name="description" rows="3" required></textarea>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="editProductPrice" class="form-label">Price</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">Rp</span>
-                                                <input type="text" class="form-control rupiah-format"
-                                                    id="editProductPrice" name="price_display" required>
-                                                <input type="hidden" id="editProductPriceHidden" name="price">
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="editProductBrand" class="form-label">Brand</label>
-                                            <input type="text" class="form-control" id="editProductBrand" name="brand"
-                                                required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="editProductType" class="form-label">Type</label>
-                                            <input type="text" class="form-control" id="editProductType" name="type"
-                                                required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="editProductDistributorOrigin" class="form-label">Distributor
-                                                Origin</label>
-                                            <input type="text" class="form-control" id="editProductDistributorOrigin"
-                                                name="distributor_origin" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="editProductWeight" class="form-label">Weight</label>
-                                            <input type="text" class="form-control" id="editProductWeight" name="weight"
-                                                required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="editProductDollarBasePrice" class="form-label">Dollar Base
-                                                Price</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">$</span>
-                                                <input type="number" step="0.01" class="form-control"
-                                                    id="editProductDollarBasePrice" name="dollar_base_price" required>
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="editProductShippingFee" class="form-label">Shipping Fee (Air)</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">Rp</span>
-                                                <input type="text" class="form-control rupiah-format"
-                                                    id="editProductShippingFee" name="shipping_fee_by_air_display" required>
-                                                <input type="hidden" id="editProductShippingFeeHidden"
-                                                    name="shipping_fee_by_air">
-                                            </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -632,7 +656,7 @@
                         "render": function(data, type, row) {
                             let actions = '';
                             @can('EDIT_PRODUCT')
-                                actions += `<a href="" class="btn btn-icon edit-product-btn" data-bs-toggle="modal" data-bs-target="#modal-edit-product" data-product-id="${row.id}" data-product-name="${row.name}" data-product-description="${row.description}" data-product-price="${row.price}" data-product-brand="${row.brand}" data-product-type="${row.type}" data-product-distributor-origin="${row.distributor_origin}" data-product-weight="${row.weight}" data-product-dollar-base-price="${row.dollar_base_price}" data-product-shipping-fee="${row.shipping_fee_by_air}" aria-label="Edit Product" title="Edit Product">
+                                actions += `<a href="" class="btn btn-icon edit-product-btn" data-bs-toggle="modal" data-bs-target="#modal-edit-product" data-product-id="${row.id}" data-product-name="${row.name}" data-product-description="${row.description}" data-product-price="${row.price}" data-product-brand="${row.brand}" data-product-type="${row.type}" data-product-distributor-origin="${row.distributor_origin}" data-product-weight="${row.weight}" data-product-dollar-base-price="${row.dollar_base_price}" data-product-margin-percentage="${row.margin_percentage}" data-product-shipping-fee="${row.shipping_fee_by_air}" aria-label="Edit Product" title="Edit Product">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-edit"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
                             </a>`;
                             @endcan
@@ -774,24 +798,19 @@
                 }
             });
 
-            // Initialize Select2 for Type in create modal with tags (freetext) support
-            var typesUrl = '{{ url('/product/types') }}';
-            $('#productType').select2({
+
+
+            // Initialize Select2 for Brand in edit modal with tags (freetext) support
+            $('#editProductBrand').select2({
                 theme: 'bootstrap-5',
-                dropdownParent: $('#modal-create-product'),
+                dropdownParent: $('#modal-edit-product'),
                 tags: true,
-                placeholder: 'Select or type a type',
+                placeholder: 'Select or type a brand',
                 allowClear: true,
                 ajax: {
-                    url: typesUrl,
+                    url: brandsUrl,
                     dataType: 'json',
                     delay: 250,
-                    data: function(params) {
-                        return {
-                            q: params.term,
-                            brand: $('#productBrand').val()
-                        };
-                    },
                     processResults: function(data) {
                         return {
                             results: data.map(function(item) {
@@ -806,11 +825,7 @@
                 }
             });
 
-            // When brand changes, clear and reload type options
-            $('#productBrand').on('change', function() {
-                var $typeSelect = $('#productType');
-                $typeSelect.val(null).trigger('change');
-            });
+
 
             // Custom Table Info
             function updateTableInfo() {
@@ -920,17 +935,28 @@
                 var productDistributorOrigin = $(this).data('product-distributor-origin');
                 var productWeight = $(this).data('product-weight');
                 var productDollarBasePrice = $(this).data('product-dollar-base-price');
+                var productMarginPercentage = $(this).data('product-margin-percentage');
                 var productShippingFee = $(this).data('product-shipping-fee');
 
                 $('#editProductName').val(productName);
                 $('#editProductDescription').val(productDescription);
-                $('#editProductPrice').val(formatRupiahInput(productPrice));
-                $('#editProductPriceHidden').val(productPrice);
-                $('#editProductBrand').val(productBrand);
+                
+                // Set Select2 value for brand
+                var $brandSelect = $('#editProductBrand');
+                
+                // Create new option and append to Select2 for brand
+                if (productBrand) {
+                    var brandOption = new Option(productBrand, productBrand, true, true);
+                    $brandSelect.append(brandOption).trigger('change');
+                }
+                
+                // Set Type value directly
                 $('#editProductType').val(productType);
+                
                 $('#editProductDistributorOrigin').val(productDistributorOrigin);
                 $('#editProductWeight').val(productWeight);
                 $('#editProductDollarBasePrice').val(productDollarBasePrice);
+                $('#editProductUpPercentage').val(productMarginPercentage);
                 $('#editProductShippingFee').val(formatRupiahInput(productShippingFee));
                 $('#editProductShippingFeeHidden').val(productShippingFee);
 

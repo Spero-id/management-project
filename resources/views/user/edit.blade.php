@@ -158,16 +158,6 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Target</label>
-                                <input type="text" name="sales_target"
-                                    class="form-control @error('sales_target') is-invalid @enderror"
-                                    value="{{ old('sales_target', $user->sales_target) }}" placeholder="Enter target">
-                                @error('sales_target')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
                             <!-- Password -->
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">New Password</label>
@@ -194,8 +184,8 @@
                             <!-- KTP Image -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">KTP Image</label>
-                                <input type="file" name="ktp"
-                                    class="form-control @error('ktp') is-invalid @enderror" accept="image/*">
+                                <input type="file" name="ktp" class="form-control @error('ktp') is-invalid @enderror"
+                                    accept="image/*">
                                 @error('ktp')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -226,7 +216,7 @@
                             </div>
 
                             <!-- Sertifikat Images (Multiple Upload) -->
-                            <div class="col-md-12 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">Sertifikat Images</label>
                                 <input type="file" name="sertifikat[]"
                                     class="form-control @error('sertifikat.*') is-invalid @enderror" accept="image/*"
@@ -248,7 +238,23 @@
                                 @endif
                             </div>
 
-                            <!-- Target -->
+
+                            <!-- Tanda Tangan -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tanda Tangan</label>
+                                <input type="file" name="ttd_img"
+                                    class="form-control @error('ttd_img') is-invalid @enderror" accept="image/*">
+                                @error('ttd_img')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-hint">Accepted formats: JPG, PNG, JPEG. Max size: 2MB</small>
+                                @if ($user->ttd_img)
+                                    <div class="mt-2">
+                                        <a href="{{ asset('storage/' . $user->ttd_img) }}" target="_blank"
+                                            class="btn btn-sm btn-outline-primary">View Current Signature</a>
+                                    </div>
+                                @endif
+                            </div>
 
                         </div>
                     </div>

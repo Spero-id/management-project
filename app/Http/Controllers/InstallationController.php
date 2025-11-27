@@ -20,7 +20,6 @@ class InstallationController extends Controller
     public function create(Quotation $quotation)
     {
         return view('quotation.installation.create', compact('quotation'));
-
     }
 
     /**
@@ -39,10 +38,10 @@ class InstallationController extends Controller
         ];
 
         $request->validate($validationRules);
+        $quotation = Quotation::findOrFail($request->quotation_id);
 
         try {
-            DB::transaction(function () use ($request) {
-                $quotation = Quotation::findOrFail($request->quotation_id);
+            DB::transaction(function () use ($request, $quotation) {
                 $quotation->need_accommodation = $request->boolean('need_accommodation');
                 if ($request->boolean('need_accommodation')) {
                     $quotation->accommodation_wilayah = $request->accommodation_wilayah;
@@ -80,16 +79,22 @@ class InstallationController extends Controller
                 } else {
                     $quotation->accommodationItems()->delete();
                 }
-
-                // Recalculate total
                 $quotation->calculateTotal();
+
             });
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => 'An error occurred while saving installation items: '.$e->getMessage()])->withInput();
         }
 
-        return redirect()->route('quotation.show', $request->quotation_id)
-            ->with('success', 'Installation items saved successfully.');
+        // if ($request->form_type == 'create') {
+
+        // } else {
+
+        // }
+
+        return redirect()->route('prospect.create', $quotation->prospect_id)
+            ->withFragment('quotation-conditions');
+
     }
 
     /**
@@ -174,8 +179,10 @@ class InstallationController extends Controller
             return redirect()->back()->withErrors(['error' => 'An error occurred while updating installation items: '.$e->getMessage()])->withInput();
         }
 
-        return redirect()->route('quotation.show', $request->quotation_id)
-            ->with('success', 'Installation items updated successfully.');
+        return redirect()->back()
+            ->withFragment('installation')
+            ->with('success', 'Installation items saved successfully.');
+
     }
 
     /**

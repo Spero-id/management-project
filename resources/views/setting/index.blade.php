@@ -324,7 +324,7 @@
     </div>
 
     <!-- Accommodation Table -->
-    <div class="row justify-content-center">
+    <div class="row justify-content-center mb-4">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -384,6 +384,83 @@
                         </div>
                         <div class="col-auto">
                             <ul id="accommodationTablePagination" class="pagination m-0 ms-auto"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quotation Condition Table -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Quotation Conditions</h3>
+                    <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#modal-create-quotation-condition">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="icon icon-2">
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                        </svg>
+                        Create Condition
+                    </a>
+                </div>
+                <div class="card-body border-bottom py-3">
+                    <div class="d-flex">
+                        <div class="text-secondary">
+                            Show
+                            <div class="mx-2 d-inline-block">
+                                <input type="text" id="quotationConditionPageLength" class="form-control form-control-sm"
+                                    value="8" size="3" aria-label="Quotation Condition count">
+                            </div>
+                            entries
+                        </div>
+                        <div class="ms-auto text-secondary">
+                            Search:
+                            <div class="ms-2 d-inline-block">
+                                <input type="text" id="quotationConditionSearch" class="form-control form-control-sm"
+                                    aria-label="Search Quotation Condition">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="quotation-condition-table-loading" class="position-relative" style="display: none;">
+                        <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center"
+                            style="background-color: rgba(255, 255, 255, 0.8); z-index: 1000; min-height: 300px;">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <div class="mt-2 text-secondary">Memuat data...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="quotationConditionTable"
+                            class="table table-selectable card-table table-vcenter text-nowrap datatable">
+                            <thead>
+                                <tr>
+                                    <th class="w-1">ID</th>
+                                    <th>Condition</th>
+                                    <th class="w-1">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row g-2 justify-content-center justify-content-sm-between">
+                        <div class="col-auto d-flex align-items-center">
+                            <p id="quotationConditionTableInfo" class="m-0 text-secondary"></p>
+                        </div>
+                        <div class="col-auto">
+                            <ul id="quotationConditionTablePagination" class="pagination m-0 ms-auto"></ul>
                         </div>
                     </div>
                 </div>
@@ -837,6 +914,103 @@
             </div>
         </div>
     </div>
+
+    <!-- Quotation Condition Modals -->
+    <!-- Create Quotation Condition Modal -->
+    <div class="modal modal-blur fade" id="modal-create-quotation-condition" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Quotation Condition</h5>
+                </div>
+                <form method="POST" action="{{ route('quotation-condition.store') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="quotationCondition" class="form-label">Condition</label>
+                            <textarea class="form-control" id="quotationCondition" name="condition" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Quotation Condition Modal -->
+    <div class="modal modal-blur fade" id="modal-edit-quotation-condition" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Quotation Condition</h5>
+                </div>
+                <form method="POST" action="" id="editQuotationConditionForm">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editQuotationCondition" class="form-label">Condition</label>
+                            <textarea class="form-control" id="editQuotationCondition" name="condition" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Quotation Condition Modal -->
+    <div class="modal modal-blur fade" id="modal-delete-quotation-condition" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-danger"></div>
+                <div class="modal-body text-center py-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24"
+                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 9v2m0 4v.01" />
+                        <path
+                            d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                    </svg>
+                    <h3>Apakah Anda yakin?</h3>
+                    <div class="text-secondary">
+                        Anda akan menghapus kondisi quotation ini.
+                        Tindakan ini tidak dapat dibatalkan.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn w-100" data-bs-dismiss="modal">
+                                    Batal
+                                </button>
+                            </div>
+                            <div class="col">
+                                <form id="deleteQuotationConditionForm" method="POST" style="display: inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger w-100">
+                                        Ya, hapus
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -1095,6 +1269,59 @@
             $('#status-table-loading').show();
             $('#installation-table-loading').show();
             $('#accommodation-table-loading').show();
+            $('#quotation-condition-table-loading').show();
+
+            // Initialize Quotation Condition Table
+            var quotationConditionTable = $('#quotationConditionTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "{{ route('quotation-condition.datatable') }}",
+                    "type": "GET"
+                },
+                "columns": [{
+                        "data": "id"
+                    },
+                    {
+                        "data": "condition"
+                    },
+                    {
+                        "data": null,
+                        "orderable": false,
+                        "searchable": false,
+                        "render": function(data, type, row) {
+                            return `
+                                <a href="#" class="btn btn-icon edit-quotation-condition-btn" data-bs-toggle="modal" 
+                                   data-bs-target="#modal-edit-quotation-condition" data-condition-id="${row.id}" 
+                                   data-condition="${row.condition}" aria-label="Edit Condition" title="Edit Condition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-edit"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
+                                </a>
+                                <button class="btn btn-icon delete-quotation-condition-btn" data-bs-toggle="modal" 
+                                        data-bs-target="#modal-delete-quotation-condition" data-condition-id="${row.id}" 
+                                        aria-label="Delete Condition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+                                </button>
+                            `;
+                        }
+                    }
+                ],
+                "searching": true,
+                "dom": 't',
+                "pageLength": 8,
+                "lengthChange": false,
+                "info": false,
+                "ordering": true,
+                "responsive": true,
+                "paging": true,
+                "drawCallback": function(settings) {
+                    updateQuotationConditionTableInfo();
+                    updateQuotationConditionPagination();
+                    $('#quotation-condition-table-loading').hide();
+                },
+                "preDrawCallback": function(settings) {
+                    $('#quotation-condition-table-loading').show();
+                }
+            });
 
             // Division Table Search
             $('#divisionSearch').on('keyup', function() {
@@ -1169,6 +1396,25 @@
                 var length = parseInt(this.value);
                 if (!isNaN(length) && length > 0) {
                     accommodationTable.page.len(length).draw();
+                }
+            });
+
+            // Quotation Condition Table Search
+            $('#quotationConditionSearch').on('keyup', function() {
+                quotationConditionTable.search(this.value).draw();
+            });
+
+            $('#quotationConditionSearch').on('search', function() {
+                if (this.value === '') {
+                    quotationConditionTable.search('').draw();
+                }
+            });
+
+            // Quotation Condition Page length functionality
+            $('#quotationConditionPageLength').on('keyup change', function() {
+                var length = parseInt(this.value);
+                if (!isNaN(length) && length > 0) {
+                    quotationConditionTable.page.len(length).draw();
                 }
             });
 
@@ -1396,6 +1642,62 @@
                 });
             }
 
+            // Quotation Condition Table Info and Pagination Functions
+            function updateQuotationConditionTableInfo() {
+                var info = quotationConditionTable.page.info();
+                var start = info.start + 1;
+                var end = info.end;
+                var total = info.recordsTotal;
+                var text = `Showing <strong>${start} to ${end}</strong> of <strong>${total} entries</strong>`;
+                $('#quotationConditionTableInfo').html(text);
+            }
+
+            function updateQuotationConditionPagination() {
+                var info = quotationConditionTable.page.info();
+                var currentPage = info.page + 1;
+                var totalPages = info.pages;
+                var pagination = '';
+
+                // Previous button
+                if (currentPage === 1) {
+                    pagination +=
+                        `<li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true"><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='icon icon-1'><path d='M15 6l-6 6l6 6'></path></svg></a></li>`;
+                } else {
+                    pagination +=
+                        `<li class="page-item"><a class="page-link quotation-condition-page-link" href="#" data-page="${currentPage - 2}"><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='icon icon-1'><path d='M15 6l-6 6l6 6'></path></svg></a></li>`;
+                }
+
+                // Page numbers
+                for (var i = 1; i <= totalPages; i++) {
+                    if (i === currentPage) {
+                        pagination += `<li class="page-item active"><a class="page-link" href="#">${i}</a></li>`;
+                    } else {
+                        pagination +=
+                            `<li class="page-item"><a class="page-link quotation-condition-page-link" href="#" data-page="${i - 1}">${i}</a></li>`;
+                    }
+                }
+
+                // Next button
+                if (currentPage === totalPages || totalPages === 0) {
+                    pagination +=
+                        `<li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true"><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='icon icon-1'><path d='M9 6l6 6l-6 6'></path></svg></a></li>`;
+                } else {
+                    pagination +=
+                        `<li class="page-item"><a class="page-link quotation-condition-page-link" href="#" data-page="${currentPage}"><svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='icon icon-1'><path d='M9 6l6 6l-6 6'></path></svg></a></li>`;
+                }
+
+                $('#quotationConditionTablePagination').html(pagination);
+
+                // Handle page click for quotation condition table
+                $('.quotation-condition-page-link').off('click').on('click', function(e) {
+                    e.preventDefault();
+                    var page = parseInt($(this).data('page'));
+                    if (!isNaN(page)) {
+                        quotationConditionTable.page(page).draw('page');
+                    }
+                });
+            }
+
             // Division Modal Handlers
             $(document).on('click', '.edit-division-btn', function() {
                 var divisionId = $(this).data('division-id');
@@ -1478,6 +1780,24 @@
 
                 var baseUrl = '{{ url('/accommodation') }}';
                 $('#editAccommodationForm').attr('action', baseUrl + '/' + accommodationId);
+            });
+
+            // Quotation Condition Modal Handlers
+            $(document).on('click', '.edit-quotation-condition-btn', function() {
+                var conditionId = $(this).data('condition-id');
+                var condition = $(this).data('condition');
+
+                $('#editQuotationCondition').val(condition);
+
+                var baseUrl = '{{ url('/quotation-condition') }}';
+                $('#editQuotationConditionForm').attr('action', baseUrl + '/' + conditionId);
+            });
+
+            $(document).on('click', '.delete-quotation-condition-btn', function() {
+                var conditionId = $(this).data('condition-id');
+
+                var baseUrl = '{{ url('/quotation-condition') }}';
+                $('#deleteQuotationConditionForm').attr('action', baseUrl + '/' + conditionId);
             });
         });
     </script>

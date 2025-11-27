@@ -27,6 +27,7 @@ return new class extends Migration
             $table->json('sertifikat')->nullable();
             $table->text('foto')->nullable();
             $table->integer('no_quotation')->nullable();
+            $table->text('ttd_img')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

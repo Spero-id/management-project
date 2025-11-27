@@ -85,21 +85,18 @@
         <div class="card border-0 shadow-none">
             <div class="card-body">
                 <div class="row g-3">
-                    {{-- Photo Section --}}
-                    <div class="col-lg-3">
-                        <div class="border border-2 border-dashed rounded p-3 text-center d-flex align-items-center justify-content-center"
-                            style="height: 140px;">
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="mx-auto mb-2 text-muted">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                    <polyline points="21 15 16 10 5 21"></polyline>
-                                </svg>
-                                <p class="text-muted small">No Image</p>
+                    <div class="col-lg-2">
+                        @if($prospect->creator->foto)
+                            <img src="{{ asset('storage/' . $prospect->creator->foto) }}" 
+                                 alt="{{ $prospect->creator->name }}" 
+                                 class="rounded w-100"
+                                 style="height: 140px; object-fit: cover;">
+                        @else
+                            <div class="avatar avatar-xl w-100"
+                                 style="height: 140px; font-size: 3rem; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; color: #6c757d;">
+                                {{ strtoupper(substr($prospect->creator->name, 0, 1)) }}
                             </div>
-                        </div>
+                        @endif
                     </div>
 
                     {{-- Sales Member Section --}}
@@ -135,6 +132,7 @@
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
+                       
                         <div class="mb-3">
                             <label class="form-label fw-bold">PIC PROJECT</label>
                             <select name="pic_project"
@@ -159,6 +157,15 @@
                                 class="form-control @error('deadline_days') is-invalid @enderror"
                                 value="{{ old('deadline_days') }}" placeholder="Jumlah hari">
                             @error('deadline_days')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                         <div class="mb-3">
+                            <label class="form-label fw-bold">NOMOR PO</label>
+                            <input type="text" name="no_po"
+                                class="form-control @error('no_po') is-invalid @enderror"
+                                value="{{ old('no_po') }}" placeholder="Nomor Purchase Order">
+                            @error('no_po')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>

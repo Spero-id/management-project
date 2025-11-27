@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\ProjectOrder;
 use App\Models\ProjectOrderItem;
+use App\Models\ProductStock;
 use App\Models\QuotationItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +45,9 @@ class ProjectOrderController extends Controller
             return response()->json(['percentage' => $percentage]);
         }
 
-        $projectOrder = ProjectOrder::where('is_confirmed', true)->pluck('project_id');
+        $projectOrder = ProjectOrder::where('is_confirmed', true)
+            ->where('is_order_confirmed', false)
+        ->pluck('project_id');
         $projects = Project::with('prospect.quotations.items.product')
             ->whereIn('id', $projectOrder)
             ->get();
@@ -90,13 +93,15 @@ class ProjectOrderController extends Controller
     public function datatable(Request $request)
     {
         $projectId = $request->get('project_id');
+        // dd($projectId);
 
         if (! $projectId) {
             return DataTables::of(collect([]))->make(true);
         }
 
+        $projectOrder = ProjectOrder::find($projectId);
         $project = Project::with('prospect.quotations.items.product.stock')
-            ->findOrFail($projectId);
+            ->findOrFail($projectOrder->project_id);
 
         $existingOrders = ProjectOrderItem::where('project_id', $projectId)
             ->get()
@@ -211,7 +216,6 @@ class ProjectOrderController extends Controller
     public function financeDatatable(Request $request)
     {
         $projectId = $request->get('project_id');
-
         if (! $projectId) {
             return DataTables::of(collect([]))->make(true);
         }
@@ -642,6 +646,80 @@ class ProjectOrderController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Confirm order and update stock
+     */
+    public function confirmOrder(Request $request)
+    {
+        $request->validate([
+            'project_id' => 'required|exists:project_orders,id',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $projectOrder = ProjectOrder::findOrFail($request->project_id);
+
+            // Check if already confirmed
+            if ($projectOrder->is_order_confirmed) {
+                return response()->json([
+                    'message' => 'Order has already been confirmed'
+                ], 422);
+            }
+
+            // Get all project order items for this project
+            $projectOrderItems = ProjectOrderItem::where('project_id', $projectOrder->project_id)
+                ->with(['product.stock'])
+                ->get();
+
+            if ($projectOrderItems->isEmpty()) {
+                return response()->json([
+                    'message' => 'No items found for this project order'
+                ], 422);
+            }
+
+            // Update stock for each item based on remaining quantity
+            foreach ($projectOrderItems as $item) {
+                $remainingQty = $item->required_qty - $item->stock_used;
+
+                if ($remainingQty > 0) {
+                    // Get or create product stock
+                    $productStock = ProductStock::firstOrNew([
+                        'product_id' => $item->product_id
+                    ]);
+
+                    // Add remaining quantity to stock
+                    $productStock->stock_quantity = ($productStock->stock_quantity ?? 0) + $remainingQty;
+                    $productStock->save();
+
+                    // Update stock_used to match required_qty
+                    $item->stock_used = $item->required_qty;
+                    $item->save();
+                }
+            }
+
+            // Update is_order_confirmed status
+            $projectOrder->is_order_confirmed = true;
+            $projectOrder->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Order confirmed successfully and stock updated',
+                'data' => [
+                    'project_order' => $projectOrder,
+                    'items_updated' => $projectOrderItems->count()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to confirm order: ' . $e->getMessage()
             ], 500);
         }
     }

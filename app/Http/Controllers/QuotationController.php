@@ -40,6 +40,7 @@ class QuotationController extends Controller
      */
     public function store(Request $request)
     {
+
         $validationRules = [
             'prospect_id' => 'required|exists:prospects,id',
             'notes' => 'nullable|string',
@@ -149,7 +150,7 @@ class QuotationController extends Controller
     public function update(Request $request, string $id)
     {
         $quotation = Quotation::findOrFail($id);
-        if (!($request->is_quotation == true)) {
+        if (! ($request->is_quotation == true)) {
             if ($quotation->prospect) {
                 $quotation->prospect->is_quotation = false;
                 $quotation->prospect->save();
@@ -227,12 +228,13 @@ class QuotationController extends Controller
     public function generatePDF(Quotation $quotation)
     {
 
-        $quotation = Quotation::with(['prospect', 'items.product', 'installationItems.installation', 'accommodationItems'])->findOrFail($quotation->id);
+        $quotation = Quotation::with(['prospect', 'items.product', 'installationItems.installation', 'accommodationItems', 'user'])->findOrFail($quotation->id);
 
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('quotation.pdf', compact('quotation'));
 
-        return $pdf->download('quotation_'.$quotation->id.'.pdf');
+        return $pdf->stream('quotation_'.$quotation->id.'.pdf');
+        // return $pdf->download('quotation_'.$quotation->id.'.pdf');
     }
 
     public function destroy(string $id)
@@ -242,5 +244,31 @@ class QuotationController extends Controller
 
         return redirect()->route('prospect.index')
             ->with('success', 'Quotation deleted successfully.');
+    }
+
+    /**
+     * Update quotation conditions for a prospect.
+     */
+    public function updateConditions(Request $request, Prospect $prospect): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'conditions' => 'nullable|array',
+            'conditions.*' => 'nullable|string|max:500',
+        ]);
+
+        $conditions = array_filter($request->input('conditions', []), fn ($condition) => ! empty(trim($condition)));
+        $prospect->quotation_conditions = ! empty($conditions) ? json_encode(array_values($conditions)) : null;
+        $prospect->save();
+
+        if($request->form_type == 'create') {
+            return redirect()->route('prospect.show', $prospect->id)
+                ->withFragment('quotation-conditions')
+                ->with('success', 'Quotation conditions updated successfully.');
+        }
+
+
+        return redirect()->route('prospect.edit', $prospect->id)
+            ->withFragment('quotation-conditions')
+            ->with('success', 'Quotation conditions updated successfully.');
     }
 }

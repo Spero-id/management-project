@@ -53,7 +53,7 @@ class ProductController extends Controller
                 $search = null;
                 if (is_array($request->get('search')) && isset($request->get('search')['value'])) {
                     $search = $request->get('search')['value'];
-                } elseif ($request->has('search') && !is_array($request->get('search'))) {
+                } elseif ($request->has('search') && ! is_array($request->get('search'))) {
                     $search = $request->get('search');
                 }
 
@@ -106,19 +106,19 @@ class ProductController extends Controller
     public function types(Request $request)
     {
         $brand = $request->get('brand');
-        
+
         $query = Product::query()
             ->whereNotNull('type')
             ->where('type', '<>', '')
             ->select('type')
             ->distinct()
             ->orderBy('type');
-        
+
         // Filter by brand if provided
         if ($brand) {
             $query->where('brand', $brand);
         }
-        
+
         $types = $query->pluck('type');
 
         return response()->json($types);
@@ -176,18 +176,44 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
+            'price' => 'nullable|numeric|min:0',
             'brand' => 'nullable|string|max:255',
             'type' => 'nullable|string|max:255',
             'distributor_origin' => 'nullable|string|max:255',
             'weight' => 'nullable|numeric|min:0',
             'shipping_fee_by_air' => 'nullable|numeric|min:0',
             'dollar_base_price' => 'nullable|numeric|min:0',
+            'margin_percentage' => 'required|numeric|min:0|max:100',
         ]);
 
-        Product::create($validated);
+        $exchangeSetting = Setting::where('setting_name', 'currency_exchange_rate')->first();
+        $exchangeRate = $exchangeSetting ? (float) $exchangeSetting->setting_value : 17000.0;
+
+        $pricing = Product::calculatePricing(
+            (float) $validated['dollar_base_price'],
+            $exchangeRate,
+            (float) $validated['shipping_fee_by_air'],
+            (float) $validated['weight'],
+            (float) $validated['margin_percentage']
+        );
+
+        $product = Product::create([
+            'name' => $validated['name'],
+            'description' => $validated['description'],
+            'price' => $pricing['unit_price'],
+            'brand' => $validated['brand'],
+            'type' => $validated['type'],
+            'distributor_origin' => $validated['distributor_origin'],
+            'weight' => $validated['weight'],
+            'shipping_fee_by_air' => (float) $validated['shipping_fee_by_air'],
+            'dollar_base_price' => (float) $validated['dollar_base_price'],
+            'base_price_rupiah_for_luar_negeri' => $pricing['base_price_rupiah_for_luar_negeri'],
+            'base_price_rupiah_for_jakarta' => $pricing['base_price_rupiah_for_jakarta'],
+            'margin_percentage' => (float) $validated['margin_percentage'],
+        ]);
 
         return redirect()->route('product.index')->with('success', 'Product created successfully.');
+
     }
 
     public function importProduct(Request $request)

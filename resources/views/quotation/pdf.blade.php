@@ -73,7 +73,7 @@
         }
 
         .quotation-title {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: #666;
             margin-bottom: 20px;
@@ -194,16 +194,14 @@
         <div class="header-right">
             <div class="quotation-title">Quotation - IFP</div>
             <div class="quotation-info">
-                <strong>Date</strong> : {{ $quotation->created_at->format('d F Y') }}<br>
-                <strong>No</strong> : {{ $quotation->quotation_number }}<br>
-
+                <span style="font-weight:bold">Date</span>: {{ $quotation->created_at->format('d F Y') }}<br>
+                <span style="font-weight:bold">No</span>: {{ $quotation->quotation_number }}<br>
             </div>
         </div>
     </div>
 
     <div class="greeting">
-        <strong>Dear Customer,</strong><br>
-        Herewith we send you the Price Quotation For
+        <strong>Dear Customer,</strong>
     </div>
 
 
@@ -218,8 +216,8 @@
                 <th style="width: 15%;">JENIS BARANG</th>
                 <th style="width: 8%; text-align: center;">VOL</th>
                 <th style="width: 8%; text-align: center;">UNIT</th>
-                <th style="width: 10%; text-align: right;">HARGA SATUAN</th>
-                <th style="width: 9%; text-align: right;">TOTAL HARGA</th>
+                <th style="width: 10%; text-align: right; white-space: nowrap;">HARGA SATUAN</th>
+                <th style="width: 9%; text-align: right; white-space: nowrap;">TOTAL HARGA</th>
             </tr>
         </thead>
         <tbody>
@@ -233,17 +231,16 @@
                 @foreach ($quotation->items as $item)
                     <tr>
                         <td style="text-align: center;">{{ $itemNumber++ }}</td>
-                        <td>
+                        <td style="font-size: 10px;">
                             {{ $item->product->name }}
-                            @if ($item->product->description)
-                                <div style="color:#888; font-size:11px;">{{ $item->product->description }}</div>
-                            @endif
                         </td>
-                        <td>{{ $item->product->brand ?? 'PRODUCT' }}</td>
+                        <td style="font-size: 10px;">{{ $item->product->brand ?? 'PRODUCT' }}</td>
                         <td style="text-align: center;">{{ number_format($item->quantity, 0) }}</td>
                         <td style="text-align: center;">Unit</td>
-                        <td style="text-align: right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                        <td style="text-align: right;">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                        <td style="text-align: right; font-size: 10px;">Rp
+                            {{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                        <td style="text-align: right; font-size: 10px;">Rp
+                            {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             @endif
@@ -256,22 +253,16 @@
                 @foreach ($quotation->installationItems as $item)
                     <tr>
                         <td style="text-align: center;">{{ $itemNumber++ }}</td>
-                        <td>
+                        <td style="font-size: 10px;">
                             {{ $item->installation->name }}
-                            @if ($item->installation->description)
-                                <div style="color:#888; font-size:11px;">{{ $item->installation->description }}</div>
-                            @endif
-                            @if ($item->installation->proportional)
-                                <div style="color:#666; font-size:11px;">
-                                    <em>Proportional: {{ number_format($item->installation->proportional, 2) }}%</em>
-                                </div>
-                            @endif
                         </td>
-                        <td>INSTALLATION</td>
+                        <td style="font-size: 10px;">INSTALLATION</td>
                         <td style="text-align: center;">{{ number_format($item->quantity, 0) }}</td>
                         <td style="text-align: center;">Unit</td>
-                        <td style="text-align: right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                        <td style="text-align: right;">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                        <td style="text-align: right; font-size: 10px; white-space: nowrap;">Rp
+                            {{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                        <td style="text-align: right; font-size: 10px; white-space: nowrap;">Rp
+                            {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             @endif
@@ -283,13 +274,15 @@
                 </tr>
                 @foreach ($quotation->accommodationItems as $item)
                     <tr>
-                        <td style="text-align: center;" >{{ $itemNumber++ }}</td>
-                        <td colspan="4">
+                        <td style="text-align: center;">{{ $itemNumber++ }}</td>
+                        <td colspan="4" style="font-size: 10px;">
                             {{ $item->name }}
-                       
+
                         </td>
-                        <td style="text-align: right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                        <td style="text-align: right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                        <td style="text-align: right; font-size: 10px; white-space: nowrap;">Rp
+                            {{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                        <td style="text-align: right; font-size: 10px; white-space: nowrap;">Rp
+                            {{ number_format($item->unit_price, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             @endif
@@ -311,7 +304,8 @@
                 <tr style="border-top: 2px solid #000;">
                     <td colspan="6" class="text-end"
                         style="font-weight:bold; font-size:14px; background-color: #e9ecef;">Total</td>
-                    <td class="text-end" style="font-size:14px; font-weight:bold; background-color: #e9ecef;">
+                    <td class="text-end"
+                        style="font-size:12px; font-weight:bold; background-color: #e9ecef; white-space: nowrap;">
                         Rp {{ number_format($quotation->total_amount, 0, ',', '.') }}
                     </td>
                 </tr>
@@ -319,11 +313,38 @@
         @endif
     </table>
 
-
-    @if ($quotation->notes)
+    <!-- Notes and Quotation Conditions -->
+    @if (
+        $quotation->notes ||
+            ($quotation->prospect &&
+                $quotation->prospect->quotation_conditions &&
+                is_array($quotation->prospect->quotation_conditions) &&
+                count($quotation->prospect->quotation_conditions) > 0))
         <div class="notes">
-            <strong>Notes:</strong><br>
-            {{ $quotation->notes }}
+            @if ($quotation->notes)
+                <strong>Notes:</strong><br>
+                {{ $quotation->notes }}
+                @if (
+                    $quotation->prospect &&
+                        $quotation->prospect->quotation_conditions &&
+                        is_array($quotation->prospect->quotation_conditions) &&
+                        count($quotation->prospect->quotation_conditions) > 0)
+                    <br><br>
+                @endif
+            @endif
+
+            @if (
+                $quotation->prospect &&
+                    $quotation->prospect->quotation_conditions &&
+                    is_array($quotation->prospect->quotation_conditions) &&
+                    count($quotation->prospect->quotation_conditions) > 0)
+                <strong>Terms & Conditions:</strong>
+                <ol style="margin-top: 8px; margin-bottom: 0; padding-left: 20px;">
+                    @foreach ($quotation->prospect->quotation_conditions as $condition)
+                        <li style="margin-bottom: 5px; line-height: 1.4;">{{ $condition }}</li>
+                    @endforeach
+                </ol>
+            @endif
         </div>
     @endif
 
@@ -333,8 +354,14 @@
             <strong>Thank & Regards</strong>
         </div>
 
-        <div style="margin-top: 60px; margin-bottom: 10px;">
-            <!-- Space for signature -->
+        <div style="margin-top: 20px; margin-bottom: 10px;">
+            @if ($quotation->user && $quotation->user->ttd_img)
+                <img src="{{ public_path('storage/' . $quotation->user->ttd_img) }}" alt="Signature"
+                    style="max-width: 150px; max-height: 80px; object-fit: contain;">
+            @else
+                <!-- Space for manual signature -->
+                <div style="height: 60px; border-bottom: 1px solid #ccc; width: 200px;"></div>
+            @endif
         </div>
 
         <div>

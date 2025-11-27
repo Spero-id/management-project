@@ -93,6 +93,13 @@
                         Installation
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="#quotation-conditions" class="nav-link @if ($quotation->quotation_number == null) disabled @endif"
+                        data-bs-toggle="tab"
+                        @if (!$quotation) onclick="return false;" style="cursor: not-allowed; opacity: 0.5;" title="Create a quotation first" @endif>
+                        Quotation conditions
+                    </a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -108,30 +115,39 @@
                 <div class="tab-pane" id="installation">
                     <div>
                         @php
-
                             $installationRoute =
-                                !$quotation->installationItems?->isEmpty() 
+                                $quotation->installationItems?->count() > 0
                                     ? route('installation.update', $quotation->id)
                                     : route('installation.store');
                             $installation =
                                 $quotation->installationItems?->count() > 0
-                                    ? $quotation->installationItems
+                                    ? $quotation->installationItems->map(function ($item) {
+                                        return (object) [
+                                            'id' => $item->installation->id,
+                                            'text' =>
+                                                $item->installation->name ??
+                                                ($item->installation->title ?? 'Installation'),
+                                            'proportional' => $item->installation->proportional ?? null,
+                                            'quantity' => $item->quantity,
+                                        ];
+                                    })
                                     : \App\Models\Installation::all()->map(function ($i) {
                                         return (object) [
                                             'id' => $i->id,
                                             'text' => $i->name ?? ($i->title ?? 'Installation'),
-                                            'installation_id' => $i->id,
-                                            'installation'=>$i,
-                                            'quantity' => 0,
-                                            'unit_price' => 0,
-                                            'subtotal' => 0,
                                             'proportional' => $i->proportional ?? null,
+                                            'quantity' => 0,
                                         ];
                                     });
 
                         @endphp
                         <x-installation.form :route="$installationRoute" :quotation="$quotation" :installation="$installation" :installation-categories="$installationCategories"
-                            :accommodationCategory="$accommodationCategory" :accommodationItems="$quotation->accommodationItems" :total-jasa-setting="$totalJasaSetting" />
+                            type="edit" :accommodationCategory="$accommodationCategory" :accommodationItems="$quotation->accommodationItems" :total-jasa-setting="$totalJasaSetting" />
+                    </div>
+                </div>
+                <div class="tab-pane" id="quotation-conditions">
+                    <div>
+                        <x-quotation-conditions.form :quotation="$quotation" :route="route('quotation.updateConditions', ['prospect' => $quotation->prospect_id])" />
                     </div>
                 </div>
             </div>

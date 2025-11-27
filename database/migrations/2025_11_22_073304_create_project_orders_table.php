@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('project_id');
             $table->foreign('project_id')->references('id')->on('projects');
             $table->boolean('is_confirmed')->default(false);
+            $table->boolean('is_order_confirmed')->default(false);
             $table->timestamps();
         });
     }

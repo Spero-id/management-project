@@ -224,11 +224,15 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow" data-bs-theme="light">
                             <li class="nav-item">
+                                <a class="dropdown-item" href="{{ route('profile.index') }}">
+                                    <span>Profile</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <form method="POST" action="{{ route('logout') }}" id="logout-form">
                                     @csrf
                                     <a class="dropdown-item" href="#"
                                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-
                                         <span>Logout</span>
                                     </a>
                                 </form>
@@ -238,304 +242,308 @@
                 </div>
                 <div class="collapse navbar-collapse" id="navbar-menu">
                     <!-- BEGIN NAVBAR MENU -->
-                    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 960px; scrollbar-width: none; -ms-overflow-style: none;">
+                    <div
+                        style="overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 960px; scrollbar-width: none; -ms-overflow-style: none;">
                         <style>
-                            #navbar-menu > div::-webkit-scrollbar {
+                            #navbar-menu>div::-webkit-scrollbar {
                                 display: none;
                             }
                         </style>
                         <ul class="navbar-nav flex-nowrap">
                             <li class="nav-item" style="white-space: nowrap;">
-                            <a class="nav-link" href="{{ route('home') }}">
-                                <span
-                                    class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/home -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
-                                        <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
-                                        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-                                        <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
-                                    </svg></span>
-                                <span class="nav-link-title"> Home </span>
-                            </a>
-                        </li>
-
-                        @can('VIEW_USER')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('user.index') }}">
+                                <a class="nav-link" href="{{ route('home') }}">
                                     <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/home -->
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-users">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
-                                            <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                            <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
-                                        </svg>
-
-                                    </span>
-                                    <span class="nav-link-title"> User </span>
-                                </a>
-                            </li>
-                        @endcan
-
-                        @can('VIEW_PROSPECT')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('prospect.index') }}">
-                                    <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-contract">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M8 21h-2a3 3 0 0 1 -3 -3v-1h5.5" />
-                                            <path d="M17 8.5v-3.5a2 2 0 1 1 2 2h-2" />
-                                            <path d="M19 3h-11a3 3 0 0 0 -3 3v11" />
-                                            <path d="M9 7h4" />
-                                            <path d="M9 11h4" />
-                                            <path d="M18.42 12.61a2.1 2.1 0 0 1 2.97 2.97l-6.39 6.42h-3v-3z" />
-                                        </svg>
-                                    </span>
-                                    <span class="nav-link-title"> Prospect </span>
-                                </a>
-                            </li>
-                        @endcan
-
-                        @can('VIEW_PRODUCT')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('product.index') }}">
-                                    <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-box">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
-                                            <path d="M12 12l8 -4.5" />
-                                            <path d="M12 12l0 9" />
-                                            <path d="M12 12l-8 -4.5" />
-                                        </svg>
-                                    </span>
-                                    <span class="nav-link-title"> Product </span>
-                                </a>
-                            </li>
-                        @endcan
-
-                        @can('VIEW_PROJECT')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('project.index') }}">
-                                    <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
-                                            <path d="M9 11l3 3l8 -8" />
-                                            <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" />
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                            class="icon icon-1">
+                                            <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+                                            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+                                            <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
                                         </svg></span>
-                                    <span class="nav-link-title"> Project </span>
+                                    <span class="nav-link-title"> Home </span>
                                 </a>
                             </li>
-                        @endcan
+
+                            @can('VIEW_USER')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('user.index') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-users">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                                                <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                                <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+                                            </svg>
+
+                                        </span>
+                                        <span class="nav-link-title"> User </span>
+                                    </a>
+                                </li>
+                            @endcan
+
+                            @can('VIEW_PROSPECT')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('prospect.index') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-contract">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M8 21h-2a3 3 0 0 1 -3 -3v-1h5.5" />
+                                                <path d="M17 8.5v-3.5a2 2 0 1 1 2 2h-2" />
+                                                <path d="M19 3h-11a3 3 0 0 0 -3 3v11" />
+                                                <path d="M9 7h4" />
+                                                <path d="M9 11h4" />
+                                                <path d="M18.42 12.61a2.1 2.1 0 0 1 2.97 2.97l-6.39 6.42h-3v-3z" />
+                                            </svg>
+                                        </span>
+                                        <span class="nav-link-title"> Prospect </span>
+                                    </a>
+                                </li>
+                            @endcan
+
+                            @can('VIEW_PRODUCT')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('product.index') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-box">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
+                                                <path d="M12 12l8 -4.5" />
+                                                <path d="M12 12l0 9" />
+                                                <path d="M12 12l-8 -4.5" />
+                                            </svg>
+                                        </span>
+                                        <span class="nav-link-title"> Product </span>
+                                    </a>
+                                </li>
+                            @endcan
+
+                            @can('VIEW_PROJECT')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('project.index') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-1">
+                                                <path d="M9 11l3 3l8 -8" />
+                                                <path
+                                                    d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" />
+                                            </svg></span>
+                                        <span class="nav-link-title"> Project </span>
+                                    </a>
+                                </li>
+                            @endcan
 
 
-                        @can('VIEW_STOCK')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('stock.index') }}">
-                                    <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-box">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
-                                            <path d="M12 12l8 -4.5" />
-                                            <path d="M12 12l0 9" />
-                                            <path d="M12 12l-8 -4.5" />
-                                        </svg>
+                            @can('VIEW_STOCK')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('stock.index') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-box">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
+                                                <path d="M12 12l8 -4.5" />
+                                                <path d="M12 12l0 9" />
+                                                <path d="M12 12l-8 -4.5" />
+                                            </svg>
 
-                                    </span>
-                                    <span class="nav-link-title"> Stock </span>
-                                </a>
-                            </li>
-                        @endcan
-                        @can('VIEW_INVENTORY')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('inventory.index') }}">
-                                    <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-building-warehouse">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M3 21v-13l9 -4l9 4v13" />
-                                            <path d="M13 13h4v8h-10v-6h6" />
-                                            <path d="M13 21v-9a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v3" />
-                                        </svg>
+                                        </span>
+                                        <span class="nav-link-title"> Stock </span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('VIEW_INVENTORY')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('inventory.index') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-building-warehouse">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M3 21v-13l9 -4l9 4v13" />
+                                                <path d="M13 13h4v8h-10v-6h6" />
+                                                <path d="M13 21v-9a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v3" />
+                                            </svg>
 
-                                    </span>
-                                    <span class="nav-link-title"> Inventory </span>
-                                </a>
-                            </li>
-                        @endcan
-                        @can('VIEW_PROJECT_ORDER')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('project-order.index') }}">
-                                    <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-package-export">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M12 21l-8 -4.5v-9l8 -4.5l8 4.5v4.5" />
-                                            <path d="M12 12l8 -4.5" />
-                                            <path d="M12 12v9" />
-                                            <path d="M12 12l-8 -4.5" />
-                                            <path d="M15 18h7" />
-                                            <path d="M19 15l3 3l-3 3" />
-                                        </svg>
-                                    </span>
-                                    <span class="nav-link-title"> Project Order </span>
-                                </a>
-                            </li>
-                        @endcan
-                        @can('VIEW_BORROWING')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('borrowing.index') }}">
-                                    <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-sort-ascending-shapes">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M4 15l3 3l3 -3" />
-                                            <path d="M7 6v12" />
-                                            <path
-                                                d="M14 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-4z" />
-                                            <path d="M17 14l-3.5 6h7z" />
-                                        </svg>
-                                    </span>
-                                    <span class="nav-link-title"> Borrowing </span>
-                                </a>
-                            </li>
-                        @endcan
+                                        </span>
+                                        <span class="nav-link-title"> Inventory </span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('VIEW_PROJECT_ORDER')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('project-order.index') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-package-export">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M12 21l-8 -4.5v-9l8 -4.5l8 4.5v4.5" />
+                                                <path d="M12 12l8 -4.5" />
+                                                <path d="M12 12v9" />
+                                                <path d="M12 12l-8 -4.5" />
+                                                <path d="M15 18h7" />
+                                                <path d="M19 15l3 3l-3 3" />
+                                            </svg>
+                                        </span>
+                                        <span class="nav-link-title"> Project Order </span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('VIEW_BORROWING')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('borrowing.index') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-sort-ascending-shapes">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M4 15l3 3l3 -3" />
+                                                <path d="M7 6v12" />
+                                                <path
+                                                    d="M14 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-4z" />
+                                                <path d="M17 14l-3.5 6h7z" />
+                                            </svg>
+                                        </span>
+                                        <span class="nav-link-title"> Borrowing </span>
+                                    </a>
+                                </li>
+                            @endcan
 
-                        @can('VIEW_DELIVERY')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('delivery-order.index') }}">
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-truck">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                                            <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                                            <path d="M5 17h-2v-11a1 1 0 0 1 1 -1h9v12m-4 0h6m4 0h2v-6h-8m0 -5h5l3 5" />
-                                        </svg>
-                                    </span>
-                                    <span class="nav-link-title"> Delivery Order</span>
-                                </a>
-                            </li>
-                        @endcan
+                            @can('VIEW_DELIVERY')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('delivery-order.index') }}">
+                                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-truck">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                                <path d="M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                                <path d="M5 17h-2v-11a1 1 0 0 1 1 -1h9v12m-4 0h6m4 0h2v-6h-8m0 -5h5l3 5" />
+                                            </svg>
+                                        </span>
+                                        <span class="nav-link-title"> Delivery Order</span>
+                                    </a>
+                                </li>
+                            @endcan
 
-                        @can('LOGISTIC_ORDER')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('finance-project-order.index') }}">
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-basket-dollar">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M17 10l-2 -6" />
-                                            <path d="M7 10l2 -6" />
-                                            <path
-                                                d="M13 20h-5.756a3 3 0 0 1 -2.965 -2.544l-1.255 -7.152a2 2 0 0 1 1.977 -2.304h13.999a2 2 0 0 1 1.977 2.304" />
-                                            <path d="M10 14a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                                            <path d="M21 15h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3h-2.5" />
-                                            <path d="M19 21v1m0 -8v1" />
-                                        </svg>
-                                    </span>
-                                    <span class="nav-link-title">Logistic Order </span>
-                                </a>
-                            </li>
-                        @endcan
+                            @can('LOGISTIC_ORDER')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('finance-project-order.index') }}">
+                                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-basket-dollar">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M17 10l-2 -6" />
+                                                <path d="M7 10l2 -6" />
+                                                <path
+                                                    d="M13 20h-5.756a3 3 0 0 1 -2.965 -2.544l-1.255 -7.152a2 2 0 0 1 1.977 -2.304h13.999a2 2 0 0 1 1.977 2.304" />
+                                                <path d="M10 14a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                                <path d="M21 15h-2.5a1.5 1.5 0 0 0 0 3h1a1.5 1.5 0 0 1 0 3h-2.5" />
+                                                <path d="M19 21v1m0 -8v1" />
+                                            </svg>
+                                        </span>
+                                        <span class="nav-link-title">Logistic Order </span>
+                                    </a>
+                                </li>
+                            @endcan
 
-                        @can('PERHITUNGAN_PROJECT')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('perhitungan-project.index') }}">
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-file-analytics">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                            <path
-                                                d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-                                            <path d="M9 17l0 -5" />
-                                            <path d="M12 17l0 -1" />
-                                            <path d="M15 17l0 -3" />
-                                        </svg>
-                                    </span>
-                                    <span class="nav-link-title">Perhitungan Project </span>
-                                </a>
-                            </li>
-                        @endcan
-
-
+                            @can('PERHITUNGAN_PROJECT')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('perhitungan-project.index') }}">
+                                        <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-file-analytics">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                                <path
+                                                    d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+                                                <path d="M9 17l0 -5" />
+                                                <path d="M12 17l0 -1" />
+                                                <path d="M15 17l0 -3" />
+                                            </svg>
+                                        </span>
+                                        <span class="nav-link-title">Perhitungan Project </span>
+                                    </a>
+                                </li>
+                            @endcan
 
 
-                        @can('VIEW_SETTING')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('setting.index') }}">
-                                    <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
-                                            <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                                        </svg>
-                                    </span>
-                                    <span class="nav-link-title">Setting</span>
-                                </a>
-                            </li>
-                        @endcan
 
-                        @can('VIEW_SALES_TARGET')
-                            <li class="nav-item" style="white-space: nowrap;">
-                                <a class="nav-link" href="{{ route('setting.sales-target') }}">
-                                    <span
-                                        class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
-                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                            <path
-                                                d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
-                                            <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
-                                        </svg>
-                                    </span>
-                                    <span class="nav-link-title">Sales Target</span>
-                                </a>
-                            </li>
-                        @endcan
 
-                    </ul>
+                            @can('VIEW_SETTING')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('setting.index') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path
+                                                    d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                                            </svg>
+                                        </span>
+                                        <span class="nav-link-title">Setting</span>
+                                    </a>
+                                </li>
+                            @endcan
+
+                            @can('VIEW_SALES_TARGET')
+                                <li class="nav-item" style="white-space: nowrap;">
+                                    <a class="nav-link" href="{{ route('setting.sales-target') }}">
+                                        <span
+                                            class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path
+                                                    d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" />
+                                                <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+                                            </svg>
+                                        </span>
+                                        <span class="nav-link-title">Sales Target</span>
+                                    </a>
+                                </li>
+                            @endcan
+
+                        </ul>
                     </div>
                     <!-- END NAVBAR MENU -->
                 </div>
@@ -597,7 +605,7 @@
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.3.4/js/dataTables.bootstrap5.js"></script>
-    
+
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

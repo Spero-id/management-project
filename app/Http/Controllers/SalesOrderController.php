@@ -43,6 +43,7 @@ class SalesOrderController extends Controller
     {
         $validated = $request->validate([
             'project_name' => 'required|string|max:255',
+            'no_po' => 'nullable|string|max:255',
             'pic_project' => 'required|string|max:255',
             'deadline_days' => 'required|integer|min:1',
 
@@ -73,6 +74,7 @@ class SalesOrderController extends Controller
                 'company' => $prospect->company,
                 'company_identity' => $prospect->company_identity,
                 'project_name' => $request->input('project_name'),
+                'no_po' => $request->input('no_po'),
                 'description' => '',
                 'status' => 'on-going',
                 'percentage' => 0,

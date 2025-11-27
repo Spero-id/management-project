@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('company');
             $table->string('company_identity');
             $table->string('project_name');
+            $table->string('no_po')->nullable();
             // $table->string('target_from_month');
             // $table->string('target_to_month');
             // $table->foreignId('status_id')->constrained('prospect_status')->onDelete('cascade');

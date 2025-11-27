@@ -5,7 +5,7 @@
     'installationCategories' => [],
     'accommodationCategory' => [],
     'accommodationItems' => [],
-    'type' => 'edit',
+    'type' => 'create',
     'totalJasaSetting' => 0,
 ])
 
@@ -69,7 +69,7 @@
         <!-- Installations Section -->
         <div class="row mt-5">
             <div class="col-12">
-                <label class="form-label">Installations</label>
+                <label class="form-label">Installations </label>
 
                 <div class="table-responsive">
                     <table class="table table-vcenter" id="installationsTable">
@@ -145,7 +145,7 @@
                                             ? floatval($item->proportional)
                                             : 0;
                                     $unitPrice = isset($allocations[$idx]) ? $allocations[$idx] : 0;
-                                    $quantity = 0;
+                                    $quantity = $item->quantity;
                                     $subtotal = $unitPrice * $quantity;
                                 @endphp
                                 <tr class="installation-row"
@@ -256,11 +256,11 @@
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <label class="form-label">Harga Tiket Pesawat (per orang)</label>
-                                        <input type="number" id="accommodation_ticket_price"
+                                        <input type="text" id="accommodation_ticket_price"
                                             name="accommodation_plane_ticket_price"
                                             class="form-control @error('accommodation_plane_ticket_price') is-invalid @enderror"
-                                            placeholder="Enter ticket price"
-                                            value="{{ old('accommodation_plane_ticket_price', $quotation?->accommodation_plane_ticket_price ?? 0) }}">
+                                            placeholder="0"
+                                            value="{{ old('accommodation_plane_ticket_price') ? number_format($quotation?->accommodation_plane_ticket_price ?? 0, 0, ',', '.') : number_format($quotation?->accommodation_plane_ticket_price ?? 0, 0, ',', '.') }}">
                                         @error('accommodation_plane_ticket_price')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -583,13 +583,23 @@
                 }
             }
 
+            function formatRupiahInput(input) {
+                let value = input.value.replace(/[^0-9]/g, '');
+                if (value) {
+                    value = parseInt(value, 10);
+                    input.value = formatRupiah(value);
+                } else {
+                    input.value = '';
+                }
+            }
+
             function calculateTicketPrice() {
                 const peopleEl = document.getElementById('accommodation_people');
                 const ticketEl = document.getElementById('accommodation_ticket_price');
                 if (!peopleEl || !ticketEl) return;
 
                 const people = parseInt(peopleEl.value) || 0;
-                const ticket = parseInt(ticketEl.value) || 0;
+                const ticket = parseRupiah(ticketEl.value) || 0;
 
                 if (people > 0 && ticket > 0) {
                     const TicketPrice = ticket * people * 2;
@@ -727,6 +737,20 @@
 
                 // Attach accommodation field listeners
                 safeAttachAccommodationListeners();
+
+                // Format Rupiah on input for ticket price
+                const ticketPriceInput = document.getElementById('accommodation_ticket_price');
+                if (ticketPriceInput) {
+                    ticketPriceInput.addEventListener('input', function() {
+                        formatRupiahInput(this);
+                        calculateTicketPrice();
+                    });
+
+                    // Format on load
+                    if (ticketPriceInput.value) {
+                        formatRupiahInput(ticketPriceInput);
+                    }
+                }
             });
         })
         ();

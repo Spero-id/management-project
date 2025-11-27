@@ -47,10 +47,11 @@
         <div class="col">
             <!-- Page pre-title -->
             <div class="page-pretitle">Finance</div>
-            <h2 class="page-title">Items to order</h2>
+            <h2 class="page-title">Logistic Order</h2>
         </div>
         <!-- Page title actions -->
         <div class="col-auto ms-auto d-print-none">
+
             <!-- PO Upload Modal -->
             <div class="modal modal-blur fade" id="modal-po-upload" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -59,7 +60,8 @@
                             <h5 class="modal-title" id="po-modal-title">Manage purchase order</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form id="po-upload-form" method="POST" action="{{ route('finance-project-order.upload-po') }}" enctype="multipart/form-data">
+                        <form id="po-upload-form" method="POST" action="{{ route('finance-project-order.upload-po') }}"
+                            enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" id="po-order-item-id" name="order_item_id">
                             <div class="modal-body">
@@ -97,7 +99,8 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label required">Estimated arrival date</label>
-                                        <input type="date" class="form-control" id="po-eta" name="estimated_arrival_date" required>
+                                        <input type="date" class="form-control" id="po-eta"
+                                            name="estimated_arrival_date" required>
                                     </div>
                                 </div>
 
@@ -204,6 +207,15 @@
                                             ],
                                         ]" />
                                 </div>
+                                <button type="button" class="btn btn-primary btn-confirm-order" data-project-id="{{ $project->projectOrder->id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" class="icon">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M5 12l5 5l10 -10" />
+                                    </svg>
+                                    Confirm order
+                                </button>
                             </div>
                         @empty
                             <div class="tab-pane active show" id="tab-no-project" role="tabpanel">
@@ -345,7 +357,8 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Success',
-                            text: response.message || 'Purchase order has been saved successfully',
+                            text: response.message ||
+                                'Purchase order has been saved successfully',
                             showConfirmButton: false,
                             timer: 2000
                         });
@@ -381,6 +394,88 @@
                         // Re-enable submit button
                         submitBtn.prop('disabled', false);
                         $('#save-po-text').text(originalText);
+                    }
+                });
+            });
+
+            // Handle confirm order button
+            $('.btn-confirm-order').on('click', function() {
+                const button = $(this);
+                // Get project ID from button data attribute
+                const projectId = button.data('project-id');
+
+                if (!projectId) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Please select a project first',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Confirm order',
+                    text: 'Are you sure you want to confirm this order? Stock will be updated based on remaining quantity.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, confirm',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#206bc4',
+                    cancelButtonColor: '#d63939'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Disable button
+                        button.prop('disabled', true).html(
+                            '<span class="spinner-border spinner-border-sm me-2"></span>Processing...'
+                            );
+
+                        $.ajax({
+                            url: '{{ route('finance-project-order.confirm-order') }}',
+                            type: 'POST',
+                            data: {
+                                project_id: projectId,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: response.message ||
+                                        'Order has been confirmed and stock updated successfully',
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                }).then(() => {
+                                    // Reload page or redirect
+                                    window.location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                let errorMessage =
+                                    'An error occurred while confirming the order';
+
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                } else if (xhr.responseJSON && xhr.responseJSON
+                                    .errors) {
+                                    const errors = Object.values(xhr.responseJSON
+                                        .errors).flat();
+                                    errorMessage = errors.join('<br>');
+                                }
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    html: errorMessage,
+                                    confirmButtonText: 'OK'
+                                });
+
+                                // Re-enable button
+                                button.prop('disabled', false).html(
+                                    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10"/></svg> Confirm order'
+                                    );
+                            }
+                        });
                     }
                 });
             });

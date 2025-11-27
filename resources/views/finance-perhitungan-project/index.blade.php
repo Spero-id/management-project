@@ -350,30 +350,24 @@
                                         
                                         @foreach($project->quotationItemsGrouped as $groupedItem)
                                             @php
-                                                $product = $groupedItem['product'];
-                                                $qty = $groupedItem['total_qty'];
-                                                $unitPrice = $groupedItem['unit_price'];
-                                                $totalPrice = $groupedItem['total_price'];
-                                                
-                                                // Calculate base price (assuming 48% discount from price)
-                                                $hargaDasar = $unitPrice * 0.52;
-                                                $totalHargaDasar = $qty * $hargaDasar;
-                                                
-                                                $total += $totalPrice;
-                                                $totalDasar += $totalHargaDasar;
+                                                $itemTotal = $groupedItem['total_qty'] * $groupedItem['product']->price;
+                                                $itemTotalDasar = $groupedItem['total_qty'] * $groupedItem['product']->base_price_rupiah_for_luar_negeri;
+
+                                                $total += $itemTotal;
+                                                $totalDasar += $itemTotalDasar;
                                             @endphp
                                             
                                             <tr>
                                                 <td class="text-center">{{ $no++ }}</td>
-                                                <td>{{ $product->description ?? $product->name }}</td>
-                                                <td class="text-center">{{ $product->brand ?? '-' }}</td>
-                                                <td>{{ $product->type ?? '-' }}</td>
-                                                <td class="text-center">{{ $qty }}</td>
+                                                <td>{{ $groupedItem['product']->name }}</td>
+                                                <td class="text-center">{{ $groupedItem['product']->brand ?? '-' }}</td>
+                                                <td>{{ $groupedItem['product']->type ?? '-' }}</td>
+                                                <td class="text-center">{{ $groupedItem['total_qty'] }}</td>
                                                 <td class="text-center">Unit</td>
-                                                <td class="text-end">Rp {{ number_format($unitPrice, 0, ',', '.') }}</td>
-                                                <td class="text-end">Rp {{ number_format($totalPrice, 0, ',', '.') }}</td>
-                                                <td class="text-end">Rp {{ number_format($hargaDasar, 0, ',', '.') }}</td>
-                                                <td class="text-end">Rp {{ number_format($totalHargaDasar, 0, ',', '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($groupedItem['product']->price, 0, ',', '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($itemTotal, 0, ',', '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($groupedItem['product']->base_price_rupiah_for_luar_negeri, 0, ',', '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($itemTotalDasar, 0, ',', '.') }}</td>
                                             </tr>
                                         @endforeach
                                         
@@ -384,17 +378,32 @@
                                             <td class="text-end"><strong>TOTAL</strong></td>
                                             <td class="text-end"><strong>Rp {{ number_format($totalDasar, 0, ',', '.') }}</strong></td>
                                         </tr>
-                                        <tr class="table-light">
-                                            <td colspan="8"></td>
-                                            <td class="text-end"><strong>Ppn</strong></td>
-                                            <td class="text-end"><strong>Rp {{ number_format($totalDasar * 0.11, 0, ',', '.') }}</strong></td>
+                                         <tr class="table-light">
+                                            @php
+                                                $ppn = $total * 0.11;
+                                                $ppnDasar = $totalDasar * 0.11;
+                                            @endphp
+                                            <td colspan="6"></td>
+                                            <td class="text-end"><strong>PPN (11%)</strong></td>
+                                            <td class="text-end"><strong>Rp {{ number_format($ppn, 0, ',', '.') }}</strong></td>
+                                            <td class="text-end"><strong>PPN  (11%)</strong></td>
+                                            <td class="text-end"><strong>Rp {{ number_format($ppnDasar, 0, ',', '.') }}</strong></td>
                                         </tr>
+                                        
                                         <tr class="table-light">
-                                            <td colspan="7"></td>
-                                            <td class="text-end"><strong>GRAND TOTAL</strong></td>
-                                            <td class="text-end"><strong>GRAND TOTAL</strong></td>
-                                            <td class="text-end"><strong>Rp {{ number_format($totalDasar * 1.11, 0, ',', '.') }}</strong></td>
+                                            @php
+                                                $ppn = $total * 0.11;
+                                                $ppnDasar = $totalDasar * 0.11;
+                                                $grandTotal = $total + $ppn;
+                                                $grandTotalDasar = $totalDasar + $ppnDasar;
+                                            @endphp
+                                            <td colspan="6"></td>
+                                            <td class="text-end"><strong>GRAND TOTAL (Incl. PPN 11%)</strong></td>
+                                            <td class="text-end"><strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong></td>
+                                            <td class="text-end"><strong>GRAND TOTAL (Incl. PPN 11%)</strong></td>
+                                            <td class="text-end"><strong>Rp {{ number_format($grandTotalDasar, 0, ',', '.') }}</strong></td>
                                         </tr>
+                                        
                                     </tbody>
                                 </table>
                             </div>

@@ -11,12 +11,27 @@ class Project extends Model
 
 
     protected $table = 'projects';
+    
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'client_name',
+        'client_email', 
+        'client_phone',
+        'company',
+        'company_identity',
+        'project_name',
+        'no_po',
+        'description',
+        'created_by',
+        'prospect_id',
+        'execution_time',
+        'po_file',
+        'spk_file'
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -38,6 +53,13 @@ class Project extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function projectOrder()
+    {
+        return $this->hasOne(ProjectOrder::class, 'project_id');
+    }
+
+    
 
     /**
      * Get the project manager.

@@ -18,6 +18,9 @@ return new class extends Migration
             $table->integer('weight')->nullable();
             $table->bigInteger('shipping_fee_by_air')->nullable();
             $table->decimal("dollar_base_price", 10, 2)->nullable();
+            $table->bigInteger('base_price_rupiah_for_luar_negeri')->nullable();
+            $table->bigInteger('base_price_rupiah_for_jakarta')->nullable();
+            $table->integer('margin_percentage');
         });
     }
 

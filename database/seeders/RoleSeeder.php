@@ -70,7 +70,6 @@ class RoleSeeder extends Seeder
 
         Role::create(['name' => 'SUPER_ADMIN'])->givePermissionTo(Permission::all());
         Role::create(['name' => 'BOD'])->givePermissionTo([
-            'CREATE_PROSPECT',
             'EDIT_PROSPECT',
             'DELETE_PROSPECT',
             'VIEW_PROSPECT',
@@ -134,7 +133,6 @@ class RoleSeeder extends Seeder
         ]);
 
         Role::create(['name' => 'PROJECT'])->givePermissionTo([
-
             'VIEW_PROJECT',
             'CREATE_PROJECT',
             'EDIT_PROJECT',

@@ -8,6 +8,13 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::group(['prefix' => 'profile', 'as' => 'profile.'], function () {
+        Route::get('/', [App\Http\Controllers\ProfileController::class, 'index'])->name('index');
+        Route::post('/upload-photo', [App\Http\Controllers\UserController::class, 'uploadProfilePhoto'])->name('upload-photo');
+        Route::post('/upload-signature', [App\Http\Controllers\UserController::class, 'uploadSignature'])->name('upload-signature');
+        Route::post('/upload-document', [App\Http\Controllers\ProfileController::class, 'uploadDocument'])->name('upload-document');
+    });
+
     Route::group(['prefix' => 'kpi', 'as' => 'kpi.'], function () {
         Route::view('/', 'kpi.index')->name('index');
         Route::view('/1', 'kpi.show')->name('show');
@@ -79,6 +86,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/{quotation}', [App\Http\Controllers\QuotationController::class, 'update'])->name('update');
         Route::delete('/{quotation}', [App\Http\Controllers\QuotationController::class, 'destroy'])->name('destroy');
 
+        Route::put('/prospects/{prospect}/quotation-conditions', [App\Http\Controllers\QuotationController::class, 'updateConditions'])
+            ->name('updateConditions');
+
         Route::get('/{quotation}/pdf', [App\Http\Controllers\QuotationController::class, 'generatePDF'])->name('pdf');
     });
 
@@ -95,7 +105,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [App\Http\Controllers\ProductController::class, 'destroy'])->name('destroy');
         Route::patch('/{id}/restore', [App\Http\Controllers\ProductController::class, 'restore'])->name('restore');
         Route::delete('/{id}/force-delete', [App\Http\Controllers\ProductController::class, 'forceDelete'])->name('force-delete');
-      
+
         Route::get('/datatable/api', [App\Http\Controllers\ProductController::class, 'dataTableAPI'])->name('datatable.api');
     });
 
@@ -156,6 +166,13 @@ Route::middleware('auth')->group(function () {
     Route::group(['prefix' => 'settings', 'as' => 'settings.'], function () {
         Route::put('/currency-exchange', [App\Http\Controllers\SettingController::class, 'updateCurrencyExchange'])->name('currency-exchange.update');
         Route::put('/total-jasa', [App\Http\Controllers\SettingController::class, 'updateTotalJasa'])->name('total-jasa.update');
+    });
+
+    Route::group(['prefix' => 'quotation-condition', 'as' => 'quotation-condition.'], function () {
+        Route::get('/datatable', [App\Http\Controllers\SettingController::class, 'quotationConditionDatatable'])->name('datatable');
+        Route::post('/', [App\Http\Controllers\SettingController::class, 'storeQuotationCondition'])->name('store');
+        Route::put('/{quotationCondition}', [App\Http\Controllers\SettingController::class, 'updateQuotationCondition'])->name('update');
+        Route::delete('/{quotationCondition}', [App\Http\Controllers\SettingController::class, 'destroyQuotationCondition'])->name('destroy');
     });
 
     Route::group(['prefix' => 'project-weekly-meetings', 'as' => 'project-weekly-meetings.'], function () {
@@ -222,6 +239,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [App\Http\Controllers\ProjectOrderController::class, 'FinanceIndex'])->name('index');
         Route::get('/datatable', [App\Http\Controllers\ProjectOrderController::class, 'financeDatatable'])->name('datatable');
         Route::post('/upload-po', [App\Http\Controllers\ProjectOrderController::class, 'uploadPO'])->name('upload-po');
+        Route::post('/confirm-order', [App\Http\Controllers\ProjectOrderController::class, 'confirmOrder'])->name('confirm-order');
     });
 
     Route::group(['prefix' => 'delivery-order', 'as' => 'delivery-order.'], function () {
@@ -231,6 +249,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [App\Http\Controllers\DeliveryOrderController::class, 'store'])->name('store');
         Route::get('/project-items/{projectId}', [App\Http\Controllers\DeliveryOrderController::class, 'getProjectItems'])->name('project-items');
         Route::get('/{id}', [App\Http\Controllers\DeliveryOrderController::class, 'show'])->name('show');
+        Route::get('/{id}/pdf', [App\Http\Controllers\DeliveryOrderController::class, 'streamPdf'])->name('pdf');
     });
 
     // perhitungan project

@@ -29,6 +29,7 @@ class Prospect extends Model
         'is_empty',
         'product_offered',
         'is_converted_to_project',
+        'quotation_conditions',
     ];
 
     protected $appends = ['target_deal'];
@@ -36,6 +37,7 @@ class Prospect extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'quotation_conditions' => 'json',
     ];
 
     public function minuteOfMeetings()
