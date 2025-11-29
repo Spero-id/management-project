@@ -13,7 +13,7 @@
                 <path d="M7 9l5 -5l5 5" />
                 <path d="M12 4l0 12" />
             </svg>
-            <span>Import list of work</span>
+            <span>Import Weekly Meeting</span>
         </button>
 
         <a type="button" class="btn btn-success d-flex align-items-center"
@@ -26,7 +26,7 @@
                 <path d="M7 11l5 5l5 -5" />
                 <path d="M12 4l0 12" />
             </svg>
-            <span>Export list of work</span>
+            <span>Export Weekly Meeting</span>
         </a>
     </div>
 
@@ -81,7 +81,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label text-muted">Complete Date</label>
-                            <input type="date" name="end_date" class="form-control" required>
+                            <input type="date" name="end_date" class="form-control">
                         </div>
 
                         <div class="col-md-6">
@@ -153,7 +153,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label text-muted">Complete Date</label>
-                            <input type="date" name="end_date" id="edit_end_date" class="form-control" required>
+                            <input type="date" name="end_date" id="edit_end_date" class="form-control">
                         </div>
 
                         <div class="col-md-6">

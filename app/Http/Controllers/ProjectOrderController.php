@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductStock;
 use App\Models\Project;
 use App\Models\ProjectOrder;
 use App\Models\ProjectOrderItem;
-use App\Models\ProductStock;
 use App\Models\QuotationItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,10 +47,14 @@ class ProjectOrderController extends Controller
 
         $projectOrder = ProjectOrder::where('is_confirmed', true)
             ->where('is_order_confirmed', false)
-        ->pluck('project_id');
+            ->pluck('project_id');
         $projects = Project::with('prospect.quotations.items.product')
             ->whereIn('id', $projectOrder)
             ->get();
+
+
+            
+
 
         return view('finance-project-order.index', compact('projects'));
     }
@@ -103,50 +107,46 @@ class ProjectOrderController extends Controller
         $project = Project::with('prospect.quotations.items.product.stock')
             ->findOrFail($projectOrder->project_id);
 
-        $existingOrders = ProjectOrderItem::where('project_id', $projectId)
-            ->get()
-            ->keyBy('quotation_item_id');
+        $projectOrderItems = ProjectOrderItem::where('project_id', $projectId)
+            ->with(['product.stock', 'quotationItem'])
+            ->get();
 
         $quotationItems = collect([]);
 
-        if ($project->prospect && $project->prospect->quotations) {
-            foreach ($project->prospect->quotations as $quotation) {
-                foreach ($quotation->items as $item) {
-                    $existingOrder = $existingOrders->get($item->id);
-                    $currentStockUsed = $existingOrder ? $existingOrder->stock_used : 0;
-                    $remainingQty = $item->quantity - $currentStockUsed;
+        foreach ($projectOrderItems as $orderItem) {
+            $product = $orderItem->product;
+            $quotationItem = $orderItem->quotationItem;
+            $currentStockUsed = $orderItem->stock_used ?? 0;
+            $currentDeliveryQty = $orderItem->delivery_qty ?? 0;
+            $requiredQty = $orderItem->required_qty ?? ($quotationItem->quantity ?? 0);
+            $remainingQty = $orderItem->remaining_qty ;
 
-                    // Determine status based on stock usage
-                    $status = 'pending';
-                    if ($existingOrder) {
-                        if ($currentStockUsed >= $item->quantity) {
-                            $status = 'complete';
-                        } elseif ($currentStockUsed > 0) {
-                            $status = 'partial';
-                        } else {
-                            $status = 'pending';
-                        }
-                    }
-
-                    $quotationItems->push([
-                        'id' => $item->id,
-                        'project_id' => $projectId,
-                        'product_id' => $item->product_id,
-                        'brand' => $item->product->brand ?? '-',
-                        'model_type' => $item->product->type ?? $item->product->name ?? '-',
-                        'qty_needed' => $item->quantity,
-                        'qty_ready' => $currentStockUsed,
-                        'remaining_qty' => max(0, $remainingQty),
-                        'qty' => $item->quantity,
-                        'unit' => 'unit',
-                        'stok' => $item->product->stock->stock_quantity ?? 0,
-                        'stock_used_so_far' => $currentStockUsed,
-                        'existing_ead' => $existingOrder && $existingOrder->estimated_arrival_date ? $existingOrder->estimated_arrival_date->format('Y-m-d') : '',
-                        'ead' => '-',
-                        'status' => $status,
-                    ]);
-                }
+            // Determine status based on stock usage
+            $status = 'pending';
+            if ($currentStockUsed >= $remainingQty) {
+                $status = 'complete';
+            } elseif ($currentStockUsed > 0) {
+                $status = 'partial';
             }
+
+            $quotationItems->push([
+                'id' => $quotationItem->id ?? $orderItem->id,
+                'project_id' => $projectId,
+                'product_id' => $orderItem->product_id,
+                'brand' => $product->brand ?? '-',
+                'model_type' => $product->type ?? $product->name ?? '-',
+                'qty_needed' => $requiredQty,
+                'qty_ready' => $currentStockUsed,
+                'delivery_qty' => $currentDeliveryQty,
+                'remaining_qty' => max(0, $remainingQty),
+                'qty' => $requiredQty,
+                'unit' => 'unit',
+                'stok' => $product->stock->stock_quantity ?? 0,
+                'stock_used_so_far' => $currentStockUsed,
+                'existing_ead' => $orderItem->estimated_arrival_date ? $orderItem->estimated_arrival_date->format('Y-m-d') : '',
+                'ead' => '-',
+                'status' => $status,
+            ]);
         }
 
         $orders = $quotationItems;
@@ -154,6 +154,9 @@ class ProjectOrderController extends Controller
         return DataTables::of($orders)
             ->addColumn('ead', function ($row) {
                 return $row['existing_ead'] ?: '-';
+            })
+            ->addColumn('delivery_qty', function ($row) {
+                return $row['delivery_qty'];
             })
             ->addColumn('status', function ($row) {
                 $status = $row['status'];
@@ -199,6 +202,7 @@ class ProjectOrderController extends Controller
                         data-stock="'.$row['stok'].'" 
                         data-qty="'.$row['qty_needed'].'" 
                         data-qty-ready="'.$row['qty_ready'].'" 
+                        data-delivery-qty="'.$row['delivery_qty'].'" 
                         data-qty-remaining="'.$row['remaining_qty'].'" 
                         data-stock-used="'.$row['stock_used_so_far'].'" 
                         data-ead="'.$row['existing_ead'].'" 
@@ -510,9 +514,10 @@ class ProjectOrderController extends Controller
                 // Create or update project order item
                 if ($existingOrder) {
                     $existingOrder->update([
-                        'stock_used' => $newStockUsed,
+                        'stock_used' => $item['stock_used'],
                         'estimated_arrival_date' => $item['estimated_arrival_date'],
                         'order_status' => $orderStatus,
+                        'remaining_qty' => $existingOrder->remaining_qty - $item['stock_used'],
                     ]);
                 } else {
                     ProjectOrderItem::create([
@@ -528,7 +533,6 @@ class ProjectOrderController extends Controller
                 }
 
                 // Reduce product stock
-                $productStock->decrement('stock_quantity', $item['stock_used']);
             }
 
             DB::commit();
@@ -556,6 +560,14 @@ class ProjectOrderController extends Controller
             $projectOrder = ProjectOrder::where('project_id', $projectId)->firstOrFail();
 
             $projectOrder->update(['is_confirmed' => true]);
+
+            foreach ($projectOrder->items as $item) {
+                $productStock = ProductStock::firstOrNew([
+                    'product_id' => $item->product_id,
+                ]);
+                $productStock->stock_quantity = ($productStock->stock_quantity ?? 0) - $item->stock_used;
+                $productStock->save();
+            }
 
             return response()->json([
                 'success' => true,
@@ -663,11 +675,12 @@ class ProjectOrderController extends Controller
 
         try {
             $projectOrder = ProjectOrder::findOrFail($request->project_id);
+            $projectOrder->update(['is_confirmed' => false]);
 
             // Check if already confirmed
             if ($projectOrder->is_order_confirmed) {
                 return response()->json([
-                    'message' => 'Order has already been confirmed'
+                    'message' => 'Order has already been confirmed',
                 ], 422);
             }
 
@@ -678,18 +691,19 @@ class ProjectOrderController extends Controller
 
             if ($projectOrderItems->isEmpty()) {
                 return response()->json([
-                    'message' => 'No items found for this project order'
+                    'message' => 'No items found for this project order',
                 ], 422);
             }
 
             // Update stock for each item based on remaining quantity
             foreach ($projectOrderItems as $item) {
-                $remainingQty = $item->required_qty - $item->stock_used;
+
+                $remainingQty = $item->remaining_qty;
 
                 if ($remainingQty > 0) {
                     // Get or create product stock
                     $productStock = ProductStock::firstOrNew([
-                        'product_id' => $item->product_id
+                        'product_id' => $item->product_id,
                     ]);
 
                     // Add remaining quantity to stock
@@ -697,7 +711,7 @@ class ProjectOrderController extends Controller
                     $productStock->save();
 
                     // Update stock_used to match required_qty
-                    $item->stock_used = $item->required_qty;
+                    // $item->remaining_qty = 0;
                     $item->save();
                 }
             }
@@ -712,14 +726,14 @@ class ProjectOrderController extends Controller
                 'message' => 'Order confirmed successfully and stock updated',
                 'data' => [
                     'project_order' => $projectOrder,
-                    'items_updated' => $projectOrderItems->count()
-                ]
+                    'items_updated' => $projectOrderItems->count(),
+                ],
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
-                'message' => 'Failed to confirm order: ' . $e->getMessage()
+                'message' => 'Failed to confirm order: '.$e->getMessage(),
             ], 500);
         }
     }

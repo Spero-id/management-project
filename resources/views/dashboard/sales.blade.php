@@ -12,22 +12,9 @@
             height: 450px;
         }
 
-        .team-button {
-            background: white;
-            border: 2px solid #e5e7eb;
-            color: #374151;
-            padding: 10px 20px;
-            margin: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
 
-        .team-button.active {
-            background: #3b82f6;
-            border-color: #3b82f6;
-            color: white;
-        }
+
+
 
         .chart-container {
             background: white;
@@ -43,55 +30,7 @@
             width: 100% !important;
         }
 
-        .performance-table {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
 
-        .performance-table table {
-            color: #374151;
-            margin-bottom: 0;
-        }
-
-        .performance-table th {
-            background: #f8fafc;
-            border: none;
-            padding: 15px;
-            color: #374151;
-        }
-
-        .performance-table td {
-            border-color: #e5e7eb;
-            padding: 15px;
-        }
-
-        .completion-bar {
-            height: 20px;
-            background: #f1f5f9;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .completion-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-
-        .completion-yellow {
-            background: #f59e0b;
-        }
-
-        .completion-blue {
-            background: #3b82f6;
-        }
-
-        .completion-green {
-            background: #10b981;
-        }
 
         .chart-title {
             font-size: 1.5rem;
@@ -101,10 +40,7 @@
             color: #374151;
         }
 
-        .opacity-50 {
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
-        }
+
 
         /* Custom styles for the prospects table */
         .card-table {
@@ -239,13 +175,25 @@
                             <div class="col-12 mb-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="text-secondary">TARGET SALES YEARLY</div>
-                                    <div class="fw-bold">Rp 4.500.000.000</div>
+                                    <div class="fw-bold">
+                                        @if($salesTarget && $salesTarget->target_yearly > 0)
+                                            Rp {{ number_format($salesTarget->target_yearly, 0, ',', '.') }}
+                                        @else
+                                            <span class="text-muted">Target belum ditetapkan</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="text-secondary">TARGET SALES MONTHLY</div>
-                                    <div class="fw-bold">Rp 375.000.000</div>
+                                    <div class="fw-bold">
+                                        @if($salesTarget && $salesTarget->target_monthly > 0)
+                                            Rp {{ number_format($salesTarget->target_monthly, 0, ',', '.') }}
+                                        @else
+                                            <span class="text-muted">Target belum ditetapkan</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -265,37 +213,37 @@
                     <div class="mt-2">
                         <div class="report-row">
                             <div class="report-label">PENCAPAIAN TARGET</div>
-                            <div class="report-value">70 %</div>
+                            <div class="report-value">{{ $reportMetrics['target_achievement'] }}%</div>
                         </div>
 
                         <div class="report-row">
                             <div class="report-label">TOTAL PROSPEK</div>
-                            <div class="report-value">30</div>
+                            <div class="report-value">{{ $reportMetrics['total_prospects'] }}</div>
                         </div>
 
                         <div class="report-row">
                             <div class="report-label">PROSPEK DEAL</div>
-                            <div class="report-value">9</div>
+                            <div class="report-value">{{ $reportMetrics['prospects_deal'] }}</div>
                         </div>
 
                         <div class="report-row">
                             <div class="report-label">PROSPEK BARU BULAN</div>
-                            <div class="report-value">15</div>
+                            <div class="report-value">{{ $reportMetrics['prospects_new_month'] }}</div>
                         </div>
 
                         <div class="report-row">
                             <div class="report-label">PROSPEK LOST</div>
-                            <div class="report-value">6</div>
+                            <div class="report-value">{{ $reportMetrics['prospects_lost'] }}</div>
                         </div>
 
                         <div class="report-row">
                             <div class="report-label">TOTAL OMSET</div>
-                            <div class="report-value">Rp 4.500.000.000</div>
+                            <div class="report-value">Rp {{ number_format($reportMetrics['total_omset'], 0, ',', '.') }}</div>
                         </div>
 
                         <div class="report-row">
                             <div class="report-label">TOTAL DEAL</div>
-                            <div class="report-value">Rp 3.150.000.000</div>
+                            <div class="report-value">Rp {{ number_format($reportMetrics['total_deal'], 0, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
@@ -574,22 +522,7 @@
                 $('#deleteProspectForm').attr('action', baseUrl + '/' + prospectId);
             });
 
-            // Sales team selection
-            $('.team-button').click(function() {
-                $('.team-button').removeClass('active');
-                $(this).addClass('active');
 
-                var selectedTeam = $(this).data('team');
-                console.log('Selected team:', selectedTeam);
-
-                // Show loading state
-                $('.chart-container').addClass('opacity-50');
-                $('.performance-table').addClass('opacity-50');
-                $('.table-responsive').addClass('opacity-50');
-
-                // Call AJAX to update data based on selected team
-                updateDashboardData(selectedTeam);
-            });
         });
 
         // Functions for updating table info and pagination
@@ -612,6 +545,11 @@
                 monthlyChart.destroy();
             }
 
+            // Calculate monthly target based on yearly target
+            const salesTarget = @json($salesTarget);
+            const monthlyTargetAmount = salesTarget && salesTarget.target_monthly > 0 ? salesTarget.target_monthly : 0;
+            const targetLine = new Array(12).fill(monthlyTargetAmount);
+
             monthlyChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -633,9 +571,8 @@
                             borderWidth: 1
                         },
                         {
-                            label: 'TARGET',
-                            data: monthlyData.target_completion.map(rate => rate *
-                                150000), // Scale for visualization
+                            label: 'TARGET BULANAN',
+                            data: targetLine,
                             type: 'line',
                             borderColor: '#f59e0b',
                             backgroundColor: 'transparent',
@@ -643,7 +580,7 @@
                             pointBackgroundColor: '#f59e0b',
                             pointBorderColor: '#f59e0b',
                             pointRadius: 5,
-                            yAxisID: 'y1'
+                            borderDash: [5, 5]
                         }
                     ]
                 },
@@ -664,7 +601,13 @@
                             ticks: {
                                 color: '#374151',
                                 callback: function(value) {
-                                    return (value / 1000000) + 'M';
+                                    if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toFixed(1) + 'M';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toFixed(0) + 'K';
+                                    } else {
+                                        return 'Rp ' + value.toLocaleString('id-ID');
+                                    }
                                 }
                             },
                             grid: {
@@ -678,103 +621,13 @@
                             grid: {
                                 color: 'rgba(0, 0, 0, 0.1)'
                             }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: false,
-                            position: 'right',
-                            max: 100 * 150000,
-                            grid: {
-                                drawOnChartArea: false,
-                            }
                         }
                     }
                 }
             });
         }
 
-        // Function to update dashboard data via AJAX
-        function updateDashboardData(team) {
-            $.ajax({
-                url: '/dashboard/team/' + team,
-                method: 'GET',
-                success: function(response) {
-                    console.log('Received data:', response);
 
-                    // Update chart with new data
-                    initializeChart(response.monthlyData);
-
-                    // Update performance table
-                    updatePerformanceTable(response.performanceData);
-
-                    // Update prospects table
-                    updateProspectsTable(response.prospects || []);
-
-                    // Update chart title to show selected team
-                    $('.chart-title').text('Performance Data for ' + response.teamName);
-
-                    // Remove loading state
-                    $('.chart-container').removeClass('opacity-50');
-                    $('.performance-table').removeClass('opacity-50');
-                    $('.table-responsive').removeClass('opacity-50');
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching team data:', error);
-                    alert('Error loading team data. Please try again.');
-
-                    // Remove loading state
-                    $('.chart-container').removeClass('opacity-50');
-                    $('.performance-table').removeClass('opacity-50');
-                    $('.table-responsive').removeClass('opacity-50');
-                }
-            });
-        }
-
-        // Function to update performance table
-        function updatePerformanceTable(performanceData) {
-            const tbody = $('.performance-table tbody');
-            tbody.empty();
-
-            if (performanceData.length === 0) {
-                tbody.append(`
-                    <tr>
-                        <td colspan="7" class="text-center py-5">
-                            <div class="text-muted">
-                                <i class="fa fa-chart-bar mb-3" style="font-size: 3rem;"></i>
-                                <h5>No performance data available for this sales team</h5>
-                                <p>This sales person has no quotations or company data yet.</p>
-                            </div>
-                        </td>
-                    </tr>
-                `);
-                return;
-            }
-
-            performanceData.forEach(function(data) {
-                const row = `
-                    <tr>
-                        <td class="fw-bold">${data.company}</td>
-                        <td>${new Intl.NumberFormat('id-ID').format(data.monthly_target)}</td>
-                        <td>${new Intl.NumberFormat('id-ID').format(data.completion)}</td>
-                        <td>
-                            <div class="completion-bar">
-                                <div class="completion-fill completion-${data.monthly_completion_color}" 
-                                     style="width: ${data.monthly_completion_rate}%"></div>
-                            </div>
-                        </td>
-                        <td>${new Intl.NumberFormat('id-ID').format(data.yearly_target)}</td>
-                        <td>${new Intl.NumberFormat('id-ID').format(data.accumulative_total)}</td>
-                        <td>
-                            <div class="completion-bar">
-                                <div class="completion-fill completion-${data.yearly_completion_color}" 
-                                     style="width: ${data.yearly_completion_rate}%"></div>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                tbody.append(row);
-            });
-        }
 
         // Function to update prospects table
         function updateProspectsTable(prospects) {

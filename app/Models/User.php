@@ -75,5 +75,13 @@ class User extends Authenticatable
         return $this->quotations()->count();
     }
 
+    public function salesTargets()
+    {
+        return $this->hasMany(SalesTarget::class);
+    }
 
+    public function currentYearSalesTarget()
+    {
+        return $this->hasOne(SalesTarget::class)->where('year', date('Y'));
+    }
 }

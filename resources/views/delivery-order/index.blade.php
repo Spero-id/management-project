@@ -113,26 +113,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="btn-print-do">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" class="icon">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" />
-                            <path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" />
-                            <path d="M7 13m0 2a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2z" />
-                        </svg>
-                        Print
-                    </button>
-                </div>
+             
             </div>
         </div>
     </div>
 
     <!-- Create Delivery Order Modal -->
-    <div class="modal modal-blur fade" id="modal-create-delivery-order" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal modal-blur fade" id="modal-create-delivery-order" tabindex="-1" role="dialog"
+        aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -256,6 +244,8 @@
                     '</div>'
                 );
 
+
+
                 $.ajax({
                     url: `/delivery-order/project-items/${projectId}`,
                     method: 'GET',
@@ -293,16 +283,54 @@
             }
 
             function renderItems(items) {
-                let html = '<div class="table-responsive"><table class="table table-bordered"><thead><tr>' +
-                    '<th width="20%">Product</th><th width="10%">Brand</th><th width="10%">Model/Type</th><th width="8%">Required</th><th width="8%">Delivered</th><th width="8%">Remaining</th><th width="8%">QTY</th><th width="20%">Serial Numbers</th><th width="8%">Notes</th>' +
+                // Filter out items where delivery is already complete or stock_used is 0/empty
+                const availableItems = items.filter(item =>
+                    item.delivered_qty < item.quantity &&
+                    item.stock_used > 0
+                );
+                console.log(availableItems)
+
+                const filteredCount = items.length - availableItems.length;
+
+                let html = '';
+
+                // Show information message if some items are filtered out
+                if (filteredCount > 0) {
+                    html += '<div class="alert alert-info mb-3">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<path stroke="none" d="M0 0h24v24H0z" fill="none"></path>' +
+                        '<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path>' +
+                        '<path d="M12 9h.01"></path>' +
+                        '<path d="M11 12h1v4h1"></path>' +
+                        '</svg>' +
+                        '<div><strong>' + filteredCount +
+                        '</strong> item(s) are hidden because they have been fully delivered or have no available stock</div>' +
+                        '</div>';
+                }
+
+                if (availableItems.length === 0) {
+                    html += '<div class="alert alert-warning">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<path stroke="none" d="M0 0h24v24H0z" fill="none"></path>' +
+                        '<path d="M12 9v2m0 4v.01" /></path>' +
+                        '<path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" /></path>' +
+                        '</svg>' +
+                        '<div>All items for this project have been fully delivered or have no available stock</div>' +
+                        '</div>';
+                    $('#items-container').html(html);
+                    return;
+                }
+
+                html += '<div class="table-responsive"><table class="table table-bordered"><thead><tr>' +
+                    '<th width="20%">Product</th><th width="10%">Brand</th><th width="10%">Model/Type</th><th width="8%">Required</th><th width="8%">Delivered</th><th width="8%">Available</th><th width="8%">QTY</th><th width="20%">Serial Numbers</th><th width="8%">Notes</th>' +
                     '</tr></thead><tbody>';
 
-                items.forEach((item, index) => {
-                    const remainingQty = item.remaining_qty;
-                    const deliveredInfo = item.delivered_qty > 0 
-                        ? `<span >${item.delivered_qty} </span>` 
-                        : '<span class="text-muted">None</span>';
-                    
+                availableItems.forEach((item, index) => {
+                    const remainingQty = item.stock_used;
+                    const deliveredInfo = item.delivered_qty > 0 ?
+                        `<span >${item.delivered_qty} </span>` :
+                        '<span class="text-muted">None</span>';
+
                     html += `
                         <tr>
                             <td>
@@ -320,7 +348,7 @@
                                     name="items[${index}][qty]" 
                                     data-index="${index}" 
                                     data-max="${remainingQty}"
-                                    min="1" max="${remainingQty}" value="${remainingQty}" required>
+                                    ${remainingQty > 0 ? 'min="1"' : ''} max="${remainingQty}" value="${remainingQty}" ${remainingQty > 0 ? 'required' : ''}>
                                 <small class="text-muted">Max: ${remainingQty}</small>
                             </td>
                             <td>
@@ -336,21 +364,24 @@
                 html += '</tbody></table></div>';
                 $('#items-container').html(html);
 
-                items.forEach((item, index) => {
-                    generateSNInputs(index, item.remaining_qty);
+                availableItems.forEach((item, index) => {
+                    generateSNInputs(index, item.stock_used);
+
                 });
 
                 $('.item-qty').on('change input', function() {
+
                     const index = $(this).data('index');
                     const qty = parseInt($(this).val()) || 0;
                     const maxQty = parseInt($(this).data('max')) || 0;
+                    const minQty = maxQty > 0 ? 1 : 0;
 
                     if (qty > maxQty) {
                         $(this).val(maxQty);
                         generateSNInputs(index, maxQty);
-                    } else if (qty < 1) {
-                        $(this).val(1);
-                        generateSNInputs(index, 1);
+                    } else if (qty < minQty) {
+                        $(this).val(minQty);
+                        generateSNInputs(index, minQty);
                     } else {
                         generateSNInputs(index, qty);
                     }
@@ -360,6 +391,7 @@
             function generateSNInputs(itemIndex, quantity) {
                 const snContainer = $(`#sn-inputs-${itemIndex}`);
                 snContainer.empty();
+
 
                 for (let i = 0; i < quantity; i++) {
                     const snHtml = `
@@ -389,6 +421,7 @@
                     do_number: $('#do-number').val(),
                     items: []
                 };
+
 
                 const itemsMap = {};
                 formData.forEach(field => {
@@ -555,9 +588,10 @@
             function renderDeliveryOrderDetails(data) {
                 let itemsHtml = '';
                 data.items.forEach((item, index) => {
-                    const snList = item.sn && item.sn.length > 0 
-                        ? item.sn.map(sn => `<span class="badge bg-blue-lt me-1 mb-1">${sn}</span>`).join('')
-                        : '<span class="text-muted">No serial numbers</span>';
+                    const snList = item.sn && item.sn.length > 0 ?
+                        item.sn.map(sn => `<span class="badge bg-blue-lt me-1 mb-1">${sn}</span>`).join(
+                            '') :
+                        '<span class="text-muted">No serial numbers</span>';
 
                     itemsHtml += `
                         <tr>
@@ -620,32 +654,6 @@
                 $('#view-do-content').html(html);
             }
 
-            // Print Delivery Order
-            $('#btn-print-do').on('click', function() {
-                const content = $('#view-do-content').html();
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Delivery Order</title>
-                        <link href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" rel="stylesheet">
-                        <style>
-                            @media print {
-                                .btn { display: none; }
-                            }
-                            body { padding: 20px; }
-                        </style>
-                    </head>
-                    <body>
-                        <h2>Delivery Order</h2>
-                        ${content}
-                      
-                    </body>
-                    </html>
-                `);
-                printWindow.document.close();
-            });
         });
     </script>
 @endpush

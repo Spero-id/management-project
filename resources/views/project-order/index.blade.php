@@ -480,7 +480,7 @@
                 $('#stock-qty-ready').val(qtyReady);
                 $('#stock-qty-remaining').val(qtyRemaining);
                 $('#stock-available').val(stock);
-                $('#stock-use-qty').val(stockUsed).attr('max', Math.min(stock, qtyRemaining));
+                $('#stock-use-qty').val(0).attr('max', Math.min(stock, qtyRemaining));
                 $('#stock-max-value').text(Math.min(stock, qtyRemaining));
                 
                 // Update modal based on complete status
@@ -496,6 +496,12 @@
                 
                 // Show modal
                 $('#modal-stock-management').modal('show');
+            });
+            
+            // Reset form when modal is closed
+            $('#modal-stock-management').on('hidden.bs.modal', function() {
+                $('#stock-use-qty').val(0);
+                currentStockItem = null;
             });
             
             // Validate stock usage input

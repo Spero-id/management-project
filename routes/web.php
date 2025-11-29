@@ -33,8 +33,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{project}', [App\Http\Controllers\ProjectController::class, 'destroy'])->name('destroy');
 
         Route::post('/{project}/wbs-items', [App\Http\Controllers\ProjectWbsItemController::class, 'store'])->name('wbs-items.store');
-        Route::get('/{project}/wbs-items/export', [App\Http\Controllers\ProjectWbsItemController::class, 'export'])
-            ->name('projects.wbs-items.export');
+        Route::get('/{project}/wbs-items/export', [App\Http\Controllers\ProjectWbsItemController::class, 'export'])->name('wbs-items.export');
 
         Route::post('/{project}/wbs-items/import', [App\Http\Controllers\ProjectWbsItemController::class, 'import'])->name('wbs-items.import');
         Route::put('/wbs-items/{wbsItem}', [App\Http\Controllers\ProjectWbsItemController::class, 'update'])->name('wbs-items.update');
@@ -57,6 +56,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/create/{id}', [App\Http\Controllers\SalesOrderController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\SalesOrderController::class, 'store'])->name('store');
         Route::post('/mom', [App\Http\Controllers\SalesOrderController::class, 'saveMinuteOfMeeting'])->name('saveMinuteOfMeeting');
+        Route::post('/calculate-base-price', [App\Http\Controllers\SalesOrderController::class, 'getGrandTotalBasePrice'])->name('calculate-base-price');
     });
 
     Route::group(['prefix' => 'prospect', 'as' => 'prospect.'], function () {
@@ -255,6 +255,13 @@ Route::middleware('auth')->group(function () {
     // perhitungan project
     Route::group(['prefix' => 'perhitungan-project', 'as' => 'perhitungan-project.'], function () {
         Route::get('/', [App\Http\Controllers\PerhitunganProjectController::class, 'index'])->name('index');
+    });
+
+    // Minutes of Meeting routes
+    Route::group(['prefix' => 'mom', 'as' => 'mom.'], function () {
+        Route::post('/', [App\Http\Controllers\MinuteOfMeetingController::class, 'store'])->name('store');
+        Route::put('/{mom}', [App\Http\Controllers\MinuteOfMeetingController::class, 'update'])->name('update');
+        Route::delete('/{mom}', [App\Http\Controllers\MinuteOfMeetingController::class, 'destroy'])->name('destroy');
     });
 });
 

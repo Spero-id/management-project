@@ -30,9 +30,17 @@ class ProjectWeeklyMeetingController extends Controller
 
     public function datatable($projectId)
     {
-        $statuses = ProjectWeeklyMeeting::where('project_id', $projectId)->get();
+        $statuses = ProjectWeeklyMeeting::where('project_id', $projectId)
+            ->orderByDesc('created_at')
+            ->get();
 
         return DataTables::of($statuses)
+            ->editColumn('created_at', function ($row) {
+                return $row->created_at->format('d M Y H:i');
+            })
+            ->editColumn('updated_at', function ($row) {
+                return $row->updated_at->format('d M Y H:i');
+            })
             ->addColumn('action', function ($row) {
                 $editBtn = '<button type="button" class="btn btn-icon edit-btn" data-id="'.$row->id.'" aria-label="Edit" title="Edit weekly meeting">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-edit">

@@ -140,25 +140,63 @@
             margin-left: 0.5em;
         }
 
+        /* Project calculation summary styles */
+        .project-summary-table {
+            margin-bottom: 1.5rem;
+        }
+
+        .project-summary-table .bg-warning {
+            background-color: #ffeb3b !important;
+            color: #000 !important;
+        }
+
+        .project-summary-table .table-success {
+            background-color: #d4edda !important;
+        }
+
+        .project-summary-table td {
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            border: 1px solid #dee2e6;
+        }
+
+        .project-summary-table .fw-bold {
+            font-weight: 600 !important;
+        }
+
         /* Empty state */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
         }
 
         .empty-state .empty-icon {
-            font-size: 4rem;
-            color: #d1d5db;
-            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background-color: #f8f9fa;
+            border-radius: 50%;
+            margin: 0 auto 20px;
         }
 
         .empty-state h5 {
             color: #6b7280;
             margin-bottom: 10px;
+            font-weight: 500;
         }
 
         .empty-state p {
             color: #9ca3af;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .empty-state .small {
+            font-size: 0.85rem;
         }
     </style>
 @endpush
@@ -305,9 +343,7 @@
                         {{ $project->project_name }}
                     </a>
                 @empty
-                    <div class="text-center w-100 py-4">
-                        <p class="text-muted">No projects found</p>
-                    </div>
+                
                 @endforelse
             </div>
         </div>
@@ -319,115 +355,84 @@
             <div class="content-area">
                 @forelse($projects as $index => $project)
                     <div class="project-content" id="project-content-{{ $project->id }}" style="{{ $index === 0 ? '' : 'display: none;' }}">
-                        <h5>{{ $project->project_name }}</h5>
-                        
                         @if($project->quotationItemsGrouped && $project->quotationItemsGrouped->count() > 0)
                             <div class="table-responsive">
-                                <table class="table table-bordered table-vcenter card-table">
-                                    <thead>
-                                        <tr>
-                                            <th rowspan="2" class="text-center">NO</th>
-                                            <th rowspan="2">Description</th>
-                                            <th rowspan="2" class="text-center">BRAND</th>
-                                            <th rowspan="2" class="text-center">TYPE</th>
-                                            <th rowspan="2" class="text-center">QTY</th>
-                                            <th rowspan="2" class="text-center">UNIT</th>
-                                            <th rowspan="2" class="text-center">PRICE</th>
-                                            <th rowspan="2" class="text-center">TOTAL PRICE</th>
-                                            <th colspan="2" class="text-center">HARGA DASAR</th>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-center">HARGA DASAR</th>
-                                            <th class="text-center">TOTAL HARGA DASAR</th>
-                                        </tr>
-                                    </thead>
+                                <!-- Project Summary Table -->
+                                <table class="table table-bordered mb-4 project-summary-table">
                                     <tbody>
                                         @php
-                                            $no = 1;
-                                            $total = 0;
-                                            $totalDasar = 0;
-                                        @endphp
-                                        
-                                        @foreach($project->quotationItemsGrouped as $groupedItem)
-                                            @php
+                                            $totalEquipments = 0;
+                                            $totalBaseCost = 0;
+                                            
+                                            foreach($project->quotationItemsGrouped as $groupedItem) {
                                                 $itemTotal = $groupedItem['total_qty'] * $groupedItem['product']->price;
                                                 $itemTotalDasar = $groupedItem['total_qty'] * $groupedItem['product']->base_price_rupiah_for_luar_negeri;
-
-                                                $total += $itemTotal;
-                                                $totalDasar += $itemTotalDasar;
-                                            @endphp
+                                                
+                                                $totalEquipments += $itemTotal;
+                                                $totalBaseCost += $itemTotalDasar;
+                                            }
                                             
-                                            <tr>
-                                                <td class="text-center">{{ $no++ }}</td>
-                                                <td>{{ $groupedItem['product']->name }}</td>
-                                                <td class="text-center">{{ $groupedItem['product']->brand ?? '-' }}</td>
-                                                <td>{{ $groupedItem['product']->type ?? '-' }}</td>
-                                                <td class="text-center">{{ $groupedItem['total_qty'] }}</td>
-                                                <td class="text-center">Unit</td>
-                                                <td class="text-end">Rp {{ number_format($groupedItem['product']->price, 0, ',', '.') }}</td>
-                                                <td class="text-end">Rp {{ number_format($itemTotal, 0, ',', '.') }}</td>
-                                                <td class="text-end">Rp {{ number_format($groupedItem['product']->base_price_rupiah_for_luar_negeri, 0, ',', '.') }}</td>
-                                                <td class="text-end">Rp {{ number_format($itemTotalDasar, 0, ',', '.') }}</td>
-                                            </tr>
-                                        @endforeach
+                                            $profit = $totalEquipments - $totalBaseCost;
+                                        @endphp
                                         
-                                        <tr class="table-light">
-                                            <td colspan="6"></td>
-                                            <td class="text-end"><strong>TOTAL</strong></td>
-                                            <td class="text-end"><strong>Rp {{ number_format($total, 0, ',', '.') }}</strong></td>
-                                            <td class="text-end"><strong>TOTAL</strong></td>
-                                            <td class="text-end"><strong>Rp {{ number_format($totalDasar, 0, ',', '.') }}</strong></td>
-                                        </tr>
-                                         <tr class="table-light">
-                                            @php
-                                                $ppn = $total * 0.11;
-                                                $ppnDasar = $totalDasar * 0.11;
-                                            @endphp
-                                            <td colspan="6"></td>
-                                            <td class="text-end"><strong>PPN (11%)</strong></td>
-                                            <td class="text-end"><strong>Rp {{ number_format($ppn, 0, ',', '.') }}</strong></td>
-                                            <td class="text-end"><strong>PPN  (11%)</strong></td>
-                                            <td class="text-end"><strong>Rp {{ number_format($ppnDasar, 0, ',', '.') }}</strong></td>
+                                        <tr class="bg-warning">
+                                            <td colspan="2" class="text-center fw-bold py-2" style="background-color: #ffeb3b; color: #000;">
+                                                PERHITUNGAN PROJECT "{{ strtoupper($project->project_name) }}"
+                                            </td>
                                         </tr>
                                         
-                                        <tr class="table-light">
-                                            @php
-                                                $ppn = $total * 0.11;
-                                                $ppnDasar = $totalDasar * 0.11;
-                                                $grandTotal = $total + $ppn;
-                                                $grandTotalDasar = $totalDasar + $ppnDasar;
-                                            @endphp
-                                            <td colspan="6"></td>
-                                            <td class="text-end"><strong>GRAND TOTAL (Incl. PPN 11%)</strong></td>
-                                            <td class="text-end"><strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong></td>
-                                            <td class="text-end"><strong>GRAND TOTAL (Incl. PPN 11%)</strong></td>
-                                            <td class="text-end"><strong>Rp {{ number_format($grandTotalDasar, 0, ',', '.') }}</strong></td>
+                                        <tr>
+                                            <td class="fw-bold" style="width: 70%;">TOTAL PROJECT {{ strtoupper($project->project_name) }} - EQUIPMENTS</td>
+                                            <td class="text-end fw-bold">Rp {{ number_format($totalEquipments, 0, ',', '.') }}</td>
                                         </tr>
                                         
+                                        <tr>
+                                            <td class="fw-bold">TOTAL PROJECT {{ strtoupper($project->project_name) }} - HARGA DASAR EQUIPMENT</td>
+                                            <td class="text-end fw-bold">Rp {{ number_format($totalBaseCost, 0, ',', '.') }}</td>
+                                        </tr>
+                                        
+                                        <tr class="table-success">
+                                            <td class="fw-bold">PROFIT</td>
+                                            <td class="text-end fw-bold">Rp {{ number_format($profit, 0, ',', '.') }}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         @else
-                            <div class="empty-state">
-                                <div class="empty-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                                    </svg>
+                            <!-- Empty State for Project without Data -->
+                            <div class="text-center py-5">
+                                <div class="empty-state">
+                                    <div class="empty-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14,2 14,8 20,8"></polyline>
+                                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                                            <polyline points="10,9 9,9 8,9"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div class="mt-3">
+                                        <h5 class="text-muted mb-2">Belum ada data perhitungan</h5>
+                                        <p class="text-muted small mb-0">Project <strong>{{ $project->project_name }}</strong> belum memiliki item untuk dihitung.</p>
+                                    </div>
                                 </div>
-                                <h5>No items to order</h5>
-                                <p>This project doesn't have any items that need to be ordered yet.</p>
                             </div>
                         @endif
                     </div>
                 @empty
-                    <div class="empty-state">
-                        <div class="empty-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 7v11m0 0a2 2 0 002 2h14a2 2 0 002-2V7M3 18l3-3m12 3l3-3M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"></path>
-                            </svg>
+                    <!-- Empty State for No Projects -->
+                    <div class="text-center py-5">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-muted">
+                                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                </svg>
+                            </div>
+                            <div class="mt-4">
+                                <h5 class="text-muted mb-3">Belum ada project tersedia</h5>
+                                <p class="text-muted mb-0">Saat ini belum ada project yang dapat dihitung.<br>Silakan buat project baru atau hubungi administrator.</p>
+                            </div>
                         </div>
-                        <h5>No projects available</h5>
-                        <p>There are no projects with items to order at this time.</p>
                     </div>
                 @endforelse
             </div>

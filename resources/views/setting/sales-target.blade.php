@@ -73,15 +73,30 @@
             letter-spacing: 0.5px;
         }
 
+        .target-card .input-group {
+            width: 100%;
+        }
+
+        .target-card .input-group-text {
+            background-color: #f8fafc;
+            border: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
         .target-card input {
             border: 1px solid #e5e7eb;
-            border-radius: 6px;
             padding: 0.625rem 1rem;
             font-size: 1.5rem;
             font-weight: bold;
-            width: 100%;
             transition: all 0.2s ease;
             color: #111827;
+        }
+
+        .target-card .input-group:focus-within .input-group-text {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
         }
 
         .target-card input:focus {
@@ -208,34 +223,43 @@
                     <!-- Target Gross Profit Card -->
                     <div class="target-card">
                         <h6>Target sales gross profit</h6>
-                        <input type="text" 
-                               class="form-control" 
-                               id="targetGrossProfit" 
-                               name="target_gross_profit"
-                               value="{{ old('target_gross_profit', $salesTarget->target_gross_profit ?? 0) }}"
-                               placeholder="0">
+                        <div class="input-group">
+                            <span class="input-group-text">Rp</span>
+                            <input type="text" 
+                                   class="form-control currency-input" 
+                                   id="targetGrossProfit" 
+                                   name="target_gross_profit"
+                                   value="{{ old('target_gross_profit', $salesTarget->target_gross_profit ?? '') }}"
+                                   placeholder="0">
+                        </div>
                     </div>
 
                     <!-- Target Monthly Card -->
                     <div class="target-card">
                         <h6>Target sales bulanan</h6>
-                        <input type="text" 
-                               class="form-control" 
-                               id="targetMonthly" 
-                               name="target_monthly"
-                               value="{{ old('target_monthly', $salesTarget->target_monthly ?? 0) }}"
-                               placeholder="0">
+                        <div class="input-group">
+                            <span class="input-group-text">Rp</span>
+                            <input type="text" 
+                                   class="form-control currency-input" 
+                                   id="targetMonthly" 
+                                   name="target_monthly"
+                                   value="{{ old('target_monthly', $salesTarget->target_monthly ?? '') }}"
+                                   placeholder="0">
+                        </div>
                     </div>
 
                     <!-- Target Yearly Card -->
                     <div class="target-card">
                         <h6>Target sales tahunan</h6>
-                        <input type="text" 
-                               class="form-control" 
-                               id="targetYearly" 
-                               name="target_yearly"
-                               value="{{ old('target_yearly', $salesTarget->target_yearly ?? 0) }}"
-                               placeholder="0">
+                        <div class="input-group">
+                            <span class="input-group-text">Rp</span>
+                            <input type="text" 
+                                   class="form-control currency-input" 
+                                   id="targetYearly" 
+                                   name="target_yearly"
+                                   value="{{ old('target_yearly', $salesTarget->target_yearly ?? '') }}"
+                                   placeholder="0">
+                        </div>
                     </div>
 
                     <!-- Save Button Card -->
@@ -272,56 +296,71 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const targetGrossProfit = document.getElementById('targetGrossProfit');
-            const targetMonthly = document.getElementById('targetMonthly');
-            const targetYearly = document.getElementById('targetYearly');
-            const form = document.getElementById('salesTargetForm');
+            const currencyInputs = document.querySelectorAll('.currency-input');
 
-            // Format number with thousand separator
-            function formatNumber(num) {
-                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            }
-
-            // Parse formatted number
-            function parseFormattedNumber(str) {
-                return str.replace(/\./g, '');
+            // Function to format number as Indonesian Rupiah
+            function formatCurrency(value) {
+                // Remove non-numeric characters
+                const numericValue = value.toString().replace(/[^0-9]/g, '');
+                
+                if (numericValue === '') return '';
+                
+                // Format with thousand separators
+                return new Intl.NumberFormat('id-ID').format(parseInt(numericValue));
             }
 
-            // Format initial values
-            if (targetGrossProfit.value) {
-                targetGrossProfit.value = formatNumber(parseFormattedNumber(targetGrossProfit.value));
-            }
-            if (targetMonthly.value) {
-                targetMonthly.value = formatNumber(parseFormattedNumber(targetMonthly.value));
-            }
-            if (targetYearly.value) {
-                targetYearly.value = formatNumber(parseFormattedNumber(targetYearly.value));
+            // Function to get numeric value from formatted string
+            function getNumericValue(formattedValue) {
+                return formattedValue.replace(/[^0-9]/g, '');
             }
 
-            // Add formatting to inputs
-            [targetGrossProfit, targetMonthly, targetYearly].forEach(input => {
+            // Initialize existing values with formatting
+            currencyInputs.forEach(input => {
+                if (input.value && input.value !== '0') {
+                    input.value = formatCurrency(input.value);
+                }
+            });
+
+            currencyInputs.forEach(input => {
+                if (!input) return;
+
+                // Format currency on input
                 input.addEventListener('input', function(e) {
-                    let value = parseFormattedNumber(e.target.value);
-                    if (value && !isNaN(value)) {
-                        e.target.value = formatNumber(value);
-                    }
+                    const cursorPosition = e.target.selectionStart;
+                    const oldValue = e.target.value;
+                    const newValue = formatCurrency(e.target.value);
+                    
+                    e.target.value = newValue;
+                    
+                    // Maintain cursor position
+                    const lengthDiff = newValue.length - oldValue.length;
+                    const newCursorPosition = cursorPosition + lengthDiff;
+                    e.target.setSelectionRange(newCursorPosition, newCursorPosition);
                 });
 
+                // Validate on blur
                 input.addEventListener('blur', function(e) {
-                    let value = parseFormattedNumber(e.target.value);
-                    if (!value || isNaN(value)) {
+                    const numericValue = getNumericValue(e.target.value);
+                    const value = parseInt(numericValue) || 0;
+                    
+                    if (value < 0) {
                         e.target.value = '0';
+                    } else if (numericValue === '') {
+                        e.target.value = '';
                     }
                 });
             });
 
-            // Format on submit
-            form.addEventListener('submit', function(e) {
-                // Remove formatting before submit
-                targetGrossProfit.value = parseFormattedNumber(targetGrossProfit.value);
-                targetMonthly.value = parseFormattedNumber(targetMonthly.value);
-                targetYearly.value = parseFormattedNumber(targetYearly.value);
-            });
+            // Handle form submission - convert formatted values to numeric
+            const form = document.getElementById('salesTargetForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    currencyInputs.forEach(input => {
+                        const numericValue = getNumericValue(input.value);
+                        input.value = numericValue;
+                    });
+                });
+            }
         });
     </script>
 @endpush

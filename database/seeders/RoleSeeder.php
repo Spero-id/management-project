@@ -66,6 +66,7 @@ class RoleSeeder extends Seeder
 
         Permission::create(['name' => 'VIEW_DELIVERY']);
         Permission::create(['name' => 'LOGISTIC_ORDER']);
+        Permission::create(['name' => 'PERHITUNGAN_PROJECT_BOD']);
         Permission::create(['name' => 'PERHITUNGAN_PROJECT']);
 
         Role::create(['name' => 'SUPER_ADMIN'])->givePermissionTo(Permission::all());
@@ -110,6 +111,7 @@ class RoleSeeder extends Seeder
             'VIEW_BORROWING',
             'PERHITUNGAN_PROJECT',
             'LOGISTIC_ORDER',
+            'PERHITUNGAN_PROJECT_BOD',
 
         ]);
         Role::create(['name' => 'SALES'])->givePermissionTo([

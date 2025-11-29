@@ -110,6 +110,7 @@ class SalesOrderController extends Controller
                     'product_id' => $item->product_id,
                     'quotation_item_id' => $item->id,
                     'required_qty' => $item->quantity,
+                    'remaining_qty' => $item->quantity,
                 ]);
             }
 
@@ -125,8 +126,6 @@ class SalesOrderController extends Controller
             \Illuminate\Support\Facades\DB::commit();
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-
-            dd($e);
 
             return redirect()->back()
                 ->withErrors(['error' => 'An error occurred while processing your request: '.$e->getMessage()])

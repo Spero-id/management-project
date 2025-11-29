@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('quotation_item_id')->constrained('quotation_items')->onDelete('cascade');
             $table->integer('required_qty')->default(0);
             $table->integer('stock_used')->default(0);
+            $table->integer('remaining_qty')->default(0);
             $table->date('estimated_arrival_date')->nullable();
             $table->string('order_status')->default('pending'); // pending, partial, complete
             $table->timestamps();

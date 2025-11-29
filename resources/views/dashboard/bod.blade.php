@@ -43,47 +43,71 @@
             width: 100% !important;
         }
 
-        .performance-table {
+        /* Report panel styles */
+        .sales-report {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 30px;
             background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            height: 450px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            /* allow vertical scrolling when content overflows */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            /* smooth scrolling on mobile */
         }
 
-        .performance-table table {
-            color: #374151;
-            margin-bottom: 0;
+        /* Slightly smaller heading so the panel feels compact */
+        .sales-report h5 {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
         }
 
-        .performance-table th {
-            background: #f8fafc;
-            border: none;
-            padding: 15px;
-            color: #374151;
+        /* Make each report-row a vertical list: label above value */
+        .sales-report .report-row {
+            display: flex;
+            flex-direction: column;
+            /* stack label above value */
+            justify-content: flex-start;
+            align-items: flex-start;
+            /* left align for readability */
+            padding: 8px 0;
+            border-bottom: 1px dashed #f1f5f9;
+            gap: 4px;
         }
 
-        .performance-table td {
-            border-color: #e5e7eb;
-            padding: 15px;
+        .sales-report .report-row:last-child {
+            border-bottom: none;
         }
 
-        .completion-bar {
-            height: 20px;
-            background: #f1f5f9;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
+        /* Label sits above the value, smaller and muted */
+        .sales-report .report-label {
+            color: #6b7280;
+            /* slightly muted */
+            font-size: 0.75rem;
+            /* smaller label */
+            font-weight: 600;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: initial;
+            max-width: 100%;
         }
 
-        .completion-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s ease;
+        /* Value below label: stand out but still compact */
+        .sales-report .report-value {
+            font-weight: 800;
+            color: #111827;
+            font-size: 0.95rem;
+            /* slightly larger than label */
+            white-space: normal;
+            overflow: visible;
+            text-overflow: initial;
+            max-width: 100%;
+            text-align: left;
         }
-
-        .completion-yellow { background: #f59e0b; }
-        .completion-blue { background: #3b82f6; }
-        .completion-green { background: #10b981; }
 
         .chart-title {
             font-size: 1.5rem;
@@ -157,11 +181,53 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-lg-2">
+                <div class="sales-report">
+                    <h5>OVERALL REPORT</h5>
+                    <div class="mt-2">
+                        <div class="report-row">
+                            <div class="report-label">PENCAPAIAN TARGET</div>
+                            <div class="report-value">{{ $reportMetrics['target_achievement'] ?? 0 }}%</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">TOTAL PROSPEK</div>
+                            <div class="report-value">{{ $reportMetrics['total_prospects'] ?? 0 }}</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">PROSPEK DEAL</div>
+                            <div class="report-value">{{ $reportMetrics['prospects_deal'] ?? 0 }}</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">PROSPEK BARU BULAN</div>
+                            <div class="report-value">{{ $reportMetrics['prospects_new_month'] ?? 0 }}</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">PROSPEK LOST</div>
+                            <div class="report-value">{{ $reportMetrics['prospects_lost'] ?? 0 }}</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">TOTAL OMSET</div>
+                            <div class="report-value">Rp {{ number_format($reportMetrics['total_omset'] ?? 0, 0, ',', '.') }}</div>
+                        </div>
+
+                        <div class="report-row">
+                            <div class="report-label">TOTAL DEAL</div>
+                            <div class="report-value">Rp {{ number_format($reportMetrics['total_deal'] ?? 0, 0, ',', '.') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <!-- Monthly Performance Chart -->
-            <div class="col-lg-8">
+            <div class="col-lg-6">
                 <div class="chart-container">
-                    <h4 class="chart-title">Performance Data for ALL TEAMS</h4>
+                    <h4 class="chart-title">YEARLY PERFORMANCE OVERVIEW</h4>
                     <canvas id="monthlyChart" width="400" height="200"></canvas>
                 </div>
             </div>
@@ -216,6 +282,7 @@
                                         <th>Status</th>
                                         <th>Progress</th>
                                         <th>Create Date</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -265,7 +332,45 @@
                                                 </div>
                                             </td>
                                             <td>{{ $prospect->created_at->format('Y-m-d') }}</td>
-                                         
+                                            <td>
+                                                @php
+                                                    $canEdit = ($prospect->prospectStatus->persentage ?? 0) < 100;
+                                                @endphp
+                                                <a href="{{ route('prospect.show', $prospect->id) }}" class="btn btn-icon" aria-label="View" title="View prospect">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-eye">
+                                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                                                    </svg>
+                                                </a>
+                                                @if($canEdit)
+                                                    <a href="{{ route('prospect.edit', $prospect->id) }}" class="btn btn-icon" aria-label="Edit" title="Edit prospect">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                                                            <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                                                            <path d="M16 5l3 3" />
+                                                        </svg>
+                                                    </a>
+                                                    <button class="btn btn-icon delete-prospect-btn" data-bs-toggle="modal" data-bs-target="#modal-delete-prospect" data-prospect-id="{{ $prospect->id }}" data-prospect-name="{{ $prospect->customer_name }}" aria-label="Delete Prospect">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
+                                                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                            <path d="M4 7l16 0" />
+                                                            <path d="M10 11l0 6" />
+                                                            <path d="M14 11l0 6" />
+                                                            <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                                                            <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                                                        </svg>
+                                                    </button>
+                                                @else
+                                                    <span class="btn btn-icon btn-outline-primary" disabled title="Prospect sudah selesai (100%) - tidak dapat diedit atau dihapus">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10"></circle>
+                                                            <path d="m9 12 2 2 4-4"></path>
+                                                        </svg>
+                                                    </span>
+                                                @endif
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -436,8 +541,8 @@
                 
                 // Show loading state
                 $('.chart-container').addClass('opacity-50');
-                $('.performance-table').addClass('opacity-50');
                 $('.table-responsive').addClass('opacity-50');
+                $('.sales-report').addClass('opacity-50');
                 
                 // Call AJAX to update data based on selected team
                 updateDashboardData(selectedTeam);
@@ -482,18 +587,6 @@
                             backgroundColor: '#3b82f6',
                             borderColor: '#3b82f6',
                             borderWidth: 1
-                        },
-                        {
-                            label: 'TARGET',
-                            data: monthlyData.target_completion.map(rate => rate * 150000), // Scale for visualization
-                            type: 'line',
-                            borderColor: '#f59e0b',
-                            backgroundColor: 'transparent',
-                            borderWidth: 3,
-                            pointBackgroundColor: '#f59e0b',
-                            pointBorderColor: '#f59e0b',
-                            pointRadius: 5,
-                            yAxisID: 'y1'
                         }
                     ]
                 },
@@ -514,7 +607,13 @@
                             ticks: {
                                 color: '#374151',
                                 callback: function(value) {
-                                    return (value / 1000000) + 'M';
+                                    if (value >= 1000000) {
+                                        return 'Rp ' + (value / 1000000).toFixed(1) + 'M';
+                                    } else if (value >= 1000) {
+                                        return 'Rp ' + (value / 1000).toFixed(0) + 'K';
+                                    } else {
+                                        return 'Rp ' + value.toLocaleString('id-ID');
+                                    }
                                 }
                             },
                             grid: {
@@ -527,15 +626,6 @@
                             },
                             grid: {
                                 color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: false,
-                            position: 'right',
-                            max: 100 * 150000,
-                            grid: {
-                                drawOnChartArea: false,
                             }
                         }
                     }
@@ -554,19 +644,18 @@
                     // Update chart with new data
                     initializeChart(response.monthlyData);
                     
-                    // Update performance table
-                    updatePerformanceTable(response.performanceData);
-                    
                     // Update prospects table
                     updateProspectsTable(response.prospects || []);
                     
-                    // Update chart title to show selected team
-                    $('.chart-title').text('Performance Data for ' + response.teamName);
+                    // Update overall report section
+                    if (response.reportMetrics) {
+                        updateOverallReport(response.reportMetrics);
+                    }
                     
                     // Remove loading state
                     $('.chart-container').removeClass('opacity-50');
-                    $('.performance-table').removeClass('opacity-50');
                     $('.table-responsive').removeClass('opacity-50');
+                    $('.sales-report').removeClass('opacity-50');
                 },
                 error: function(xhr, status, error) {
                     console.error('Error fetching team data:', error);
@@ -574,55 +663,49 @@
                     
                     // Remove loading state
                     $('.chart-container').removeClass('opacity-50');
-                    $('.performance-table').removeClass('opacity-50');
                     $('.table-responsive').removeClass('opacity-50');
+                    $('.sales-report').removeClass('opacity-50');
                 }
             });
         }
 
-        // Function to update performance table
-        function updatePerformanceTable(performanceData) {
-            const tbody = $('.performance-table tbody');
-            tbody.empty();
-            
-            if (performanceData.length === 0) {
-                tbody.append(`
-                    <tr>
-                        <td colspan="7" class="text-center py-5">
-                            <div class="text-muted">
-                                <i class="fa fa-chart-bar mb-3" style="font-size: 3rem;"></i>
-                                <h5>No performance data available for this sales team</h5>
-                                <p>This sales person has no quotations or company data yet.</p>
-                            </div>
-                        </td>
-                    </tr>
-                `);
-                return;
+
+
+        // Function to update overall report section
+        function updateOverallReport(reportData) {
+            // Format numbers with Indonesian currency format
+            function formatCurrency(amount) {
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
             }
             
-            performanceData.forEach(function(data) {
-                const row = `
-                    <tr>
-                        <td class="fw-bold">${data.company}</td>
-                        <td>${new Intl.NumberFormat('id-ID').format(data.monthly_target)}</td>
-                        <td>${new Intl.NumberFormat('id-ID').format(data.completion)}</td>
-                        <td>
-                            <div class="completion-bar">
-                                <div class="completion-fill completion-${data.monthly_completion_color}" 
-                                     style="width: ${data.monthly_completion_rate}%"></div>
-                            </div>
-                        </td>
-                        <td>${new Intl.NumberFormat('id-ID').format(data.yearly_target)}</td>
-                        <td>${new Intl.NumberFormat('id-ID').format(data.accumulative_total)}</td>
-                        <td>
-                            <div class="completion-bar">
-                                <div class="completion-fill completion-${data.yearly_completion_color}" 
-                                     style="width: ${data.yearly_completion_rate}%"></div>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                tbody.append(row);
+            // Update each report value
+            $('.sales-report .report-row').each(function() {
+                var label = $(this).find('.report-label').text();
+                var valueElement = $(this).find('.report-value');
+                
+                switch(label) {
+                    case 'PENCAPAIAN TARGET':
+                        valueElement.text((reportData.target_achievement || 0) + '%');
+                        break;
+                    case 'TOTAL PROSPEK':
+                        valueElement.text(reportData.total_prospects || 0);
+                        break;
+                    case 'PROSPEK DEAL':
+                        valueElement.text(reportData.prospects_deal || 0);
+                        break;
+                    case 'PROSPEK BARU BULAN':
+                        valueElement.text(reportData.prospects_new_month || 0);
+                        break;
+                    case 'PROSPEK LOST':
+                        valueElement.text(reportData.prospects_lost || 0);
+                        break;
+                    case 'TOTAL OMSET':
+                        valueElement.text(formatCurrency(reportData.total_omset || 0));
+                        break;
+                    case 'TOTAL DEAL':
+                        valueElement.text(formatCurrency(reportData.total_deal || 0));
+                        break;
+                }
             });
         }
 

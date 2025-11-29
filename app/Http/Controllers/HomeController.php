@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Accommodation;
-use App\Models\Installation;
 use App\Models\Project;
 use App\Models\Prospect;
 use App\Models\Quotation;
@@ -14,11 +12,6 @@ use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('auth');
@@ -26,8 +19,6 @@ class HomeController extends Controller
 
     /**
      * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index()
     {
@@ -36,8 +27,6 @@ class HomeController extends Controller
         return match (true) {
             $user->hasRole('SALES') => $this->dashboardSales(),
             $user->hasRole('PROJECT') => $this->dashboardProject(),
-            // $user->hasRole('logistic') => $this->dashboardLogistic(),
-            // $user->hasRole('finance') => $this->dashboardFinance(),
             default => $this->dashboardBOD(),
         };
     }
@@ -47,13 +36,14 @@ class HomeController extends Controller
      */
     private function dashboardBOD()
     {
-        $totalRevenue = $this->getTotalRevenue();
+        $totalRevenue = $this->getRevenue();
         $activeProjects = $this->getActiveProjectsCount();
         $completionRate = $this->getCompletionRate();
         $performanceData = $this->getPerformanceData();
         $monthlyData = $this->getMonthlyData();
         $salesTeams = $this->getSalesTeams();
         $prospects = $this->getProspects();
+        $reportMetrics = $this->getSalesReportMetrics();
 
         return view('dashboard.bod', compact(
             'totalRevenue',
@@ -62,7 +52,8 @@ class HomeController extends Controller
             'performanceData',
             'monthlyData',
             'salesTeams',
-            'prospects'
+            'prospects',
+            'reportMetrics'
         ));
     }
 
@@ -72,20 +63,21 @@ class HomeController extends Controller
     private function dashboardSales()
     {
         $userId = Auth::id();
-        $totalRevenue = $this->getSalesRevenue($userId);
-        $quotationCount = $this->getSalesQuotationCount($userId);
-        $acceptanceRate = $this->getSalesAcceptanceRate($userId);
-        $performanceData = $this->getSalesPerformanceData($userId);
-        $monthlyData = $this->getSalesMonthlyData($userId);
+        $user = Auth::user();
+        $totalRevenue = $this->getRevenue($userId);
+        $quotationCount = $this->getQuotationCount($userId);
+        $monthlyData = $this->getMonthlyData($userId);
         $prospects = $this->getProspects($userId);
+        $salesTarget = $user->currentYearSalesTarget;
+        $reportMetrics = $this->getSalesReportMetrics($userId);
 
         return view('dashboard.sales', compact(
             'totalRevenue',
             'quotationCount',
-            'acceptanceRate',
-            'performanceData',
             'monthlyData',
-            'prospects'
+            'prospects',
+            'salesTarget',
+            'reportMetrics'
         ));
     }
 
@@ -94,19 +86,13 @@ class HomeController extends Controller
      */
     private function dashboardProject()
     {
-
         $prospects = Prospect::all();
         $projects = Project::all();
-        if (request()->get('project_id') == null) {
-            $selectedProject = $projects->first();
-        } else {
-            $selectedProject = Project::find(request()->get('project_id'));
-        }
+        $selectedProject = request()->get('project_id') 
+            ? Project::find(request()->get('project_id')) 
+            : $projects->first();
 
-        // Calculate status barang percentage
         $statusBarangPercentage = $this->calculateStatusBarangPercentage($selectedProject);
-        
-        // Calculate project progress percentage
         $projectProgressPercentage = $this->calculateProjectProgress($selectedProject);
 
         return view('dashboard.project', compact(
@@ -118,32 +104,103 @@ class HomeController extends Controller
         ));
     }
 
+    // ========== UNIFIED HELPER METHODS ==========
+
+    /**
+     * Get revenue - unified method for both global and user-specific revenue
+     */
+    private function getRevenue(?int $userId = null): float
+    {
+        $query = Quotation::where('status', 'accepted');
+        
+        if ($userId) {
+            $query->where('created_by', $userId);
+        }
+        
+        return $query->sum('total_amount');
+    }
+
+    /**
+     * Get quotation count - unified method
+     */
+    private function getQuotationCount(?int $userId = null): int
+    {
+        $query = Quotation::query();
+        
+        if ($userId) {
+            $query->where('created_by', $userId);
+        }
+        
+        return $query->count();
+    }
+
+    /**
+     * Get prospects with optional user filtering
+     */
+    private function getProspects(?int $userId = null)
+    {
+        $query = Prospect::with(['quotations', 'prospectStatus']);
+        
+        if ($userId) {
+            $query->where('pre_sales', $userId);
+        }
+        
+        return $query->orderBy('created_at', 'desc')->get();
+    }
+
+    /**
+     * Get total omset from converted prospects - unified method
+     */
+    private function getTotalOmsetFromProspects(?int $userId = null): float
+    {
+        $query = Prospect::with('quotations')->where('is_converted_to_project', true);
+        
+        if ($userId) {
+            $query->whereHas('quotations', function ($q) use ($userId) {
+                $q->where('created_by', $userId);
+            });
+        }
+        
+        return $query->get()->sum(function ($prospect) {
+            return $prospect->quotations[0]?->calculateGrandTotalPrice()['grand_total_price'] ?? 0;
+        });
+    }
+
+    /**
+     * Get completion rate - unified method
+     */
+    private function getCompletionRate(?int $userId = null): float
+    {
+        $totalQuery = Quotation::query();
+        $acceptedQuery = Quotation::where('status', 'accepted');
+        
+        if ($userId) {
+            $totalQuery->where('created_by', $userId);
+            $acceptedQuery->where('created_by', $userId);
+        }
+        
+        $total = $totalQuery->count();
+        $accepted = $acceptedQuery->count();
+        
+        return $total > 0 ? round(($accepted / $total) * 100, 1) : 0;
+    }
+
     /**
      * Calculate status barang (order items) completion percentage
      */
-    private function calculateStatusBarangPercentage($project)
+    private function calculateStatusBarangPercentage($project): float
     {
         if (!$project) {
             return 0;
         }
 
         $totalItems = $project->orderItems()->count();
-
         if ($totalItems === 0) {
             return 0;
         }
 
-        // Count complete items
-        $completeItems = $project->orderItems()
-            ->where('order_status', 'complete')
-            ->count();
-
-        // Count partial items (weighted as 0.5)
-        $partialItems = $project->orderItems()
-            ->where('order_status', 'partial')
-            ->count();
-
-        // Calculate weighted completion
+        $completeItems = $project->orderItems()->where('order_status', 'complete')->count();
+        $partialItems = $project->orderItems()->where('order_status', 'partial')->count();
         $weightedCompletion = $completeItems + ($partialItems * 0.5);
 
         return round(($weightedCompletion / $totalItems) * 100, 1);
@@ -152,22 +209,17 @@ class HomeController extends Controller
     /**
      * Calculate project progress percentage based on WBS items completion
      */
-    private function calculateProjectProgress($project)
+    private function calculateProjectProgress($project): float
     {
         if (!$project) {
             return 0;
         }
 
-        // Get all WBS items that are tasks (not categories)
-        $totalTasks = $project->wbsItems()
-            ->where('item_type', 'task')
-            ->count();
-
+        $totalTasks = $project->wbsItems()->where('item_type', 'task')->count();
         if ($totalTasks === 0) {
             return 0;
         }
 
-        // Count completed tasks
         $completedTasks = $project->wbsItems()
             ->where('item_type', 'task')
             ->where('is_done', true)
@@ -177,742 +229,279 @@ class HomeController extends Controller
     }
 
     /**
-     * Dashboard for Logistic role
-     */
-    private function dashboardLogistic()
-    {
-        $totalInstallations = $this->getTotalInstallations();
-        $pendingInstallations = $this->getPendingInstallations();
-        $completedInstallations = $this->getCompletedInstallations();
-        $installationSchedule = $this->getInstallationSchedule();
-        $accommodationStatus = $this->getAccommodationStatus();
-        $performanceMetrics = $this->getLogisticPerformanceMetrics();
-
-        return view('dashboard.logistic', compact(
-            'totalInstallations',
-            'pendingInstallations',
-            'completedInstallations',
-            'installationSchedule',
-            'accommodationStatus',
-            'performanceMetrics'
-        ));
-    }
-
-    /**
-     * Dashboard for Finance role
-     */
-    private function dashboardFinance()
-    {
-        $totalRevenue = $this->getTotalRevenue();
-        $totalExpenses = $this->getTotalExpenses();
-        $profitMargin = $this->getProfitMargin();
-        $invoiceStatus = $this->getInvoiceStatus();
-        $paymentAnalysis = $this->getPaymentAnalysis();
-        $quotationMetrics = $this->getQuotationMetrics();
-        $cashflowTrend = $this->getCashflowTrend();
-
-        return view('dashboard.finance', compact(
-            'totalRevenue',
-            'totalExpenses',
-            'profitMargin',
-            'invoiceStatus',
-            'paymentAnalysis',
-            'quotationMetrics',
-            'cashflowTrend'
-        ));
-    }
-
-    /**
-     * Get total revenue from accepted quotations
-     */
-    private function getTotalRevenue()
-    {
-        return Quotation::where('status', 'accepted')->sum('total_amount');
-    }
-
-    /**
      * Get count of active projects
      */
-    private function getActiveProjectsCount()
+    private function getActiveProjectsCount(): int
     {
         return Project::count();
     }
 
     /**
-     * Get overall completion rate based on accepted quotations vs total quotations
-     */
-    private function getCompletionRate()
-    {
-        $totalQuotations = Quotation::count();
-        $acceptedQuotations = Quotation::where('status', 'accepted')->count();
-
-        return $totalQuotations > 0 ? round(($acceptedQuotations / $totalQuotations) * 100, 1) : 0;
-    }
-
-    /**
      * Get performance data by company/region
      */
-    private function getPerformanceData()
+    private function getPerformanceData(): array
     {
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
-        // Get companies from prospects and their performance
         $companies = Prospect::select('company')
             ->distinct()
             ->whereNotNull('company')
-            ->get()
             ->pluck('company');
 
-        $performanceData = [];
-
-        foreach ($companies as $company) {
-            // Get monthly data
-            $monthlyQuotations = Quotation::whereHas('prospect', function ($query) use ($company) {
-                $query->where('company', $company);
-            })
-                ->whereMonth('created_at', $currentMonth)
-                ->whereYear('created_at', $currentYear);
-
-            $monthlyTotal = $monthlyQuotations->where('status', 'accepted')->sum('total_amount');
-            $monthlyTarget = $monthlyTotal * 1.5; // Simulate target as 150% of current achievement
-
-            // Get yearly data
-            $yearlyQuotations = Quotation::whereHas('prospect', function ($query) use ($company) {
-                $query->where('company', $company);
-            })
-                ->whereYear('created_at', $currentYear);
-
-            $yearlyTotal = $yearlyQuotations->where('status', 'accepted')->sum('total_amount');
-            $yearlyTarget = $yearlyTotal * 1.3; // Simulate target as 130% of current achievement
-
-            // Calculate completion rates
-            $monthlyCompletionRate = $monthlyTarget > 0 ? round(($monthlyTotal / $monthlyTarget) * 100, 1) : 0;
-            $yearlyCompletionRate = $yearlyTarget > 0 ? round(($yearlyTotal / $yearlyTarget) * 100, 1) : 0;
-
-            // Determine colors based on completion rate
-            $monthlyColor = $monthlyCompletionRate >= 80 ? 'green' : ($monthlyCompletionRate >= 60 ? 'blue' : 'yellow');
-            $yearlyColor = $yearlyCompletionRate >= 80 ? 'green' : ($yearlyCompletionRate >= 60 ? 'blue' : 'yellow');
-
-            $performanceData[] = [
+        return $companies->map(function ($company) use ($currentMonth, $currentYear) {
+            $monthlyData = $this->getCompanyMonthlyData($company, $currentMonth, $currentYear);
+            $yearlyData = $this->getCompanyYearlyData($company, $currentYear);
+            
+            return [
                 'company' => $company,
-                'monthly_target' => $monthlyTarget,
-                'completion' => $monthlyTotal,
-                'monthly_completion_rate' => $monthlyCompletionRate,
-                'monthly_completion_color' => $monthlyColor,
-                'yearly_target' => $yearlyTarget,
-                'accumulative_total' => $yearlyTotal,
-                'yearly_completion_rate' => $yearlyCompletionRate,
-                'yearly_completion_color' => $yearlyColor,
+                'monthly_target' => $monthlyData['target'],
+                'completion' => $monthlyData['total'],
+                'monthly_completion_rate' => $monthlyData['completion_rate'],
+                'monthly_completion_color' => $this->getCompletionColor($monthlyData['completion_rate']),
+                'yearly_target' => $yearlyData['target'],
+                'accumulative_total' => $yearlyData['total'],
+                'yearly_completion_rate' => $yearlyData['completion_rate'],
+                'yearly_completion_color' => $this->getCompletionColor($yearlyData['completion_rate'])
             ];
-        }
-
-        return $performanceData;
+        })->toArray();
     }
 
     /**
-     * Get monthly chart data for the current year
+     * Get monthly chart data - unified method for both global and user-specific data
      */
-    private function getMonthlyData()
+    private function getMonthlyData(?int $userId = null): array
     {
         $currentYear = Carbon::now()->year;
         $omsetData = [];
         $grossProfitData = [];
-        $targetCompletionData = [];
 
-        // for ($month = 1; $month <= 12; $month++) {
-        //     // Get total omset (revenue) for the month
-        //     $monthlyOmset = Quotation::where('status', 'accepted')
-        //         ->whereMonth('created_at', $month)
-        //         ->whereYear('created_at', $currentYear)
-        //         ->sum('total_amount');
+        for ($month = 1; $month <= 12; $month++) {
+            if ($userId) {
+                $monthlyOmset = $this->getMonthlyOmsetForUser($userId, $month, $currentYear);
+                $monthlyBasePrice = $this->getMonthlyBasePriceForUser($userId, $month, $currentYear);
+                $monthlyGrossProfit = $monthlyOmset - $monthlyBasePrice;
+            } else {
+                $monthlyOmset = Quotation::where('status', 'accepted')
+                    ->whereMonth('created_at', $month)
+                    ->whereYear('created_at', $currentYear)
+                    ->get()
+                    ->sum(fn($quotation) => $quotation->calculateGrandTotalPrice()['grand_total_price'] ?? 0);
 
-        //     // Simulate gross profit as 60% of omset
-        //     $monthlyGrossProfit = $monthlyOmset * 0.6;
+                $monthlyBasePrice = Quotation::where('status', 'accepted')
+                    ->whereMonth('created_at', $month)
+                    ->whereYear('created_at', $currentYear)
+                    ->get()
+                    ->sum(fn($quotation) => $quotation->calculateGrandTotalBasePrice()['grand_total_base_price'] ?? 0);
 
-        //     // Calculate target completion rate based on monthly data
-        //     $monthlyQuotations = Quotation::whereMonth('created_at', $month)
-        //         ->whereYear('created_at', $currentYear)
-        //         ->count();
+                $monthlyGrossProfit = $monthlyOmset - $monthlyBasePrice;
+            }
 
-        //     $acceptedQuotations = Quotation::where('status', 'accepted')
-        //         ->whereMonth('created_at', $month)
-        //         ->whereYear('created_at', $currentYear)
-        //         ->count();
-
-        //     $targetCompletion = $monthlyQuotations > 0 ? round(($acceptedQuotations / $monthlyQuotations) * 100) : 0;
-
-        //     $omsetData[] = $monthlyOmset;
-        //     $grossProfitData[] = $monthlyGrossProfit;
-        //     $targetCompletionData[] = $targetCompletion;
-        // }
+            $omsetData[] = $monthlyOmset;
+            $grossProfitData[] = $monthlyGrossProfit;
+        }
 
         return [
             'omset' => $omsetData,
-            'gross_profit' => $grossProfitData,
-            'target_completion' => $targetCompletionData,
+            'gross_profit' => $grossProfitData
         ];
     }
 
     /**
      * Get sales teams from users
      */
-    private function getSalesTeams()
+    private function getSalesTeams(): array
     {
         return User::whereNotNull('no_quotation')
             ->role('sales')
             ->where('no_quotation', '>', 0)
             ->select('id', 'name')
             ->get()
-            ->map(function ($user) {
-                return [
-                    'id' => strtolower(str_replace(' ', '', $user->name)),
-                    'name' => strtoupper($user->name),
-                ];
-            })
+            ->map(fn($user) => [
+                'id' => strtolower(str_replace(' ', '', $user->name)),
+                'name' => strtoupper($user->name)
+            ])
             ->toArray();
     }
 
+    // ========== HELPER METHODS ==========
+
     /**
-     * Get all prospects with their relationships
+     * Get company monthly data for performance calculation
      */
-    private function getProspects($userId = null)
+    private function getCompanyMonthlyData(string $company, int $month, int $year): array
     {
-        $query = Prospect::with(['quotations', 'prospectStatus']);
-
-        if ($userId) {
-            $query->whereHas('quotations', function ($q) use ($userId) {
-                $q->where('created_by', $userId);
-            });
-        }
-
-        return $query->orderBy('created_at', 'desc')->get();
-    }
-
-    /**
-     * ========== SALES ROLE METHODS ==========
-     */
-
-    /**
-     * Get total revenue for specific sales person
-     */
-    private function getSalesRevenue($userId)
-    {
-        return Quotation::where('created_by', $userId)
+        $monthlyTotal = Quotation::whereHas('prospect', fn($query) => $query->where('company', $company))
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
             ->where('status', 'accepted')
             ->sum('total_amount');
+            
+        $monthlyTarget = $monthlyTotal * 1.5;
+        $completionRate = $monthlyTarget > 0 ? round(($monthlyTotal / $monthlyTarget) * 100, 1) : 0;
+        
+        return [
+            'total' => $monthlyTotal,
+            'target' => $monthlyTarget,
+            'completion_rate' => $completionRate
+        ];
     }
 
     /**
-     * Get quotation count for specific sales person
+     * Get company yearly data for performance calculation
      */
-    private function getSalesQuotationCount($userId)
+    private function getCompanyYearlyData(string $company, int $year): array
     {
-        return Quotation::where('created_by', $userId)->count();
-    }
-
-    /**
-     * Get acceptance rate for specific sales person
-     */
-    private function getSalesAcceptanceRate($userId)
-    {
-        $total = Quotation::where('created_by', $userId)->count();
-        $accepted = Quotation::where('created_by', $userId)
+        $yearlyTotal = Quotation::whereHas('prospect', fn($query) => $query->where('company', $company))
+            ->whereYear('created_at', $year)
             ->where('status', 'accepted')
-            ->count();
-
-        return $total > 0 ? round(($accepted / $total) * 100, 1) : 0;
+            ->sum('total_amount');
+            
+        $yearlyTarget = $yearlyTotal * 1.3;
+        $completionRate = $yearlyTarget > 0 ? round(($yearlyTotal / $yearlyTarget) * 100, 1) : 0;
+        
+        return [
+            'total' => $yearlyTotal,
+            'target' => $yearlyTarget,
+            'completion_rate' => $completionRate
+        ];
     }
 
     /**
-     * Get performance data for specific sales person
+     * Get completion color based on rate
      */
-    private function getSalesPerformanceData($userId)
+    private function getCompletionColor(float $rate): string
+    {
+        return match (true) {
+            $rate >= 80 => 'green',
+            $rate >= 60 => 'blue',
+            default => 'yellow'
+        };
+    }
+
+    /**
+     * Get monthly omset for specific user
+     */
+    private function getMonthlyOmsetForUser(int $userId, int $month, int $year): float
+    {
+        return Quotation::where('created_by', $userId)
+            ->whereHas('prospect', fn($query) => $query->where('is_converted_to_project', true))
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->get()
+            ->sum(fn($quotation) => $quotation->calculateGrandTotalPrice()['grand_total_price'] ?? 0);
+    }
+    /**
+     * Get monthly base price for specific user
+     */
+    private function getMonthlyBasePriceForUser(int $userId, int $month, int $year): float
+    {
+        return Quotation::where('created_by', $userId)
+            ->whereHas('prospect', fn($query) => $query->where('is_converted_to_project', true))
+            ->whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->get()
+            ->sum(fn($quotation) => $quotation->calculateGrandTotalBasePrice()['grand_total_base_price'] ?? 0);
+    }
+
+    /**
+     * Get sales report metrics for dashboard
+     */
+    private function getSalesReportMetrics(?int $userId = null): array
     {
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
+        $user = Auth::user();
+        $salesTarget = $user->currentYearSalesTarget;
 
-        $companies = Prospect::whereHas('quotations', function ($query) use ($userId) {
-            $query->where('created_by', $userId);
-        })
-            ->select('company')
-            ->distinct()
-            ->whereNotNull('company')
-            ->get()
-            ->pluck('company');
-
-        $performanceData = [];
-
-        foreach ($companies as $company) {
-            $monthlyQuotations = Quotation::where('created_by', $userId)
-                ->whereHas('prospect', function ($query) use ($company) {
-                    $query->where('company', $company);
-                })
-                ->whereMonth('created_at', $currentMonth)
-                ->whereYear('created_at', $currentYear);
-
-            $monthlyTotal = $monthlyQuotations->where('status', 'accepted')->sum('total_amount');
-            $monthlyTarget = $monthlyTotal * 1.5;
-
-            $yearlyQuotations = Quotation::where('created_by', $userId)
-                ->whereHas('prospect', function ($query) use ($company) {
-                    $query->where('company', $company);
-                })
-                ->whereYear('created_at', $currentYear);
-
-            $yearlyTotal = $yearlyQuotations->where('status', 'accepted')->sum('total_amount');
-            $yearlyTarget = $yearlyTotal * 1.3;
-
-            $monthlyCompletionRate = $monthlyTarget > 0 ? round(($monthlyTotal / $monthlyTarget) * 100, 1) : 0;
-            $yearlyCompletionRate = $yearlyTarget > 0 ? round(($yearlyTotal / $yearlyTarget) * 100, 1) : 0;
-
-            $monthlyColor = $monthlyCompletionRate >= 80 ? 'green' : ($monthlyCompletionRate >= 60 ? 'blue' : 'yellow');
-            $yearlyColor = $yearlyCompletionRate >= 80 ? 'green' : ($yearlyCompletionRate >= 60 ? 'blue' : 'yellow');
-
-            $performanceData[] = [
-                'company' => $company,
-                'monthly_target' => $monthlyTarget,
-                'completion' => $monthlyTotal,
-                'monthly_completion_rate' => $monthlyCompletionRate,
-                'monthly_completion_color' => $monthlyColor,
-                'yearly_target' => $yearlyTarget,
-                'accumulative_total' => $yearlyTotal,
-                'yearly_completion_rate' => $yearlyCompletionRate,
-                'yearly_completion_color' => $yearlyColor,
-            ];
-        }
-
-        return $performanceData;
-    }
-
-    /**
-     * Get monthly chart data for specific sales person
-     */
-    private function getSalesMonthlyData($userId)
-    {
-        $currentYear = Carbon::now()->year;
-        $omsetData = [];
-        $grossProfitData = [];
-        $targetCompletionData = [];
-
-        // for ($month = 1; $month <= 12; $month++) {
-        //     $monthlyOmset = Quotation::where('created_by', $userId)
-        //         ->where('status', 'accepted')
-        //         ->whereMonth('created_at', $month)
-        //         ->whereYear('created_at', $currentYear)
-        //         ->sum('total_amount');
-        //
-        //     $monthlyGrossProfit = $monthlyOmset * 0.6;
-        //
-        //     $monthlyQuotations = Quotation::where('created_by', $userId)
-        //         ->whereMonth('created_at', $month)
-        //         ->whereYear('created_at', $currentYear)
-        //         ->count();
-        //
-        //     $acceptedQuotations = Quotation::where('created_by', $userId)
-        //         ->where('status', 'accepted')
-        //         ->whereMonth('created_at', $month)
-        //         ->whereYear('created_at', $currentYear)
-        //         ->count();
-        //
-        //     $targetCompletion = $monthlyQuotations > 0 ? round(($acceptedQuotations / $monthlyQuotations) * 100) : 0;
-        //
-        //     $omsetData[] = $monthlyOmset;
-        //     $grossProfitData[] = $monthlyGrossProfit;
-        //     $targetCompletionData[] = $targetCompletion;
-        // }
-
-        return [
-            'omset' => $omsetData,
-            'gross_profit' => $grossProfitData,
-            'target_completion' => $targetCompletionData,
-        ];
-    }
-
-    /**
-     * ========== PROJECT ROLE METHODS ==========
-     */
-
-    /**
-     * Get total projects count
-     */
-    private function getProjectCount()
-    {
-        return Project::count();
-    }
-
-    /**
-     * Get completed projects count
-     */
-    private function getCompletedProjectsCount()
-    {
-        return Project::where('status', 'completed')->count();
-    }
-
-    /**
-     * Get projects currently in progress
-     */
-    private function getProjectsInProgress()
-    {
-        return Project::where('status', 'in_progress')
-            ->with(['wbsItems'])
-            ->orderBy('updated_at', 'desc')
-            ->take(10)
-            ->get();
-    }
-
-    /**
-     * Get project timeline data
-     */
-    private function getProjectTimeline()
-    {
-        return Project::orderBy('created_at', 'asc')
-            ->get();
-    }
-
-    /**
-     * Get team productivity metrics
-     */
-    private function getTeamProductivity()
-    {
-        // Implement based on your business logic
-        return [];
-    }
-
-    /**
-     * Get project budget status
-     */
-    private function getProjectBudgetStatus()
-    {
-        return Project::select('id', 'client_name', 'company', 'description')
-            ->get()
-            ->map(function ($project) {
-                return [
-                    'id' => $project->id,
-                    'client_name' => $project->client_name,
-                    'company' => $project->company,
-                    'description' => $project->description,
-                ];
-            });
-    }
-
-    /**
-     * ========== LOGISTIC ROLE METHODS ==========
-     */
-
-    /**
-     * Get total installations count
-     */
-    private function getTotalInstallations()
-    {
-        return Installation::count();
-    }
-
-    /**
-     * Get pending installations count
-     */
-    private function getPendingInstallations()
-    {
-        return Installation::where('status', 'pending')->count();
-    }
-
-    /**
-     * Get completed installations count
-     */
-    private function getCompletedInstallations()
-    {
-        return Installation::where('status', 'completed')->count();
-    }
-
-    /**
-     * Get installation schedule
-     */
-    private function getInstallationSchedule()
-    {
-        return Installation::select('id', 'name', 'scheduled_date', 'status')
-            ->orderBy('scheduled_date', 'asc')
-            ->take(10)
-            ->get();
-    }
-
-    /**
-     * Get accommodation status
-     */
-    private function getAccommodationStatus()
-    {
-        return Accommodation::select('id', 'name', 'capacity', 'status')
-            ->get();
-    }
-
-    /**
-     * Get logistic performance metrics
-     */
-    private function getLogisticPerformanceMetrics()
-    {
-        return [
-            'on_time_delivery_rate' => $this->getOnTimeDeliveryRate(),
-            'installation_efficiency' => $this->getInstallationEfficiency(),
-            'accommodation_utilization' => $this->getAccommodationUtilization(),
-        ];
-    }
-
-    /**
-     * Get on-time delivery rate
-     */
-    private function getOnTimeDeliveryRate()
-    {
-        $total = Installation::count();
-        $onTime = Installation::where('status', 'completed')
-            ->whereRaw('completed_date <= scheduled_date')
+        $prospectQuery = $userId 
+            ? fn($query) => $query->whereHas('quotations', fn($q) => $q->where('created_by', $userId))
+            : fn($query) => $query->whereHas('quotations');
+        
+        $totalProspects = Prospect::where($prospectQuery)->count();
+        $prospectsDeals = Prospect::where($prospectQuery)
+            ->whereHas('prospectStatus', fn($query) => $query->where('persentage', 100))
+            ->count();
+        $prospectsNewMonth = Prospect::where($prospectQuery)
+            ->whereMonth('created_at', $currentMonth)
+            ->whereYear('created_at', $currentYear)
+            ->count();
+        $prospectsLost = Prospect::where($prospectQuery)
+            ->whereHas('prospectStatus', function ($query) {
+                $query->where('persentage', 0)
+                    ->orWhere('name', 'like', '%lost%')
+                    ->orWhere('name', 'like', '%gagal%');
+            })
             ->count();
 
-        return $total > 0 ? round(($onTime / $total) * 100, 1) : 0;
-    }
+        $totalOmset = $this->getTotalOmsetFromProspects($userId);
+        $targetAchievement = ($salesTarget && $salesTarget->target_yearly > 0)
+            ? round(($totalOmset / $salesTarget->target_yearly) * 100)
+            : 0;
 
-    /**
-     * Get installation efficiency rate
-     */
-    private function getInstallationEfficiency()
-    {
-        // Implement based on your business logic
-        return 0;
-    }
-
-    /**
-     * Get accommodation utilization rate
-     */
-    private function getAccommodationUtilization()
-    {
-        // Implement based on your business logic
-        return 0;
-    }
-
-    /**
-     * ========== FINANCE ROLE METHODS ==========
-     */
-
-    /**
-     * Get total expenses
-     */
-    private function getTotalExpenses()
-    {
-        // Implement based on your expense tracking model
-        return 0;
-    }
-
-    /**
-     * Get profit margin
-     */
-    private function getProfitMargin()
-    {
-        $revenue = $this->getTotalRevenue();
-        $expenses = $this->getTotalExpenses();
-
-        if ($revenue === 0) {
-            return 0;
-        }
-
-        $profit = $revenue - $expenses;
-
-        return round(($profit / $revenue) * 100, 1);
-    }
-
-    /**
-     * Get invoice status
-     */
-    private function getInvoiceStatus()
-    {
-        // Implement based on your invoice model
-        return [];
-    }
-
-    /**
-     * Get payment analysis
-     */
-    private function getPaymentAnalysis()
-    {
-        // Implement based on your payment tracking
-        return [];
-    }
-
-    /**
-     * Get quotation metrics for finance
-     */
-    private function getQuotationMetrics()
-    {
         return [
-            'total_quotations' => Quotation::count(),
-            'accepted_quotations' => Quotation::where('status', 'accepted')->count(),
-            'pending_quotations' => Quotation::where('status', 'pending')->count(),
-            'total_value' => Quotation::sum('total_amount'),
+            'target_achievement' => $targetAchievement,
+            'total_prospects' => $totalProspects,
+            'prospects_deal' => $prospectsDeals,
+            'prospects_new_month' => $prospectsNewMonth,
+            'prospects_lost' => $prospectsLost,
+            'total_omset' => $totalOmset,
+            'total_deal' => $totalOmset, // Same as omset based on original logic
         ];
     }
 
     /**
-     * Get cashflow trend
+     * Get team data for dashboard API
      */
-    private function getCashflowTrend()
+    public function getTeamData(string $teamId)
     {
-        // Implement based on your business logic
-        return [];
-    }
-
-    /**
-     * Get team-specific data for AJAX request
-     */
-    public function getTeamData($teamId)
-    {
-        // Handle "all teams" case
-        if ($teamId === 'all') {
-            $performanceData = $this->getPerformanceData();
-            $monthlyData = $this->getMonthlyData();
-            $prospects = $this->getProspects();
-
-            return response()->json([
-                'performanceData' => $performanceData,
-                'monthlyData' => $monthlyData,
-                'prospects' => $prospects,
-                'teamName' => 'ALL TEAMS',
-            ]);
+        if ($teamId === "all") {
+            return $this->getAllTeamsData();
         }
 
-        // Find user by team ID (convert back from formatted ID)
-        $user = User::whereRaw("LOWER(REPLACE(name, ' ', '')) = ?", [$teamId])
-            ->whereNotNull('no_quotation')
-            ->where('no_quotation', '>', 0)
+        $user = User::whereRaw("LOWER(REPLACE(name, \" \", \"\")) = ?", [$teamId])
+            // ->whereNotNull("no_quotation")
+            // ->where("no_quotation", ">", 0)
             ->first();
 
-        if (! $user) {
-            return response()->json(['error' => 'Sales team not found'], 404);
+        if (!$user) {
+            return response()->json(["error" => "Sales team not found"], 404);
         }
 
-        // Get performance data filtered by this sales person's quotations
-        $performanceData = $this->getPerformanceDataByUser($user->id);
-
-        // Get monthly chart data filtered by this sales person
-        $monthlyData = $this->getMonthlyDataByUser($user->id);
-
-        // Get prospects filtered by this sales person
+        $monthlyData = $this->getMonthlyData($user->id);
         $prospects = $this->getProspects($user->id);
+        $teamRevenue = $this->getRevenue($user->id);
+        $teamProjects = Prospect::whereHas('quotations', fn($query) => $query->where('created_by', $user->id))->count();
+        $teamCompletionRate = $this->getCompletionRate($user->id);
+        $reportMetrics = $this->getSalesReportMetrics($user->id);
 
         return response()->json([
-            'performanceData' => $performanceData,
-            'monthlyData' => $monthlyData,
-            'prospects' => $prospects,
-            'teamName' => strtoupper($user->name),
+            "monthlyData" => $monthlyData,
+            "prospects" => $prospects,
+            "teamName" => strtoupper($user->name),
+            "reportMetrics" => $reportMetrics,
         ]);
     }
 
     /**
-     * Get performance data filtered by specific user/sales person
+     * Get all teams data for dashboard API
      */
-    private function getPerformanceDataByUser($userId)
+    private function getAllTeamsData()
     {
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
+        $monthlyData = $this->getMonthlyData();
+        $prospects = $this->getProspects();
+        $salesTeams = $this->getSalesTeams();
+        
+        // Calculate overall report metrics for all teams
+        $reportMetrics = $this->getSalesReportMetrics();
 
-        // Get companies from prospects related to this sales person's quotations
-        $companies = Prospect::whereHas('quotations', function ($query) use ($userId) {
-            $query->where('created_by', $userId);
-        })
-            ->select('company')
-            ->distinct()
-            ->whereNotNull('company')
-            ->get()
-            ->pluck('company');
-
-        $performanceData = [];
-
-        foreach ($companies as $company) {
-            // Get monthly data for this sales person
-            $monthlyQuotations = Quotation::where('created_by', $userId)
-                ->whereHas('prospect', function ($query) use ($company) {
-                    $query->where('company', $company);
-                })
-                ->whereMonth('created_at', $currentMonth)
-                ->whereYear('created_at', $currentYear);
-
-            $monthlyTotal = $monthlyQuotations->where('status', 'accepted')->sum('total_amount');
-            $monthlyTarget = $monthlyTotal * 1.5; // Simulate target as 150% of current achievement
-
-            // Get yearly data for this sales person
-            $yearlyQuotations = Quotation::where('created_by', $userId)
-                ->whereHas('prospect', function ($query) use ($company) {
-                    $query->where('company', $company);
-                })
-                ->whereYear('created_at', $currentYear);
-
-            $yearlyTotal = $yearlyQuotations->where('status', 'accepted')->sum('total_amount');
-            $yearlyTarget = $yearlyTotal * 1.3; // Simulate target as 130% of current achievement
-
-            // Calculate completion rates
-            $monthlyCompletionRate = $monthlyTarget > 0 ? round(($monthlyTotal / $monthlyTarget) * 100, 1) : 0;
-            $yearlyCompletionRate = $yearlyTarget > 0 ? round(($yearlyTotal / $yearlyTarget) * 100, 1) : 0;
-
-            // Determine colors based on completion rate
-            $monthlyColor = $monthlyCompletionRate >= 80 ? 'green' : ($monthlyCompletionRate >= 60 ? 'blue' : 'yellow');
-            $yearlyColor = $yearlyCompletionRate >= 80 ? 'green' : ($yearlyCompletionRate >= 60 ? 'blue' : 'yellow');
-
-            $performanceData[] = [
-                'company' => $company,
-                'monthly_target' => $monthlyTarget,
-                'completion' => $monthlyTotal,
-                'monthly_completion_rate' => $monthlyCompletionRate,
-                'monthly_completion_color' => $monthlyColor,
-                'yearly_target' => $yearlyTarget,
-                'accumulative_total' => $yearlyTotal,
-                'yearly_completion_rate' => $yearlyCompletionRate,
-                'yearly_completion_color' => $yearlyColor,
-            ];
-        }
-
-        return $performanceData;
-    }
-
-    /**
-     * Get monthly chart data filtered by specific user/sales person
-     */
-    private function getMonthlyDataByUser($userId)
-    {
-        $currentYear = Carbon::now()->year;
-        $omsetData = [];
-        $grossProfitData = [];
-        $targetCompletionData = [];
-
-        // for ($month = 1; $month <= 12; $month++) {
-        //     // Get total omset (revenue) for the month for this sales person
-        //     $monthlyOmset = Quotation::where('created_by', $userId)
-        //         ->where('status', 'accepted')
-        //         ->whereMonth('created_at', $month)
-        //         ->whereYear('created_at', $currentYear)
-        //         ->sum('total_amount');
-
-        //     // Simulate gross profit as 60% of omset
-        //     $monthlyGrossProfit = $monthlyOmset * 0.6;
-
-        //     // Calculate target completion rate based on monthly data for this sales person
-        //     $monthlyQuotations = Quotation::where('created_by', $userId)
-        //         ->whereMonth('created_at', $month)
-        //         ->whereYear('created_at', $currentYear)
-        //         ->count();
-
-        //     $acceptedQuotations = Quotation::where('created_by', $userId)
-        //         ->where('status', 'accepted')
-        //         ->whereMonth('created_at', $month)
-        //         ->whereYear('created_at', $currentYear)
-        //         ->count();
-
-        //     $targetCompletion = $monthlyQuotations > 0 ? round(($acceptedQuotations / $monthlyQuotations) * 100) : 0;
-
-        //     $omsetData[] = $monthlyOmset;
-        //     $grossProfitData[] = $monthlyGrossProfit;
-        //     $targetCompletionData[] = $targetCompletion;
-        // }
-
-        return [
-            'omset' => $omsetData,
-            'gross_profit' => $grossProfitData,
-            'target_completion' => $targetCompletionData,
-        ];
+        return response()->json([
+            "monthlyData" => $monthlyData,
+            "prospects" => $prospects,
+            "teamName" => "ALL TEAMS",
+            "reportMetrics" => $reportMetrics,
+        ]);
     }
 }
+
+   

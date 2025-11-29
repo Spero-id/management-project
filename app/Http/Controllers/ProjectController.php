@@ -75,7 +75,13 @@ class ProjectController extends Controller
             ->orderBy('id')
             ->get();
 
-        return view('project.show', compact('project', 'wbsItems', 'categories'));
+        // Load minutes of meetings with creator information
+        $minuteOfMeetings = $project->minuteOfMeetings()
+            ->with('creator')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('project.show', compact('project', 'wbsItems', 'categories', 'minuteOfMeetings'));
     }
 
     /**

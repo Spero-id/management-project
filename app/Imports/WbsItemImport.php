@@ -39,8 +39,9 @@ final class WbsItemImport implements ToCollection, WithHeadingRow, WithStartRow
             $hierarchyLevel = $this->getHierarchyLevel($level);
 
             if ($this->isCategory($level)) {
-                $item = ProjectWBSItem::create([
+                $item = $this->upsertWbsItem([
                     'project_id' => $this->projectId,
+                    'level' => trim($level),
                     'title' => $this->normalizeName($name),
                     'item_type' => 'category',
                     'parent_id' => $this->getParentId($hierarchyLevel, $parentStack),
@@ -51,8 +52,9 @@ final class WbsItemImport implements ToCollection, WithHeadingRow, WithStartRow
 
                 $this->updateParentStack($hierarchyLevel, $item, $parentStack);
             } else {
-                ProjectWBSItem::create([
+                $this->upsertWbsItem([
                     'project_id' => $this->projectId,
+                    'level' => trim($level),
                     'title' => $this->normalizeName($name),
                     'item_type' => 'task',
                     'parent_id' => $this->getParentId($hierarchyLevel, $parentStack),
@@ -137,5 +139,22 @@ final class WbsItemImport implements ToCollection, WithHeadingRow, WithStartRow
         if (isset($parentStack[$level])) {
             unset($parentStack[$level]);
         }
+    }
+
+    /**
+     * Update existing WBS item or create new one based on project_id and level
+     */
+    private function upsertWbsItem(array $data): ProjectWBSItem
+    {
+        $existing = ProjectWBSItem::where('project_id', $data['project_id'])
+            ->where('level', $data['level'])
+            ->first();
+
+        if ($existing) {
+            $existing->update($data);
+            return $existing;
+        }
+
+        return ProjectWBSItem::create($data);
     }
 }

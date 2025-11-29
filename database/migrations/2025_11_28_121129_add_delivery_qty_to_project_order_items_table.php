@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        
-        Schema::table('projects', function (Blueprint $table) {
-            $table->string('status')->default('on-going')->after('description');
-            $table->unsignedInteger('percentage')->default(0)->after('status');
+        Schema::table('project_order_items', function (Blueprint $table) {
+            $table->integer('delivery_qty')->default(0)->after('stock_used');
         });
-
     }
 
     /**
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('project_order_items', function (Blueprint $table) {
+            $table->dropColumn('delivery_qty');
+        });
     }
 };

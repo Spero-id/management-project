@@ -108,4 +108,12 @@ class Project extends Model
     {
         return $this->hasMany(\App\Models\ProjectOrderItem::class, 'project_id');
     }
+
+    /**
+     * Get the minutes of meetings for this project.
+     */
+    public function minuteOfMeetings()
+    {
+        return $this->morphMany(\App\Models\MinuteOfMeeting::class, 'noteable');
+    }
 }

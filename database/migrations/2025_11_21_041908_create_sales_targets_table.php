@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('sales_targets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->decimal('target_gross_profit', 15, 2)->default(0);
-            $table->decimal('target_monthly', 15, 2)->default(0);
-            $table->decimal('target_yearly', 15, 2)->default(0);
+            $table->unsignedBigInteger('target_gross_profit')->default(0);
+            $table->unsignedBigInteger('target_monthly')->default(0);
+            $table->unsignedBigInteger('target_yearly')->default(0);
             $table->year('year');
+            $table->string('status')->default('active');
             $table->timestamps();
-            
+
             $table->unique(['user_id', 'year']);
         });
     }

@@ -26,6 +26,7 @@ final class WeeklyMeetingExport implements FromCollection, WithHeadings, WithMap
     public function headings(): array
     {
         return [
+            'ID',
             'Task',
             'Person in Charge',
             'Start Date',
@@ -39,6 +40,7 @@ final class WeeklyMeetingExport implements FromCollection, WithHeadings, WithMap
     public function map($meeting): array
     {
         return [
+            $meeting->id,
             $meeting->task,
             $meeting->petugas,
             $meeting->start_date,

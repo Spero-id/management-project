@@ -333,14 +333,23 @@
                         </div>
                     </div>
                 </div>
-                <!-- Installation Total Section -->
+                <!-- Installation & Accommodation Total Section -->
                 <div class="row mt-4">
                     <div class="col-md-8"></div>
                     <div class="col-md-4">
                         <div class="card">
                             <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-md">Installation:</span>
+                                    <span class="text-md" id="installationOnlyAmount">Rp 0</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-md">Accommodation:</span>
+                                    <span class="text-md" id="accommodationOnlyAmount">Rp 0</span>
+                                </div>
+                                <hr class="my-2">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <strong class="text-lg">Installation Total:</strong>
+                                    <strong class="text-lg">Total:</strong>
                                     <strong class="text-lg text-success" id="installationTotalAmount">Rp 0</strong>
                                 </div>
                             </div>
@@ -581,6 +590,9 @@
                     // const summaryHotel = document.getElementById('summaryHotel');
                     // if (summaryHotel) summaryHotel.textContent = formatRupiah(hotelPrice);
                 }
+                
+                // Recalculate total when hotel price changes
+                setTimeout(recalcAll, 50);
             }
 
             function formatRupiahInput(input) {
@@ -612,6 +624,9 @@
                     // const summaryFlight = document.getElementById('summaryFlight');
                     // if (summaryFlight) summaryFlight.textContent = formatRupiah(TicketPrice);
                 }
+                
+                // Recalculate total when ticket price changes
+                setTimeout(recalcAll, 50);
             }
 
             function calculateTransportationPrice() {
@@ -628,6 +643,26 @@
                     if (transportationInput) transportationInput.value = formatRupiah(transportationPrice);
 
                 }
+                
+                // Recalculate total when transportation price changes
+                setTimeout(recalcAll, 50);
+            }
+
+            function calculateAccommodationTotal() {
+                const accommodationToggle = document.getElementById('accommodationToggle');
+                if (!accommodationToggle || !accommodationToggle.checked) {
+                    return 0;
+                }
+
+                const hotelInput = document.getElementById('total_hotel_price_input');
+                const flightInput = document.getElementById('flight_price_input');
+                const transportationInput = document.getElementById('total_transportation_price');
+
+                const hotelPrice = parseRupiah((hotelInput ? hotelInput.value : '') || '0');
+                const flightPrice = parseRupiah((flightInput ? flightInput.value : '') || '0');
+                const transportationPrice = parseRupiah((transportationInput ? transportationInput.value : '') || '0');
+
+                return hotelPrice + flightPrice + transportationPrice;
             }
 
             function recalcAll() {
@@ -637,65 +672,74 @@
                 var installationTotal = productTotal * (percentage / 100);
 
                 var rows = Array.from(document.querySelectorAll('.installation-row')) || [];
-                if (rows.length === 0) {
-                    var installTotalEl = document.getElementById('installationTotalAmount');
-                    if (installTotalEl) installTotalEl.textContent = 'Rp ' + formatNumber(0);
-                    return;
-                }
-
-                var sumProportional = 0;
-                rows.forEach(function(r) {
-                    var p = parseFloat(r.dataset.proportional) || 0;
-                    if (p > 0) sumProportional += p;
-                });
-
-                var allocations = new Array(rows.length).fill(0);
-
-                if (sumProportional > 0) {
-                    var allocated = 0;
-                    var unpropIndexes = [];
-                    rows.forEach(function(r, idx) {
+                
+                var displayedInstallationTotal = 0;
+                
+                if (rows.length > 0) {
+                    var sumProportional = 0;
+                    rows.forEach(function(r) {
                         var p = parseFloat(r.dataset.proportional) || 0;
-                        if (p > 0) {
-                            var unit = installationTotal * (p / 100);
-                            allocations[idx] = unit;
-                            allocated += unit;
-                        } else {
-                            unpropIndexes.push(idx);
+                        if (p > 0) sumProportional += p;
+                    });
+
+                    var allocations = new Array(rows.length).fill(0);
+
+                    if (sumProportional > 0) {
+                        var allocated = 0;
+                        var unpropIndexes = [];
+                        rows.forEach(function(r, idx) {
+                            var p = parseFloat(r.dataset.proportional) || 0;
+                            if (p > 0) {
+                                var unit = installationTotal * (p / 100);
+                                allocations[idx] = unit;
+                                allocated += unit;
+                            } else {
+                                unpropIndexes.push(idx);
+                            }
+                        });
+                        var remaining = installationTotal - allocated;
+                        var perUnprop = unpropIndexes.length > 0 ? (remaining / unpropIndexes.length) : 0;
+                        unpropIndexes.forEach(function(i) {
+                            allocations[i] = perUnprop;
+                        });
+                    } else {
+                        var perItem = installationTotal / rows.length;
+                        for (var i = 0; i < rows.length; i++) allocations[i] = perItem;
+                    }
+
+                    rows.forEach(function(r, idx) {
+                        var qtyInput = r.querySelector('.installation-quantity-input');
+                        var unitInput = r.querySelector('.installation-unit-price-input');
+                        var subtotalDisplay = r.querySelector('.installation-subtotal-display');
+
+                        var qty = parseNumber(qtyInput ? qtyInput.value : 0);
+                        var unit = allocations[idx] || 0;
+
+                        if (unitInput) {
+                            unitInput.value = formatNumber(unit);
                         }
+
+                        var subtotal = unit * qty;
+                        if (subtotalDisplay) {
+                            subtotalDisplay.value = formatNumber(subtotal);
+                        }
+                        displayedInstallationTotal += subtotal;
                     });
-                    var remaining = installationTotal - allocated;
-                    var perUnprop = unpropIndexes.length > 0 ? (remaining / unpropIndexes.length) : 0;
-                    unpropIndexes.forEach(function(i) {
-                        allocations[i] = perUnprop;
-                    });
-                } else {
-                    var perItem = installationTotal / rows.length;
-                    for (var i = 0; i < rows.length; i++) allocations[i] = perItem;
                 }
 
-                var displayedTotal = 0;
-                rows.forEach(function(r, idx) {
-                    var qtyInput = r.querySelector('.installation-quantity-input');
-                    var unitInput = r.querySelector('.installation-unit-price-input');
-                    var subtotalDisplay = r.querySelector('.installation-subtotal-display');
-
-                    var qty = parseNumber(qtyInput ? qtyInput.value : 0);
-                    var unit = allocations[idx] || 0;
-
-                    if (unitInput) {
-                        unitInput.value = formatNumber(unit);
-                    }
-
-                    var subtotal = unit * qty;
-                    if (subtotalDisplay) {
-                        subtotalDisplay.value = formatNumber(subtotal);
-                    }
-                    displayedTotal += subtotal;
-                });
-
-                var installTotalEl = document.getElementById('installationTotalAmount');
-                if (installTotalEl) installTotalEl.textContent = 'Rp ' + formatNumber(displayedTotal);
+                // Calculate accommodation total
+                var accommodationTotal = calculateAccommodationTotal();
+                
+                // Update individual displays
+                var installOnlyEl = document.getElementById('installationOnlyAmount');
+                var accommodationOnlyEl = document.getElementById('accommodationOnlyAmount');
+                var grandTotalEl = document.getElementById('installationTotalAmount');
+                
+                if (installOnlyEl) installOnlyEl.textContent = 'Rp ' + formatNumber(displayedInstallationTotal);
+                if (accommodationOnlyEl) accommodationOnlyEl.textContent = 'Rp ' + formatNumber(accommodationTotal);
+                
+                var grandTotal = displayedInstallationTotal + accommodationTotal;
+                if (grandTotalEl) grandTotalEl.textContent = 'Rp ' + formatNumber(grandTotal);
             }
 
             function attachQuantityListeners() {
@@ -732,6 +776,8 @@
                             accommodationFormContainer.style.display = 'none';
                             needAccommodationInput.value = '0';
                         }
+                        // Recalculate total when accommodation toggle changes
+                        recalcAll();
                     });
                 }
 

@@ -12,6 +12,20 @@ class ProjectWBSItem extends Model
 
     protected $guarded = ['id'];
 
+    protected $fillable = [
+        'project_id',
+        'parent_id',
+        'title',
+        'type',
+        'from',
+        'to',
+        'quantity',
+        'item_type',
+        'is_done',
+        'note',
+        'level'
+    ];
+
     /**
      * Get all children of this WBS item.
      */

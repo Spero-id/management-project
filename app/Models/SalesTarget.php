@@ -17,9 +17,9 @@ final class SalesTarget extends Model
     protected function casts(): array
     {
         return [
-            'target_gross_profit' => 'decimal:2',
-            'target_monthly' => 'decimal:2',
-            'target_yearly' => 'decimal:2',
+            'target_gross_profit' => 'integer',
+            'target_monthly' => 'integer',
+            'target_yearly' => 'integer',
             'year' => 'integer',
         ];
     }

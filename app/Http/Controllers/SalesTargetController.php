@@ -17,16 +17,16 @@ final class SalesTargetController extends Controller
 
         // Get selected sales user ID from query parameter, or use first sales member
         $selectedSalesId = $request->query('sales_id') ?? $salesMembers->first()?->id;
-        
+
         // Get selected sales user if exists
         $selectedSales = null;
         $salesTarget = null;
-        
+
         if ($selectedSalesId) {
             $selectedSales = User::whereHas('roles', function ($query) {
                 $query->where('name', 'sales');
             })->find($selectedSalesId);
-            
+
             // Get sales target for selected sales member
             if ($selectedSales) {
                 $salesTarget = SalesTarget::where('user_id', $selectedSalesId)
@@ -48,6 +48,7 @@ final class SalesTargetController extends Controller
             'year' => 'required|integer',
         ]);
 
+
         SalesTarget::updateOrCreate(
             [
                 'user_id' => $validated['user_id'],
@@ -66,6 +67,7 @@ final class SalesTargetController extends Controller
 
     public function update(Request $request, SalesTarget $salesTarget)
     {
+
         $validated = $request->validate([
             'target_gross_profit' => 'required|numeric|min:0',
             'target_monthly' => 'required|numeric|min:0',
@@ -73,8 +75,9 @@ final class SalesTargetController extends Controller
         ]);
 
         $salesTarget->update($validated);
-
         return redirect()->back()
             ->with('success', 'Sales target berhasil diperbarui');
     }
+
+    
 }

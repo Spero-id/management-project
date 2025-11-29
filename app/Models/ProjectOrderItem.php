@@ -13,15 +13,19 @@ class ProjectOrderItem extends Model
         'quotation_item_id',
         'required_qty',
         'stock_used',
+        'delivery_qty',
         'estimated_arrival_date',
         'order_status',
         'po_number',
         'po_file_path',
         "project_order_id",
+        'delivery_qty',
+        'remaining_qty',
     ];
 
     protected $casts = [
         'stock_used' => 'integer',
+        'delivery_qty' => 'integer',
         'estimated_arrival_date' => 'date',
     ];
 

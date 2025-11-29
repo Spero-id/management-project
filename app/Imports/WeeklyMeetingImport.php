@@ -22,7 +22,7 @@ final class WeeklyMeetingImport implements ToCollection, WithHeadingRow, WithSta
     public function collection(Collection $collection): void
     {
         foreach ($collection as $row) {
-
+            $id = $row['id'] ?? null;
             $task = $row['task'] ?? null;
             $petugas = $row['person_in_charge'] ?? null;
             $startDate = $row['start_date'] ?? null;
@@ -31,12 +31,11 @@ final class WeeklyMeetingImport implements ToCollection, WithHeadingRow, WithSta
             $progress = $row['progress'] ?? 0;
             $notes = $row['notes'] ?? null;
 
-            if (empty($task) || empty($petugas) || empty($startDate) || empty($endDate) || empty($targetDate) ) {
-               
+            if (empty($task) || empty($petugas) || empty($startDate) || empty($endDate) || empty($targetDate)) {
                 continue;
             }
 
-            ProjectWeeklyMeeting::create([
+            $data = [
                 'project_id' => $this->projectId,
                 'task' => trim($task),
                 'petugas' => trim($petugas),
@@ -45,7 +44,16 @@ final class WeeklyMeetingImport implements ToCollection, WithHeadingRow, WithSta
                 'target_date' => $this->parseDate($targetDate),
                 'progress' => (int) min(100, max(0, $progress)),
                 'notes' => $notes ? trim($notes) : null,
-            ]);
+            ];
+
+            // Check if ID exists and record exists in database
+            if ($id && ProjectWeeklyMeeting::where('id', $id)->exists()) {
+                // Update existing record
+                ProjectWeeklyMeeting::where('id', $id)->update($data);
+            } else {
+                // Create new record (ID will be auto-increment)
+                ProjectWeeklyMeeting::create($data);
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -145,6 +146,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <div class="header-center">
@@ -169,8 +171,8 @@
             <div class="do-title">Delivery Order</div>
             <div class="do-info">
                 <span style="font-weight:bold">Date</span>: {{ $deliveryOrder->created_at->format('d F Y') }}<br>
-                <span style="font-weight:bold">DO No</span>: {{ $deliveryOrder->do_number }}<br>
-                <span style="font-weight:bold">Project</span>: {{ $deliveryOrder->project->project_name ?? 'N/A' }}<br>
+                <span style="font-weight:bold">NO Delivery Order</span>: {{ $deliveryOrder->do_number }}<br>
+                <span style="font-weight:bold">No PO</span>: {{ $deliveryOrder->project->no_po ?? 'N/A' }}<br>
             </div>
         </div>
     </div>
@@ -192,41 +194,29 @@
             </tr>
         </thead>
         <tbody>
-            @if($deliveryOrder->items->count() > 0)
-                @foreach($deliveryOrder->items as $index => $item)
-                <tr>
-                    <td style="text-align: center;">{{ $index + 1 }}</td>
-                    <td style="font-size: 10px; text-align: left;">
-                        {{ $item->product->name ?? 'N/A' }}
-                    </td>
-                    <td style="font-size: 10px; text-align: left;">
-                        {{ ($item->product->brand ?? 'N/A') . ' - ' . ($item->product->type ?? 'N/A') }}
-                    </td>
-                    <td style="font-size: 9px; text-align: left; line-height: 1.2;">
-                        @if($item->sn && is_array($item->sn))
-                            @foreach($item->sn as $serialNumber)
-                                S/N: {{ $serialNumber }}<br>
-                            @endforeach
-                        @else
-                            -
-                        @endif
-                    </td>
-                    <td style="text-align: center;">{{ number_format($item->qty, 0) }}</td>
-                    <td style="text-align: center; font-size: 10px;">{{ $item->notes ?? 'Unit' }}</td>
-                </tr>
+            @if ($deliveryOrder->items->count() > 0)
+                @foreach ($deliveryOrder->items as $index => $item)
+                    <tr>
+                        <td style="text-align: center;">{{ $index + 1 }}</td>
+                        <td style="font-size: 10px; text-align: left;">
+                            {{ $item->product->name ?? 'N/A' }}
+                        </td>
+                        <td style="font-size: 10px; text-align: left;">
+                            {{ ($item->product->brand ?? 'N/A') . ' - ' . ($item->product->type ?? 'N/A') }}
+                        </td>
+                        <td style="font-size: 9px; text-align: left; line-height: 1.2;">
+                            @if ($item->sn && is_array($item->sn))
+                                @foreach ($item->sn as $serialNumber)
+                                    S/N: {{ $serialNumber }}<br>
+                                @endforeach
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td style="text-align: center;">{{ number_format($item->qty, 0) }}</td>
+                        <td style="text-align: center; font-size: 10px;">{{ $item->notes }}</td>
+                    </tr>
                 @endforeach
-                
-                <!-- Add empty rows for spacing -->
-                @for($i = count($deliveryOrder->items); $i < 8; $i++)
-                <tr>
-                    <td style="height: 30px;">&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-                @endfor
             @else
                 <tr>
                     <td colspan="6" style="text-align:center; padding:20px; color:#888;">No items found</td>
@@ -236,7 +226,7 @@
     </table>
 
     <!-- Additional Notes Section -->
-    @if($deliveryOrder->notes)
+    @if ($deliveryOrder->notes)
         <div class="notes">
             <strong>Delivery Notes:</strong><br>
             {{ $deliveryOrder->notes }}
@@ -272,4 +262,5 @@
     </div>
 
 </body>
+
 </html>

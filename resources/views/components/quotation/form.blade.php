@@ -127,7 +127,7 @@
                         </svg>
                         Select Products
                     </button>
-                    <button type="button" class="btn btn-outline-light" onclick="addProductRow()">
+                    <button type="button" class="btn btn-outline-primary" onclick="addProductRow()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round">
@@ -394,6 +394,11 @@
         .product-list-item.bg-light .product-info {
             opacity: 0.8;
         }
+
+        .unit-price-input[readonly] {
+            background-color: #f8f9fa !important;
+            cursor: not-allowed;
+        }
     </style>
 @endPushOnce
 
@@ -562,7 +567,7 @@
             <td>
                 <div class="input-group">
                     <input type="text" name="products[${productRowIndex}][unit_price]" 
-                           class="form-control unit-price-input" placeholder="0" required>
+                           class="form-control unit-price-input" placeholder="0" required readonly>
                 </div>
             </td>
             <td>
@@ -659,24 +664,8 @@
 
         function addRowEventListeners(row) {
             const quantityInput = row.querySelector('.quantity-input');
-            const unitPriceInput = row.querySelector('.unit-price-input');
 
             quantityInput.addEventListener('input', function() {
-                calculateRowSubtotal(row);
-            });
-
-            unitPriceInput.addEventListener('input', function() {
-                let value = this.value.replace(/[^\d]/g, '');
-                if (value) {
-                    this.value = formatRupiahInput(parseInt(value));
-                }
-                calculateRowSubtotal(row);
-            });
-
-            unitPriceInput.addEventListener('blur', function() {
-                if (!this.value || this.value === '0') {
-                    this.value = '0';
-                }
                 calculateRowSubtotal(row);
             });
         }
@@ -888,7 +877,7 @@
                     <input type="text" name="products[${productRowIndex}][unit_price]" 
                            class="form-control unit-price-input" 
                            value="${productData.price ? formatRupiahInput(parseFloat(productData.price)) : '0'}" 
-                           placeholder="0" required>
+                           placeholder="0" required readonly>
                 </div>
             </td>
             <td>
@@ -1009,7 +998,7 @@
                             <input type="text" name="products[${productRowIndex}][unit_price]" 
                                    class="form-control unit-price-input" 
                                    value="${formatRupiahInput(parseFloat(productItem.unit_price))}" 
-                                   placeholder="0" required>
+                                   placeholder="0" required readonly>
                         </div>
                     </td>
                     <td>

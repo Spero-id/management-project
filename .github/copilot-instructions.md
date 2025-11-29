@@ -42,11 +42,6 @@ These instructions guide Copilot to generate code that aligns with modern Larave
     -   Return typed responses (e.g., `JsonResponse`).
     -   Use Resource classes for API responses.
 
--   Business logic should reside in:
-    -   Service classes
-    -   Action classes
-    -   Event listeners or Jobs for asynchronous tasks
-
 ## ✅ Eloquent ORM & Database
 
 -   Use **Eloquent Models** with proper `$fillable` or `$guarded` attributes for mass assignment protection.

@@ -271,6 +271,14 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Export WBS Items functionality
+    const exportWbsBtn = document.getElementById('exportWbsBtn');
+    if (exportWbsBtn) {
+        exportWbsBtn.addEventListener('click', function() {
+            window.location.href = '{{ route("project.wbs-items.export", $project) }}';
+        });
+    }
+
     // Utility to escape HTML when inserting into label
     function escapeHtml(str) {
         return String(str).replace(/[&<>"']/g, function(m) {

@@ -121,6 +121,7 @@
 
         .items-table th {
             background: #f5f5f5;
+            font-size: 10px;
         }
 
         .text-end {
@@ -224,10 +225,10 @@
             @php $itemNumber = 1; @endphp
 
             @if ($quotation->items->count() > 0)
-                <tr>
-                    <td colspan="7" style="background-color: #f5f5f5; font-weight: bold; text-align: center;">PRODUCT
-                        ITEMS</td>
-                </tr>
+                    <tr>
+                        <td colspan="7" style="background-color: #f5f5f5; font-weight: bold; text-align: center; font-size: 10px;">PRODUCT
+                            ITEMS</td>
+                    </tr>
                 @foreach ($quotation->items as $item)
                     <tr>
                         <td style="text-align: center;">{{ $itemNumber++ }}</td>
@@ -247,7 +248,7 @@
 
             @if ($quotation->installationItems->count() > 0)
                 <tr>
-                    <td colspan="7" style="background-color: #f5f5f5; font-weight: bold; text-align: center;">
+                    <td colspan="7" style="background-color: #f5f5f5; font-weight: bold; text-align: center; font-size: 10px;">
                         INSTALLATION</td>
                 </tr>
                 @foreach ($quotation->installationItems as $item)
@@ -269,7 +270,7 @@
 
             @if ($quotation->accommodationItems->count() > 0)
                 <tr>
-                    <td colspan="7" style="background-color: #f5f5f5; font-weight: bold; text-align: center;">
+                    <td colspan="7" style="background-color: #f5f5f5; font-weight: bold; text-align: center; font-size: 10px;">
                         ACCOMMODATION</td>
                 </tr>
                 @foreach ($quotation->accommodationItems as $item)
@@ -314,33 +315,30 @@
     </table>
 
     <!-- Notes and Quotation Conditions -->
-    @if (
-        $quotation->notes ||
-            ($quotation->prospect &&
-                $quotation->prospect->quotation_conditions &&
-                is_array($quotation->prospect->quotation_conditions) &&
-                count($quotation->prospect->quotation_conditions) > 0))
+    @php
+        $quotationConditions = [];
+        if ($quotation->prospect && $quotation->prospect->quotation_conditions) {
+            $quotationConditions = is_string($quotation->prospect->quotation_conditions)
+                ? (json_decode($quotation->prospect->quotation_conditions, true) ?:
+                [])
+                : $quotation->prospect->quotation_conditions;
+        }
+    @endphp
+
+    @if ($quotation->notes || (!empty($quotationConditions) && is_array($quotationConditions)))
         <div class="notes">
             @if ($quotation->notes)
                 <strong>Notes:</strong><br>
                 {{ $quotation->notes }}
-                @if (
-                    $quotation->prospect &&
-                        $quotation->prospect->quotation_conditions &&
-                        is_array($quotation->prospect->quotation_conditions) &&
-                        count($quotation->prospect->quotation_conditions) > 0)
+                @if (!empty($quotationConditions) && is_array($quotationConditions))
                     <br><br>
                 @endif
             @endif
 
-            @if (
-                $quotation->prospect &&
-                    $quotation->prospect->quotation_conditions &&
-                    is_array($quotation->prospect->quotation_conditions) &&
-                    count($quotation->prospect->quotation_conditions) > 0)
+            @if (!empty($quotationConditions) && is_array($quotationConditions))
                 <strong>Terms & Conditions:</strong>
                 <ol style="margin-top: 8px; margin-bottom: 0; padding-left: 20px;">
-                    @foreach ($quotation->prospect->quotation_conditions as $condition)
+                    @foreach ($quotationConditions as $condition)
                         <li style="margin-bottom: 5px; line-height: 1.4;">{{ $condition }}</li>
                     @endforeach
                 </ol>
