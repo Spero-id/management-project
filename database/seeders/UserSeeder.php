@@ -140,7 +140,7 @@ final class UserSeeder extends Seeder
         }
 
         // Create sales targets for each sales user
-        $salesUsers = User::whereHas('roles', fn($query) => $query->whepre('name', 'SALES'))->get();
+        $salesUsers = User::whereHas('roles', fn ($query) => $query->whepre('name', 'SALES'))->get();
         foreach ($salesUsers as $salesUser) {
             \App\Models\SalesTarget::create([
                 'user_id' => $salesUser->id,
