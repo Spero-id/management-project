@@ -596,7 +596,9 @@
                     }
                 },
                 "columns": [{
-                        "data": "id"
+                        "data": "id",
+                        "visible": false,
+                        "searchable": false
                     },
                     {
                         "data": "name"

@@ -43,6 +43,8 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => 'user', 'as' => 'user.'], function () {
         Route::get('/', [App\Http\Controllers\UserController::class, 'index'])->name('index');
+        Route::get('/datatable', [App\Http\Controllers\UserController::class, 'datatableUsers'])->name('datatable');
+        Route::get('/export', [App\Http\Controllers\UserController::class, 'export'])->name('export');
         Route::get('/create', [App\Http\Controllers\UserController::class, 'create'])->name('create');
         Route::post('/', [App\Http\Controllers\UserController::class, 'store'])->name('store');
         Route::get('/{id}', [App\Http\Controllers\UserController::class, 'show'])->name('show');
@@ -203,8 +205,10 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => 'inventory', 'as' => 'inventory.'], function () {
         Route::get('/', [App\Http\Controllers\InventoryController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\InventoryController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [App\Http\Controllers\InventoryController::class, 'edit'])->name('edit');
         Route::put('/{id}/update', [App\Http\Controllers\InventoryController::class, 'update'])->name('update');
+        Route::delete('/{id}', [App\Http\Controllers\InventoryController::class, 'destroy'])->name('destroy');
         Route::get('/datatable', [App\Http\Controllers\InventoryController::class, 'datatable'])->name('datatable');
     });
 

@@ -38,10 +38,76 @@
         <div class="col-auto ms-auto d-print-none">
 
             <div class="btn-list">
-
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-create-inventory">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Add Inventory
+                </button>
 
             </div>
             <!-- BEGIN MODAL -->
+            <!-- Create Modal -->
+            <div class="modal modal-blur fade" id="modal-create-inventory" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add New Inventory</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="createInventoryForm" action="{{ route('inventory.store') }}" method="POST">
+                            @csrf
+                            <div class="modal-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label required">Item</label>
+                                        <input type="text" class="form-control" name="item" id="create_item" required>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label required">Stock Awal</label>
+                                        <input type="number" class="form-control" name="stock_awal" id="create_stock_awal" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label required">Satuan Awal</label>
+                                        <input type="text" class="form-control" name="unit_awal" id="create_unit_awal" required>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label required">Stock Akhir</label>
+                                        <input type="number" class="form-control" name="stock_akhir" id="create_stock_akhir" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label required">Satuan Akhir</label>
+                                        <input type="text" class="form-control" name="unit_akhir" id="create_unit_akhir" required>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Note</label>
+                                        <textarea class="form-control" name="note" id="create_note" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label required">Posisi</label>
+                                        <input type="text" class="form-control" name="posisi" id="create_posisi" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-primary">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- Edit Modal -->
             <div class="modal modal-blur fade" id="modal-edit-inventory" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -67,7 +133,7 @@
                                             required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label required">Unit Awal</label>
+                                        <label class="form-label required">Satuan Awal</label>
                                         <input type="text" class="form-control" name="unit_awal" id="edit_unit_awal"
                                             required>
                                     </div>
@@ -79,7 +145,7 @@
                                             required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label required">Unit Akhir</label>
+                                        <label class="form-label required">Satuan Akhir</label>
                                         <input type="text" class="form-control" name="unit_akhir" id="edit_unit_akhir"
                                             required>
                                     </div>
@@ -107,7 +173,7 @@
             </div>
 
             <!-- Delete Confirmation Modal -->
-            <div class="modal modal-blur fade" id="modal-delete-project" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal modal-blur fade" id="modal-delete-inventory" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -124,8 +190,8 @@
                             </svg>
                             <h3>Apakah Anda yakin?</h3>
                             <div class="text-secondary">
-                                Anda akan menghapus project <strong id="deleteProjectName"></strong>.
-                                Tindakan ini tidak dapat dibatalkan dan akan menghapus semua file terkait.
+                                Anda akan menghapus inventory <strong id="deleteInventoryName"></strong>.
+                                Tindakan ini tidak dapat dibatalkan.
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -137,7 +203,7 @@
                                         </button>
                                     </div>
                                     <div class="col">
-                                        <form id="deleteProjectForm" method="POST" style="display: inline;">
+                                        <form id="deleteInventoryForm" method="POST" style="display: inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger w-100">
@@ -195,14 +261,14 @@
                 <div class="card-body">
                     <x-datatable id="inventory-table" title="Inventory Management"
                         url="{{ route('inventory.datatable') }}" :columns="[
-                            'item',
-                            'stock_awal',
-                            'unit_awal',
-                            'stock_akhir',
-                            'unit_akhir',
-                            'note',
-                            'posisi',
-                            'action',
+                            ['data' => 'item', 'label' => 'Item'],
+                            ['data' => 'stock_awal', 'label' => 'Stock Awal'],
+                            ['data' => 'satuan_awal', 'label' => 'Satuan Awal'],
+                            ['data' => 'stock_akhir', 'label' => 'Stock Akhir'],
+                            ['data' => 'satuan_akhir', 'label' => 'Satuan Akhir'],
+                            ['data' => 'note', 'label' => 'Note'],
+                            ['data' => 'posisi', 'label' => 'Posisi'],
+                            ['data' => 'action', 'label' => 'Action', 'orderable' => false, 'searchable' => false],
                         ]" />
                 </div>
             </div>
@@ -218,6 +284,37 @@
 
     <script>
         $(document).ready(function() {
+            // Handle create form submission
+            $('#createInventoryForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const form = $(this);
+                const url = form.attr('action');
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function(response) {
+                        $('#modal-create-inventory').modal('hide');
+                        $('#inventory-table').DataTable().ajax.reload();
+                        
+                        // Reset form
+                        form[0].reset();
+                    },
+                    error: function(xhr) {
+                        const errors = xhr.responseJSON?.errors;
+                        let errorMsg = 'Error creating inventory';
+
+                        if (errors) {
+                            errorMsg = Object.values(errors).flat().join('\n');
+                        }
+
+                        alert(errorMsg);
+                    }
+                });
+            });
+
             // Handle edit button click
             $(document).on('click', '.edit-btn', function() {
                 const id = $(this).data('id');
@@ -261,8 +358,6 @@
                     success: function(response) {
                         $('#modal-edit-inventory').modal('hide');
                         $('#inventory-table').DataTable().ajax.reload();
-
-                       
                     },
                     error: function(xhr) {
                         const errors = xhr.responseJSON?.errors;
@@ -273,6 +368,37 @@
                         }
 
                         alert(errorMsg);
+                    }
+                });
+            });
+
+            // Handle delete button click
+            $(document).on('click', '.delete-btn', function() {
+                const id = $(this).data('id');
+                const itemName = $(this).data('item');
+                
+                $('#deleteInventoryName').text(itemName);
+                $('#deleteInventoryForm').attr('action', `/inventory/${id}`);
+                $('#modal-delete-inventory').modal('show');
+            });
+
+            // Handle delete form submission
+            $('#deleteInventoryForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const form = $(this);
+                const url = form.attr('action');
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function(response) {
+                        $('#modal-delete-inventory').modal('hide');
+                        $('#inventory-table').DataTable().ajax.reload();
+                    },
+                    error: function(xhr) {
+                        alert('Error deleting inventory');
                     }
                 });
             });

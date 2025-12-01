@@ -35,7 +35,7 @@ class ProductController extends Controller
 
     public function dataTableAPI(Request $request)
     {
-        $products = Product::query();
+        $products = Product::query()->orderBy('created_at', 'desc');
 
         $dataTable = DataTables::of($products)
             ->filter(function ($query) use ($request) {

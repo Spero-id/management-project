@@ -193,15 +193,6 @@
                                 @enderror
                             </div>
 
-                              <div class="col-md-12 mb-3">
-                                <label class="form-label">Target</label>
-                                <input type="text" name="target"
-                                    class="form-control @error('target') is-invalid @enderror"
-                                    placeholder="Enter target">
-                                @error('target')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
                             <!-- Password -->
                             <div class="col-md-12 mb-3">
                                 <label class="form-label required">Password</label>

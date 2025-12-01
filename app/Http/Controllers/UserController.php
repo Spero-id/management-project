@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\UserExport;
 use App\Models\Division;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
@@ -17,9 +21,94 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with('division')->get();
+        return view('user.index');
+    }
 
-        return view('user.index', compact('users'));
+    /**
+     * DataTable API for user listing.
+     */
+    public function datatableUsers(Request $request)
+    {
+        $query = User::with('division')->select('users.*');
+
+        return DataTables::eloquent($query)
+            ->addIndexColumn()
+            ->addColumn('name', function ($user) {
+                return '<a href="' . route('user.show', $user->id) . '" class="text-reset">' . e($user->name) . '</a>';
+            })
+            ->addColumn('join_date', function ($user) {
+                return $user->join_month . '-' . $user->join_year;
+            })
+            ->addColumn('division_code', function ($user) {
+                return $user->division->kode ?? '';
+            })
+            ->addColumn('division_name', function ($user) {
+                return $user->division->name ?? '';
+            })
+            ->addColumn('actions', function ($user) {
+                $viewBtn = '<a href="'.route('user.show', $user->id).'" class="btn btn-icon view-btn" aria-label="View" title="View user">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-eye">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <circle cx="12" cy="12" r="2" />
+                        <path d="M22 12c-2.667 4.667-6 7-10 7s-7.333-2.333-10-7c2.667-4.667 6-7 10-7s7.333 2.333 10 7" />
+                    </svg>
+                </a>';
+
+                $editBtn = '<a href="'.route('user.edit', $user->id).'" class="btn btn-icon edit-btn" aria-label="Edit" title="Edit user">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                        <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                        <path d="M16 5l3 3" />
+                    </svg>
+                </a>';
+
+                $editBtn = '<a href="'.route('user.edit', $user->id).'" class="btn btn-icon edit-btn" aria-label="Edit" title="Edit user">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                        <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                        <path d="M16 5l3 3" />
+                    </svg>
+                </a>';
+
+                $deleteBtn = '<button type="button" class="btn btn-icon delete-user-btn" data-user-id="'.$user->id.'" data-user-name="'.e($user->name).'" aria-label="Delete user" title="Delete user" data-bs-toggle="modal" data-bs-target="#modal-delete-user">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M4 7l16 0" />
+                        <path d="M10 11l0 6" />
+                        <path d="M14 11l0 6" />
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                    </svg>
+                </button>';
+
+                return $viewBtn.' '.$editBtn.' '.$deleteBtn;
+            })
+            ->filterColumn('division_code', function ($query, $keyword) {
+                $query->whereHas('division', function ($q) use ($keyword) {
+                    $q->where('kode', 'like', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('division_name', function ($query, $keyword) {
+                $query->whereHas('division', function ($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%");
+                });
+            })
+            ->orderColumn('division_code', function ($query, $order) {
+                $query->join('divisions', 'users.division_id', '=', 'divisions.id')
+                      ->orderBy('divisions.kode', $order);
+            })
+            ->orderColumn('division_name', function ($query, $order) {
+                $query->join('divisions', 'users.division_id', '=', 'divisions.id')
+                      ->orderBy('divisions.name', $order);
+            })
+            ->orderColumn('join_date', function ($query, $order) {
+                $query->orderBy('users.join_year', $order)
+                      ->orderBy('users.join_month', $order);
+            })
+            ->rawColumns(['name', 'actions'])
+            ->make(true);
     }
 
     /**
@@ -516,5 +605,13 @@ class UserController extends Controller
         }
 
         return $uniqueFilename;
+    }
+
+    /**
+     * Export users to Excel
+     */
+    public function export(): BinaryFileResponse
+    {
+        return Excel::download(new UserExport(), 'users-' . date('Y-m-d') . '.xlsx');
     }
 }
