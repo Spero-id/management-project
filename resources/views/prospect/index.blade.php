@@ -43,8 +43,6 @@
 
 
                 <a href={{ route('prospect.createEmpty') }} class="btn btn-primary btn-5 d-none d-sm-inline-block">
-                    <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
-
                     Create
                 </a>
 

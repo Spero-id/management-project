@@ -27,6 +27,8 @@ class InstallationController extends Controller
      */
     public function store(Request $request)
     {
+
+
         $validationRules = [
             'quotation_id' => 'required|exists:quotations,id',
             'installations' => 'required|array|min:1',
@@ -48,7 +50,7 @@ class InstallationController extends Controller
                     $quotation->accommodation_hotel_rooms = $request->accommodation_hotel_rooms;
                     $quotation->accommodation_people = $request->accommodation_people;
                     $quotation->accommodation_target_days = $request->accommodation_target_days;
-                    $quotation->accommodation_plane_ticket_price = $request->accommodation_plane_ticket_price;
+                    $quotation->accommodation_plane_ticket_price = (int) str_replace(['.', ','], ['', '.'], $request->accommodation_plane_ticket_price);
                     $quotation->accommodation_total_amount = $this->calculateAccommodationTotal($request);
                 } else {
                     $quotation->accommodation_wilayah = null;
@@ -140,7 +142,7 @@ class InstallationController extends Controller
                     $quotation->accommodation_hotel_rooms = $request->accommodation_hotel_rooms;
                     $quotation->accommodation_people = $request->accommodation_people;
                     $quotation->accommodation_target_days = $request->accommodation_target_days;
-                    $quotation->accommodation_plane_ticket_price = $request->accommodation_plane_ticket_price;
+                    $quotation->accommodation_plane_ticket_price = (int) str_replace(['.', ','], ['', '.'], $request->accommodation_plane_ticket_price);
                     $quotation->accommodation_total_amount = $this->calculateAccommodationTotal($request);
                 } else {
                     $quotation->accommodation_wilayah = null;

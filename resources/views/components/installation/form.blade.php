@@ -34,7 +34,7 @@
                 <div class="input-group">
 
                     <input class="form-control" disabled
-                        value="{{ \App\Helpers\CurrencyHelper::formatRupiah($quotation->total_amount) }}">
+                        value="{{ \App\Helpers\CurrencyHelper::formatRupiah($quotation->items?->sum('subtotal') ?? 0) }}">
                 </div>
 
             </div>
@@ -144,7 +144,7 @@
                                         isset($item->proportional) && $item->proportional !== null
                                             ? floatval($item->proportional)
                                             : 0;
-                                    $unitPrice = isset($allocations[$idx]) ? $allocations[$idx] : 0;
+                                    $unitPrice = $item->unit_price;
                                     $quantity = $item->quantity;
                                     $subtotal = $unitPrice * $quantity;
                                 @endphp
@@ -507,31 +507,41 @@
 
 @pushOnce('scripts')
     <script>
-        (function() {
-            window.__productTotal = {{ $quotation->total_amount ?? 0 }};
+        class InstallationFormManager {
+            constructor() {
+                this.config = {
+                    productTotal: {{ $quotation->items?->sum('subtotal') ?? 0 }},
+                    hotelPricePerNight: {{ $accommodationCategory[0]->price ?? 0 }},
+                    transportationPricePerPerson: {{ $accommodationCategory[1]->price ?? 0 }}
+                };
 
-            function parseNumber(str) {
-                if (str === null || str === undefined) return 0;
-                var s = String(str).replace(/[^0-9.-]+/g, '');
-                return parseFloat(s) || 0;
+                this.elements = {};
+                this.init();
             }
 
-            function formatNumber(n) {
+            // ===== UTILITY METHODS =====
+            parseNumber(str) {
+                if (str === null || str === undefined) return 0;
+                const cleanStr = String(str).replace(/[^0-9.-]+/g, '');
+                return parseFloat(cleanStr) || 0;
+            }
+
+            formatNumber(number) {
                 try {
-                    return new Intl.NumberFormat('id-ID').format(Math.round(n));
+                    return new Intl.NumberFormat('id-ID').format(Math.round(number));
                 } catch (e) {
-                    return Math.round(n).toString();
+                    return Math.round(number).toString();
                 }
             }
 
-            function formatRupiah(number) {
+            formatRupiah(number) {
                 return new Intl.NumberFormat('id-ID', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0
                 }).format(number);
             }
 
-            function formatCurrency(amount) {
+            formatCurrency(amount) {
                 return new Intl.NumberFormat('id-ID', {
                     style: 'currency',
                     currency: 'IDR',
@@ -540,265 +550,303 @@
                 }).format(amount);
             }
 
-            function parseRupiah(rupiahString) {
-                return parseFloat(rupiahString.replace(/[.,]/g, '')) || 0;
+            parseRupiah(rupiahString) {
+                return parseFloat(String(rupiahString).replace(/[.,]/g, '')) || 0;
             }
 
-            // ===== ACCOMMODATION FUNCTIONS =====
-            function safeAttachAccommodationListeners() {
-                const targetDaysEl = document.getElementById('accommodation_target_days');
-                const peopleEl = document.getElementById('accommodation_people');
-                const ticketEl = document.getElementById('accommodation_ticket_price');
-
-                if (targetDaysEl) {
-                    targetDaysEl.addEventListener('input', calculateHotelPrice);
-                }
-                if (peopleEl) {
-                    peopleEl.addEventListener('input', function() {
-                        calculateTicketPrice();
-                        calculateTransportationPrice();
-                        calculateHotelPrice();
-                    });
-                }
-                if (ticketEl) {
-                    ticketEl.addEventListener('input', calculateTicketPrice);
+            formatRupiahInput(input) {
+                let value = input.value.replace(/[^0-9]/g, '');
+                if (value) {
+                    value = parseInt(value, 10);
+                    input.value = this.formatRupiah(value);
+                } else {
+                    input.value = '';
                 }
             }
 
-            function calculateHotelPrice() {
-                const peopleEl = document.getElementById('accommodation_people');
-                const daysEl = document.getElementById('accommodation_target_days');
+            // ===== DOM HELPERS =====
+            getElementById(id) {
+                if (!this.elements[id]) {
+                    this.elements[id] = document.getElementById(id);
+                }
+                return this.elements[id];
+            }
+
+            querySelector(selector) {
+                return document.querySelector(selector);
+            }
+
+            debounce(func, delay = 50) {
+                let timeoutId;
+                return (...args) => {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
+
+            // ===== ACCOMMODATION CALCULATIONS =====
+            calculateHotelPrice() {
+                const peopleEl = this.getElementById('accommodation_people');
+                const daysEl = this.getElementById('accommodation_target_days');
+                
                 if (!peopleEl || !daysEl) return;
 
                 const people = parseInt(peopleEl.value) || 0;
                 const days = parseInt(daysEl.value) || 0;
                 const rooms = Math.ceil(people / 2);
 
-                const roomInput = document.getElementById('accommodation_rooms') || document.querySelector(
-                    'input[name="accommodation_hotel_rooms"]');
+                // Update rooms display
+                const roomInput = this.getElementById('accommodation_rooms') || 
+                                 this.querySelector('input[name="accommodation_hotel_rooms"]');
                 if (roomInput) roomInput.value = rooms;
 
+                // Calculate and update hotel price
                 if (rooms > 0 && days > 0) {
-                    const hotelPrice = {{ $accommodationCategory[0]->price ?? 0 }} * days * rooms;
-                    console.log({{ $accommodationCategory[0]->price ?? 0 }}, days, rooms);
+                    const hotelPrice = this.config.hotelPricePerNight * days * rooms;
+                    const hotelInput = this.getElementById('total_hotel_price_input') || 
+                                      this.querySelector('input[name="total_hotel_price"]');
 
-                    const hotelInput = document.getElementById('total_hotel_price_input') || document.querySelector(
-                        'input[name="total_hotel_price"]');
-
-                    if (hotelInput) hotelInput.value = formatRupiah(hotelPrice);
-
-                    // const summaryHotel = document.getElementById('summaryHotel');
-                    // if (summaryHotel) summaryHotel.textContent = formatRupiah(hotelPrice);
+                    if (hotelInput) {
+                        hotelInput.value = this.formatRupiah(hotelPrice);
+                    }
                 }
                 
-                // Recalculate total when hotel price changes
-                setTimeout(recalcAll, 50);
+                this.debouncedRecalculate();
             }
 
-            function formatRupiahInput(input) {
-                let value = input.value.replace(/[^0-9]/g, '');
-                if (value) {
-                    value = parseInt(value, 10);
-                    input.value = formatRupiah(value);
-                } else {
-                    input.value = '';
-                }
-            }
-
-            function calculateTicketPrice() {
-                const peopleEl = document.getElementById('accommodation_people');
-                const ticketEl = document.getElementById('accommodation_ticket_price');
+            calculateTicketPrice() {
+                const peopleEl = this.getElementById('accommodation_people');
+                const ticketEl = this.getElementById('accommodation_ticket_price');
+                
                 if (!peopleEl || !ticketEl) return;
 
                 const people = parseInt(peopleEl.value) || 0;
-                const ticket = parseRupiah(ticketEl.value) || 0;
+                const ticketPrice = this.parseRupiah(ticketEl.value) || 0;
 
-                if (people > 0 && ticket > 0) {
-                    const TicketPrice = ticket * people * 2;
-
-                    const flightInput = document.getElementById('flight_price_input');
-                    if (flightInput) flightInput.value = formatRupiah(TicketPrice);
-
-                    console.log(flightInput);
-
-                    // const summaryFlight = document.getElementById('summaryFlight');
-                    // if (summaryFlight) summaryFlight.textContent = formatRupiah(TicketPrice);
+                if (people > 0 && ticketPrice > 0) {
+                    const totalTicketPrice = ticketPrice * people * 2; // Round trip
+                    const flightInput = this.getElementById('flight_price_input');
+                    
+                    if (flightInput) {
+                        flightInput.value = this.formatRupiah(totalTicketPrice);
+                    }
                 }
                 
-                // Recalculate total when ticket price changes
-                setTimeout(recalcAll, 50);
+                this.debouncedRecalculate();
             }
 
-            function calculateTransportationPrice() {
-                const peopleEl = document.getElementById('accommodation_people');
+            calculateTransportationPrice() {
+                const peopleEl = this.getElementById('accommodation_people');
                 if (!peopleEl) return;
 
                 const people = parseInt(peopleEl.value) || 0;
 
                 if (people > 0) {
-                    const transportationPrice = {{ $accommodationCategory[1]->price ?? 0 }} * people;
-
-                    const transportationInput = document.getElementById('total_transportation_price');
-                    console.log(transportationInput);
-                    if (transportationInput) transportationInput.value = formatRupiah(transportationPrice);
-
+                    const transportationPrice = this.config.transportationPricePerPerson * people;
+                    const transportationInput = this.getElementById('total_transportation_price');
+                    
+                    if (transportationInput) {
+                        transportationInput.value = this.formatRupiah(transportationPrice);
+                    }
                 }
                 
-                // Recalculate total when transportation price changes
-                setTimeout(recalcAll, 50);
+                this.debouncedRecalculate();
             }
 
-            function calculateAccommodationTotal() {
-                const accommodationToggle = document.getElementById('accommodationToggle');
+            calculateAccommodationTotal() {
+                const accommodationToggle = this.getElementById('accommodationToggle');
                 if (!accommodationToggle || !accommodationToggle.checked) {
                     return 0;
                 }
 
-                const hotelInput = document.getElementById('total_hotel_price_input');
-                const flightInput = document.getElementById('flight_price_input');
-                const transportationInput = document.getElementById('total_transportation_price');
+                const hotelInput = this.getElementById('total_hotel_price_input');
+                const flightInput = this.getElementById('flight_price_input');
+                const transportationInput = this.getElementById('total_transportation_price');
 
-                const hotelPrice = parseRupiah((hotelInput ? hotelInput.value : '') || '0');
-                const flightPrice = parseRupiah((flightInput ? flightInput.value : '') || '0');
-                const transportationPrice = parseRupiah((transportationInput ? transportationInput.value : '') || '0');
+                const hotelPrice = this.parseRupiah(hotelInput?.value || '0');
+                const flightPrice = this.parseRupiah(flightInput?.value || '0');
+                const transportationPrice = this.parseRupiah(transportationInput?.value || '0');
 
                 return hotelPrice + flightPrice + transportationPrice;
             }
 
-            function recalcAll() {
-                var pctEl = document.getElementById('installationPercentage');
-                var percentage = parseFloat(pctEl ? pctEl.value : 0) || 0;
-                var productTotal = window.__productTotal || 0;
-                var installationTotal = productTotal * (percentage / 100);
+            // ===== INSTALLATION CALCULATIONS =====
+            calculateInstallationAllocations(installationTotal, rows) {
+                const allocations = new Array(rows.length).fill(0);
+                
+                // Calculate sum of proportional values
+                const sumProportional = rows.reduce((sum, row) => {
+                    const proportional = parseFloat(row.dataset.proportional) || 0;
+                    return sum + (proportional > 0 ? proportional : 0);
+                }, 0);
 
-                var rows = Array.from(document.querySelectorAll('.installation-row')) || [];
-                
-                var displayedInstallationTotal = 0;
-                
-                if (rows.length > 0) {
-                    var sumProportional = 0;
-                    rows.forEach(function(r) {
-                        var p = parseFloat(r.dataset.proportional) || 0;
-                        if (p > 0) sumProportional += p;
+                if (sumProportional > 0) {
+                    // Allocate based on proportional values
+                    let allocated = 0;
+                    const unproportionalIndexes = [];
+
+                    rows.forEach((row, index) => {
+                        const proportional = parseFloat(row.dataset.proportional) || 0;
+                        if (proportional > 0) {
+                            const allocation = installationTotal * (proportional / 100);
+                            allocations[index] = allocation;
+                            allocated += allocation;
+                        } else {
+                            unproportionalIndexes.push(index);
+                        }
                     });
 
-                    var allocations = new Array(rows.length).fill(0);
+                    // Distribute remaining amount to non-proportional items
+                    const remaining = installationTotal - allocated;
+                    const perUnproportional = unproportionalIndexes.length > 0 
+                        ? remaining / unproportionalIndexes.length 
+                        : 0;
 
-                    if (sumProportional > 0) {
-                        var allocated = 0;
-                        var unpropIndexes = [];
-                        rows.forEach(function(r, idx) {
-                            var p = parseFloat(r.dataset.proportional) || 0;
-                            if (p > 0) {
-                                var unit = installationTotal * (p / 100);
-                                allocations[idx] = unit;
-                                allocated += unit;
-                            } else {
-                                unpropIndexes.push(idx);
-                            }
-                        });
-                        var remaining = installationTotal - allocated;
-                        var perUnprop = unpropIndexes.length > 0 ? (remaining / unpropIndexes.length) : 0;
-                        unpropIndexes.forEach(function(i) {
-                            allocations[i] = perUnprop;
-                        });
-                    } else {
-                        var perItem = installationTotal / rows.length;
-                        for (var i = 0; i < rows.length; i++) allocations[i] = perItem;
-                    }
+                    unproportionalIndexes.forEach(index => {
+                        allocations[index] = perUnproportional;
+                    });
+                } else {
+                    // Equal distribution if no proportional values
+                    const perItem = installationTotal / rows.length;
+                    allocations.fill(perItem);
+                }
 
-                    rows.forEach(function(r, idx) {
-                        var qtyInput = r.querySelector('.installation-quantity-input');
-                        var unitInput = r.querySelector('.installation-unit-price-input');
-                        var subtotalDisplay = r.querySelector('.installation-subtotal-display');
+                return allocations;
+            }
 
-                        var qty = parseNumber(qtyInput ? qtyInput.value : 0);
-                        var unit = allocations[idx] || 0;
+            recalculateAll() {
+                const percentageEl = this.getElementById('installationPercentage');
+                const percentage = parseFloat(percentageEl?.value || 0) || 0;
+                const installationTotal = this.config.productTotal * (percentage / 100);
+
+                const rows = Array.from(document.querySelectorAll('.installation-row'));
+                let displayedInstallationTotal = 0;
+                
+                if (rows.length > 0) {
+                    const allocations = this.calculateInstallationAllocations(installationTotal, rows);
+
+                    rows.forEach((row, index) => {
+                        const qtyInput = row.querySelector('.installation-quantity-input');
+                        const unitInput = row.querySelector('.installation-unit-price-input');
+                        const subtotalDisplay = row.querySelector('.installation-subtotal-display');
+
+                        const quantity = this.parseNumber(qtyInput?.value || 0);
+                        const unitPrice = allocations[index] || 0;
 
                         if (unitInput) {
-                            unitInput.value = formatNumber(unit);
+                            unitInput.value = this.formatNumber(unitPrice);
                         }
 
-                        var subtotal = unit * qty;
+                        const subtotal = unitPrice * quantity;
                         if (subtotalDisplay) {
-                            subtotalDisplay.value = formatNumber(subtotal);
+                            subtotalDisplay.value = this.formatNumber(subtotal);
                         }
+                        
                         displayedInstallationTotal += subtotal;
                     });
                 }
 
-                // Calculate accommodation total
-                var accommodationTotal = calculateAccommodationTotal();
-                
-                // Update individual displays
-                var installOnlyEl = document.getElementById('installationOnlyAmount');
-                var accommodationOnlyEl = document.getElementById('accommodationOnlyAmount');
-                var grandTotalEl = document.getElementById('installationTotalAmount');
-                
-                if (installOnlyEl) installOnlyEl.textContent = 'Rp ' + formatNumber(displayedInstallationTotal);
-                if (accommodationOnlyEl) accommodationOnlyEl.textContent = 'Rp ' + formatNumber(accommodationTotal);
-                
-                var grandTotal = displayedInstallationTotal + accommodationTotal;
-                if (grandTotalEl) grandTotalEl.textContent = 'Rp ' + formatNumber(grandTotal);
+                // Update totals display
+                this.updateTotalDisplay(displayedInstallationTotal);
             }
 
-            function attachQuantityListeners() {
-                document.addEventListener('input', function(e) {
-                    if (e.target && e.target.classList && e.target.classList.contains(
-                            'installation-quantity-input')) {
-                        recalcAll();
+            updateTotalDisplay(installationTotal) {
+                const accommodationTotal = this.calculateAccommodationTotal();
+                const grandTotal = installationTotal + accommodationTotal;
+
+                const installOnlyEl = this.getElementById('installationOnlyAmount');
+                const accommodationOnlyEl = this.getElementById('accommodationOnlyAmount');
+                const grandTotalEl = this.getElementById('installationTotalAmount');
+                
+                if (installOnlyEl) {
+                    installOnlyEl.textContent = `Rp ${this.formatNumber(installationTotal)}`;
+                }
+                if (accommodationOnlyEl) {
+                    accommodationOnlyEl.textContent = `Rp ${this.formatNumber(accommodationTotal)}`;
+                }
+                if (grandTotalEl) {
+                    grandTotalEl.textContent = `Rp ${this.formatNumber(grandTotal)}`;
+                }
+            }
+
+            // ===== EVENT LISTENERS =====
+            attachInstallationListeners() {
+                const percentageEl = this.getElementById('installationPercentage');
+                if (percentageEl) {
+                    percentageEl.addEventListener('input', () => this.recalculateAll());
+                }
+
+                // Quantity input listeners
+                document.addEventListener('input', (e) => {
+                    if (e.target?.classList?.contains('installation-quantity-input')) {
+                        this.recalculateAll();
                     }
                 });
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
-                var pctEl = document.getElementById('installationPercentage');
-                if (pctEl) {
-                    pctEl.addEventListener('input', function() {
-                        recalcAll();
+            attachAccommodationListeners() {
+                const elements = {
+                    targetDays: this.getElementById('accommodation_target_days'),
+                    people: this.getElementById('accommodation_people'),
+                    ticketPrice: this.getElementById('accommodation_ticket_price'),
+                    toggle: this.getElementById('accommodationToggle'),
+                    container: this.getElementById('accommodationFormContainer'),
+                    hiddenInput: this.getElementById('need_accommodation_input')
+                };
+
+                // Target days listener
+                if (elements.targetDays) {
+                    elements.targetDays.addEventListener('input', () => this.calculateHotelPrice());
+                }
+
+                // People count listener
+                if (elements.people) {
+                    elements.people.addEventListener('input', () => {
+                        this.calculateTicketPrice();
+                        this.calculateTransportationPrice();
+                        this.calculateHotelPrice();
                     });
                 }
 
-                attachQuantityListeners();
-                recalcAll();
-
-                // Accommodation toggle listeners
-                const accommodationToggle = document.getElementById('accommodationToggle');
-                const accommodationFormContainer = document.getElementById('accommodationFormContainer');
-                const needAccommodationInput = document.getElementById('need_accommodation_input');
-
-                if (accommodationToggle) {
-                    accommodationToggle.addEventListener('change', function() {
-                        if (this.checked) {
-                            accommodationFormContainer.style.display = 'block';
-                            needAccommodationInput.value = '1';
-                        } else {
-                            accommodationFormContainer.style.display = 'none';
-                            needAccommodationInput.value = '0';
-                        }
-                        // Recalculate total when accommodation toggle changes
-                        recalcAll();
-                    });
-                }
-
-                // Attach accommodation field listeners
-                safeAttachAccommodationListeners();
-
-                // Format Rupiah on input for ticket price
-                const ticketPriceInput = document.getElementById('accommodation_ticket_price');
-                if (ticketPriceInput) {
-                    ticketPriceInput.addEventListener('input', function() {
-                        formatRupiahInput(this);
-                        calculateTicketPrice();
+                // Ticket price listener with formatting
+                if (elements.ticketPrice) {
+                    elements.ticketPrice.addEventListener('input', () => {
+                        this.formatRupiahInput(elements.ticketPrice);
+                        this.calculateTicketPrice();
                     });
 
                     // Format on load
-                    if (ticketPriceInput.value) {
-                        formatRupiahInput(ticketPriceInput);
+                    if (elements.ticketPrice.value) {
+                        this.formatRupiahInput(elements.ticketPrice);
                     }
                 }
-            });
-        })
-        ();
+
+                // Accommodation toggle listener
+                if (elements.toggle && elements.container && elements.hiddenInput) {
+                    elements.toggle.addEventListener('change', () => {
+                        const isChecked = elements.toggle.checked;
+                        elements.container.style.display = isChecked ? 'block' : 'none';
+                        elements.hiddenInput.value = isChecked ? '1' : '0';
+                        this.recalculateAll();
+                    });
+                }
+            }
+
+            // ===== INITIALIZATION =====
+            init() {
+                // Create debounced recalculate function
+                this.debouncedRecalculate = this.debounce(() => this.recalculateAll(), 50);
+
+                document.addEventListener('DOMContentLoaded', () => {
+                    this.attachInstallationListeners();
+                    this.attachAccommodationListeners();
+                    this.recalculateAll();
+                });
+            }
+        }
+
+        // Initialize the form manager
+        new InstallationFormManager();
+    </script>
     </script>
 @endPushOnce

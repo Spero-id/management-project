@@ -132,6 +132,7 @@
                                                     ($item->installation->title ?? 'Installation'),
                                                 'proportional' => $item->installation->proportional ?? null,
                                                 'quantity' => $item->quantity,
+                                                'unit_price' => $item->unit_price,
                                             ];
                                         })
                                         : \App\Models\Installation::all()->map(function ($i) {
@@ -140,6 +141,7 @@
                                                 'text' => $i->name ?? ($i->title ?? 'Installation'),
                                                 'proportional' => $i->proportional ?? null,
                                                 'quantity' => 0,
+                                                'unit_price' => 0,
                                             ];
                                         });
                             @endphp

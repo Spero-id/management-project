@@ -28,7 +28,7 @@ final class ProductSeeder extends Seeder
         ];
 
         $exchangeSetting = Setting::where('setting_name', 'currency_exchange_rate')->first();
-        $exchangeRate = $exchangeSetting ? (float) $exchangeSetting->setting_value : 17000.0;
+        $exchangeRate = $exchangeSetting ? (int) $exchangeSetting->setting_value : 17000;
 
         foreach ($products as $productData) {
             $pricing = Product::calculatePricing(

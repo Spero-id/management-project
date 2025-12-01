@@ -10,20 +10,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Product extends Model
 {
     use SoftDeletes;
-    
+
     protected $fillable = [
-       "name",
-       "description",
-       "price",
-       "brand",
-       "type",
-       "distributor_origin",
-       "weight",
-       "shipping_fee_by_air",
-       "dollar_base_price",
-       "base_price_rupiah_for_luar_negeri",
-       "base_price_rupiah_for_jakarta",
-       "margin_percentage",
+        'name',
+        'description',
+        'price',
+        'brand',
+        'type',
+        'distributor_origin',
+        'weight',
+        'shipping_fee_by_air',
+        'dollar_base_price',
+        'base_price_rupiah_for_luar_negeri',
+        'base_price_rupiah_for_jakarta',
+        'margin_percentage',
     ];
 
     protected $casts = [
@@ -35,7 +35,7 @@ class Product extends Model
      */
     public static function calculatePricing(
         float $dollarBasePrice,
-        float $exchangeRate,
+        int $exchangeRate,
         float $shippingFeeByAir,
         float $weight,
         float $marginPercentage

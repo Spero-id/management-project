@@ -187,7 +187,7 @@ class ProductController extends Controller
         ]);
 
         $exchangeSetting = Setting::where('setting_name', 'currency_exchange_rate')->first();
-        $exchangeRate = $exchangeSetting ? (float) $exchangeSetting->setting_value : 17000.0;
+        $exchangeRate = $exchangeSetting ? (int) $exchangeSetting->setting_value : 17000.0;
 
         $pricing = Product::calculatePricing(
             (float) $validated['dollar_base_price'],
