@@ -10,6 +10,7 @@ class ProjectOrder extends Model
     protected $fillable = [
         'project_id',
         'is_confirmed',
+        'is_order_confirmed',
     ];
 
     public function project()

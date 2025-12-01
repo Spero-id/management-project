@@ -52,10 +52,6 @@ class ProjectOrderController extends Controller
             ->whereIn('id', $projectOrder)
             ->get();
 
-
-            
-
-
         return view('finance-project-order.index', compact('projects'));
     }
 
@@ -119,7 +115,7 @@ class ProjectOrderController extends Controller
             $currentStockUsed = $orderItem->stock_used ?? 0;
             $currentDeliveryQty = $orderItem->delivery_qty ?? 0;
             $requiredQty = $orderItem->required_qty ?? ($quotationItem->quantity ?? 0);
-            $remainingQty = $orderItem->remaining_qty ;
+            $remainingQty = $orderItem->remaining_qty;
 
             // Determine status based on stock usage
             $status = 'pending';
@@ -366,53 +362,70 @@ class ProjectOrderController extends Controller
             return DataTables::of(collect([]))->make(true);
         }
 
+        // Get all delivery orders for this project with their items and products
+        $deliveryOrders = \App\Models\DeliveryOrder::where('project_id', $projectId)
+            ->with(['items.product'])
+            ->get();
+
+        // Get project to access quotation data for required quantities
         $project = Project::with('prospect.quotations.items.product')
             ->findOrFail($projectId);
 
-        // Get all delivery orders for this project with their items
-        $deliveryOrders = \App\Models\DeliveryOrder::where('project_id', $projectId)
-            ->with('items')
-            ->get();
-
-        // Create a map of product_id => total delivered quantity
-        $deliveredQtyMap = [];
-        foreach ($deliveryOrders as $do) {
-            foreach ($do->items as $item) {
-                $productId = $item->product_id;
-                if (! isset($deliveredQtyMap[$productId])) {
-                    $deliveredQtyMap[$productId] = 0;
+        // Create a map of product_id => required quantity from quotations
+        $requiredQtyMap = [];
+        if ($project->prospect && $project->prospect->quotations) {
+            foreach ($project->prospect->quotations as $quotation) {
+                foreach ($quotation->items as $item) {
+                    $productId = $item->product_id;
+                    if (! isset($requiredQtyMap[$productId])) {
+                        $requiredQtyMap[$productId] = 0;
+                    }
+                    $requiredQtyMap[$productId] += $item->quantity;
                 }
-                $deliveredQtyMap[$productId] += $item->qty;
             }
         }
 
         $deliveryItems = collect([]);
 
-        if ($project->prospect && $project->prospect->quotations) {
-            foreach ($project->prospect->quotations as $quotation) {
-                foreach ($quotation->items as $item) {
-                    $requiredQty = $item->quantity;
-                    $deliveredQty = $deliveredQtyMap[$item->product_id] ?? 0;
+        // Process delivery orders to create delivery items
+        foreach ($deliveryOrders as $deliveryOrder) {
+            foreach ($deliveryOrder->items as $item) {
+                $product = $item->product;
+                $requiredQty = $requiredQtyMap[$item->product_id] ?? 0;
+                $deliveredQty = $item->qty;
 
-                    // Determine delivery status
-                    if ($deliveredQty >= $requiredQty) {
-                        $status = 'Lengkap';
-                        $statusClass = 'bg-success';
-                    } elseif ($deliveredQty > 0 && $deliveredQty < $requiredQty) {
-                        $status = 'Parsial';
-                        $statusClass = 'bg-warning';
-                    } else {
-                        $status = 'Belum dikirim';
-                        $statusClass = 'bg-secondary';
-                    }
+                // Calculate total delivered for this product across all delivery orders
+                $totalDeliveredQty = $deliveryOrders->flatMap(function ($do) use ($item) {
+                    return $do->items->where('product_id', $item->product_id);
+                })->sum('qty');
 
+                // Determine delivery status based on total delivered vs required
+                if ($totalDeliveredQty >= $requiredQty) {
+                    $status = 'Lengkap';
+                    $statusClass = 'bg-success';
+                } elseif ($totalDeliveredQty > 0 && $totalDeliveredQty < $requiredQty) {
+                    $status = 'Parsial';
+                    $statusClass = 'bg-warning';
+                } else {
+                    $status = 'Belum dikirim';
+                    $statusClass = 'bg-secondary';
+                }
+
+                // Check if this product is already in the collection to avoid duplicates
+                $existingItem = $deliveryItems->firstWhere('product_id', $item->product_id);
+
+                if (! $existingItem) {
                     $deliveryItems->push([
                         'id' => $item->id,
-                        'brand' => $item->product->brand ?? '-',
-                        'model_type' => $item->product->type ?? $item->product->name ?? '-',
+                        'product_id' => $item->product_id,
+                        'delivery_order_id' => $deliveryOrder->id,
+                        'delivery_order_number' => $deliveryOrder->delivery_number ?? 'DO-'.$deliveryOrder->id,
+                        'delivery_date' => $deliveryOrder->delivery_date?->format('d/m/Y') ?? '-',
+                        'brand' => $product->brand ?? '-',
+                        'model_type' => $product->type ?? $product->name ?? '-',
                         'qty' => $requiredQty,
-                        'delivered' => $deliveredQty,
-                        'remaining' => max(0, $requiredQty - $deliveredQty),
+                        'delivered' => $totalDeliveredQty,
+                        'remaining' => max(0, $requiredQty - $totalDeliveredQty),
                         'status' => $status,
                         'status_class' => $statusClass,
                     ]);
@@ -420,11 +433,49 @@ class ProjectOrderController extends Controller
             }
         }
 
+        // If there are no delivery orders but there are quotation items, show them as "Belum dikirim"
+        if ($deliveryItems->isEmpty() && isset($requiredQtyMap) && ! empty($requiredQtyMap)) {
+            foreach ($requiredQtyMap as $productId => $requiredQty) {
+                // Find the product from quotation items
+                $quotationItem = null;
+                foreach ($project->prospect->quotations as $quotation) {
+                    $quotationItem = $quotation->items->firstWhere('product_id', $productId);
+                    if ($quotationItem) {
+                        break;
+                    }
+                }
+
+                if ($quotationItem) {
+                    $deliveryItems->push([
+                        'id' => $quotationItem->id,
+                        'product_id' => $productId,
+                        'delivery_order_id' => null,
+                        'delivery_order_number' => '-',
+                        'delivery_date' => '-',
+                        'brand' => $quotationItem->product->brand ?? '-',
+                        'model_type' => $quotationItem->product->type ?? $quotationItem->product->name ?? '-',
+                        'qty' => $requiredQty,
+                        'delivered' => 0,
+                        'remaining' => $requiredQty,
+                        'status' => 'Belum dikirim',
+                        'status_class' => 'bg-secondary',
+                    ]);
+                }
+            }
+        }
+
         return DataTables::of($deliveryItems)
+            ->addColumn('delivery_info', function ($row) {
+                if ($row['delivery_order_id']) {
+                    return '<strong>'.$row['delivery_order_number'].'</strong><br><small>'.$row['delivery_date'].'</small>';
+                }
+
+                return '-';
+            })
             ->addColumn('status', function ($row) {
                 return '<span class="badge '.$row['status_class'].' text-white">'.$row['status'].'</span>';
             })
-            ->rawColumns(['status'])
+            ->rawColumns(['delivery_info', 'status'])
             ->make(true);
     }
 
@@ -558,16 +609,22 @@ class ProjectOrderController extends Controller
     {
         try {
             $projectOrder = ProjectOrder::where('project_id', $projectId)->firstOrFail();
-
             $projectOrder->update(['is_confirmed' => true]);
-
+            $allProductsAvailable = true;
             foreach ($projectOrder->items as $item) {
                 $productStock = ProductStock::firstOrNew([
                     'product_id' => $item->product_id,
                 ]);
+                if ($productStock->stock_quantity < $item->stock_used) {
+                    $allProductsAvailable = false;
+                }
+
                 $productStock->stock_quantity = ($productStock->stock_quantity ?? 0) - $item->stock_used;
                 $productStock->save();
+
             }
+            $projectOrder->update(['is_order_confirmed' => $allProductsAvailable]);
+            $projectOrder->save();
 
             return response()->json([
                 'success' => true,
