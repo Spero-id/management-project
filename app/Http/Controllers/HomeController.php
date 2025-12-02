@@ -411,7 +411,11 @@ class HomeController extends Controller
     {
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
-        $user = Auth::user();
+        if(!$userId) {
+            $user = Auth::user();
+        }else{
+            $user = User::find($userId);
+        }
         $salesTarget = $user->currentYearSalesTarget;
 
         $prospectQuery = $userId 
