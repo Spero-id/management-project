@@ -246,7 +246,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
+            // 'price' => 'required|numeric|min:0',
             'brand' => 'nullable|string|max:255',
             'type' => 'nullable|string|max:255',
             'distributor_origin' => 'nullable|string|max:255',
@@ -254,6 +254,7 @@ class ProductController extends Controller
             'shipping_fee_by_air' => 'nullable|numeric|min:0',
             'dollar_base_price' => 'nullable|numeric|min:0',
         ]);
+
 
         $product->update($validated);
 
