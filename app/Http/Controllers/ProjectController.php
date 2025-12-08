@@ -18,6 +18,9 @@ class ProjectController extends Controller
     {
 
         $projects = Project::with(['status', 'manager', 'creator'])->get();
+        foreach ($projects as $project) {
+            $project->percentage = $project->calculateProgressPercentage();
+        }
 
         return view('project.index', compact('projects'));
 

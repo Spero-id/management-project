@@ -47,7 +47,7 @@ class Prospect extends Model
 
     public function preSalesPerson()
     {
-        return $this->belongsTo(User::class, 'pre_sales');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function creator()

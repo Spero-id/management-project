@@ -29,7 +29,9 @@ class UserController extends Controller
      */
     public function datatableUsers(Request $request)
     {
-        $query = User::with('division')->select('users.*');
+        $query = User::with('division')
+            ->select('users.*')
+            ->orderByDesc('users.created_at');
 
         return DataTables::eloquent($query)
             ->addIndexColumn()

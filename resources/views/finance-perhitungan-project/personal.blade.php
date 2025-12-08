@@ -391,6 +391,16 @@
                                             <td class="text-end fw-bold">Rp {{ number_format($totalBaseCost, 0, ',', '.') }}</td>
                                         </tr>
                                         
+                                        <tr>
+                                            <td class="fw-bold">PPN 11%</td>
+                                            <td class="text-end fw-bold">Rp {{ number_format($totalEquipments * 0.11, 0, ',', '.') }}</td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td class="fw-bold">TOTAL DENGAN PPN</td>
+                                            <td class="text-end fw-bold">Rp {{ number_format($totalEquipments * 1.11, 0, ',', '.') }}</td>
+                                        </tr>
+                                        
                                         <tr class="table-success">
                                             <td class="fw-bold">PROFIT</td>
                                             <td class="text-end fw-bold">Rp {{ number_format($profit, 0, ',', '.') }}</td>

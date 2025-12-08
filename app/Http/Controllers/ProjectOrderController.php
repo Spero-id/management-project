@@ -615,7 +615,7 @@ class ProjectOrderController extends Controller
                 $productStock = ProductStock::firstOrNew([
                     'product_id' => $item->product_id,
                 ]);
-                if ($productStock->stock_quantity < $item->stock_used) {
+                if ($productStock->stock_quantity <= $item->stock_used) {
                     $allProductsAvailable = false;
                 }
 

@@ -116,4 +116,23 @@ class Project extends Model
     {
         return $this->morphMany(\App\Models\MinuteOfMeeting::class, 'noteable');
     }
+
+    /**
+     * Calculate project progress percentage based on WBS items completion.
+     */
+    public function calculateProgressPercentage(): float
+    {
+        $totalTasks = $this->wbsItems()->where('item_type', 'task')->count();
+        
+        if ($totalTasks === 0) {
+            return 0;
+        }
+
+        $completedTasks = $this->wbsItems()
+            ->where('item_type', 'task')
+            ->where('is_done', true)
+            ->count();
+
+        return round(($completedTasks / $totalTasks) * 100, 1);
+    }
 }

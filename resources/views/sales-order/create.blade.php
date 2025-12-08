@@ -474,41 +474,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-vcenter card-table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Accommodation</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($quotation->accommodationItems as $item)
-                                            <tr>
-                                                <td>
-                                                    <div class="fw-bold">{{ $item->name }}</div>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td class="text-center py-4">
-                                                    <div class="empty">
-                                                        <p class="empty-title">No accommodation items found</p>
-                                                        <p class="empty-subtitle text-muted">
-                                                            This quotation doesn't have any accommodation items yet.
-                                                        </p>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                    {{-- Accommodation per-item prices and total removed --}}
-                                    
-                                    
-                                    
-                                </table>
-                            </div>
-                        </div>
+                      
                     </div>
                 </div>
             </div>

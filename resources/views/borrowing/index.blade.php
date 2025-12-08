@@ -148,6 +148,7 @@
                                     <div class="col-md-6">
                                         <label class="form-label required">Jumlah barang</label>
                                         <input type="number" class="form-control" id="temp_jumlah" placeholder="Masukkan jumlah" min="1">
+                                        <div class="invalid-feedback" id="temp_jumlah_error"></div>
                                     </div>
                                 </div>
                                 
@@ -472,15 +473,46 @@
                             type: type
                         },
                         success: function(response) {
-                            $('#temp_stok_tersedia').val(response.stock || 0);
+                            const stock = response.stock || 0;
+                            $('#temp_stok_tersedia').val(stock);
+                            // Update max attribute for quantity input
+                            $('#temp_jumlah').attr('max', stock);
                         },
                         error: function() {
                             $('#temp_stok_tersedia').val(0);
+                            $('#temp_jumlah').attr('max', 0);
                         }
                     });
                 } else {
                     $('#temp_stok_tersedia').val('');
+                    $('#temp_jumlah').removeAttr('max');
                 }
+            });
+
+            // Validate quantity input against available stock
+            $('#temp_jumlah').on('input', function() {
+                const jumlah = parseInt($(this).val());
+                const stokTersedia = parseInt($('#temp_stok_tersedia').val()) || 0;
+                const $input = $(this);
+                const $errorDiv = $('#temp_jumlah_error');
+
+                // Remove previous validation classes
+                $input.removeClass('is-valid is-invalid');
+                $errorDiv.text('');
+
+                if (isNaN(jumlah) || jumlah <= 0) {
+                    $input.addClass('is-invalid');
+                    $errorDiv.text('Jumlah harus lebih dari 0');
+                    return;
+                }
+
+                if (jumlah > stokTersedia) {
+                    $input.addClass('is-invalid');
+                    $errorDiv.text(`Jumlah tidak boleh melebihi stok yang tersedia (${stokTersedia})`);
+                    return;
+                }
+
+                $input.addClass('is-valid');
             });
             
             // Open modal for creating new borrowing
@@ -522,11 +554,23 @@
             function addItemToTable() {
                 const brand = $('#temp_brand').val();
                 const type = $('#temp_type').val();
-                const stokTersedia = $('#temp_stok_tersedia').val();
-                const jumlah = $('#temp_jumlah').val();
+                const stokTersedia = parseInt($('#temp_stok_tersedia').val()) || 0;
+                const jumlah = parseInt($('#temp_jumlah').val()) || 0;
                 
+                // Basic validation
                 if (!brand || !type || !jumlah) {
                     alert('Mohon isi Brand, Type, dan Jumlah barang');
+                    return;
+                }
+
+                // Stock validation
+                if (jumlah > stokTersedia) {
+                    alert(`Jumlah barang (${jumlah}) tidak boleh melebihi stok yang tersedia (${stokTersedia})`);
+                    return;
+                }
+
+                if (jumlah <= 0) {
+                    alert('Jumlah barang harus lebih dari 0');
                     return;
                 }
                 
@@ -535,7 +579,7 @@
                     id: itemCounter,
                     brand: brand,
                     type: type,
-                    stok_tersedia: stokTersedia || null,
+                    stok_tersedia: stokTersedia,
                     jumlah_barang: jumlah
                 });
                 
@@ -580,7 +624,8 @@
                 $('#temp_brand').val(null).trigger('change');
                 $('#temp_type').val(null).trigger('change');
                 $('#temp_stok_tersedia').val('');
-                $('#temp_jumlah').val('');
+                $('#temp_jumlah').val('').removeClass('is-valid is-invalid');
+                $('#temp_jumlah_error').text('');
             }
             
             // Submit form
@@ -735,7 +780,8 @@
                 
                 // Clear temp fields
                 $('#temp_stok_tersedia').val('');
-                $('#temp_jumlah').val('');
+                $('#temp_jumlah').val('').removeClass('is-valid is-invalid');
+                $('#temp_jumlah_error').text('');
                 
                 // Reset items
                 itemsData = [];

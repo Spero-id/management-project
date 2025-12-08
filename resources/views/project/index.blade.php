@@ -165,9 +165,9 @@
                                             <path d="M6 15l6 -6l6 6"></path>
                                         </svg>
                                     </th>
+                                    <th>Project Name</th>
                                     <th>Client Name</th>
-                                    <th>Target Timeline</th>
-                                    <th>Status</th>
+                                    <th>Execution Time</th>
                                     <th>Progress</th>
                                     <th>Created Date</th>
                                     <th>Company</th>
@@ -179,16 +179,14 @@
                                 @foreach ($projects as $index => $project)
                                     <tr>
                                         <td><span class="text-secondary">{{ $index + 1 }}</span></td>
-
+                                        <td>{{ $project->project_name ?? 'N/A' }}</td>
                                         <td>{{ $project->client_name ?? 'N/A' }}</td>
                                         <td>
-                                            <span class="text-muted">{{ $project->target_from_month }}
-                                                {{ $project->target_from_year }} - {{ $project->target_to_month }}
-                                                {{ $project->target_to_year }}</span>
+                                            <span class="text-muted">{{ $project->execution_time }} Days</span>
                                         </td>
-                                        <td>
+                                        {{-- <td>
                                             {{ $project->status }}
-                                        </td>
+                                        </td> --}}
                                         <td>
                                             {{ $project->percentage }}%
                                         </td>

@@ -168,11 +168,8 @@
                 <div class="sales-team-selector">
                     <h3 class="mb-3">SALES TEAM</h3>
                     <div class="d-flex flex-wrap" style="max-height: 330px; overflow-y: auto; gap: .5rem;">
-                        <button class="team-button active" data-team="all">
-                            ALL TEAMS
-                        </button>
-                        @forelse($salesTeams as $team)
-                            <button class="team-button" data-team="{{ $team['id'] }}">
+                        @forelse($salesTeams as $index => $team)
+                            <button class="team-button {{ $index === 0 ? 'active' : '' }}" data-team="{{ $team['id'] }}">
                                 {{ $team['name'] }}
                             </button>
                         @empty
@@ -224,7 +221,7 @@
                 </div>
             </div>
             
-            <!-- Monthly Performance Chart -->
+        <!-- Monthly Performance Chart -->
             <div class="col-lg-6">
                 <div class="chart-container">
                     <h4 class="chart-title">YEARLY PERFORMANCE OVERVIEW</h4>
@@ -277,6 +274,7 @@
                                         </th>
                                         <th>Company</th>
                                         <th>Customer Name</th>
+                                        <th>Sales Name</th>
                                         <th>No Quotation</th>
                                         <th>Target Deal</th>
                                         <th>Status</th>
@@ -293,6 +291,7 @@
                                                     tabindex="-1">{{ $prospect->company }}</a>
                                             </td>
                                             <td>{{ $prospect->customer_name }}</td>
+                                            <td>{{ $prospect->preSalesPerson?->name ?? '-' }}</td>
                                             <td>
                                                 @if ($prospect->quotations->isNotEmpty())
                                                     <ul class="list-unstyled mb-0">
@@ -496,6 +495,16 @@
                     updatePagination();
                 }
             });
+
+            // Auto-load first team data on page load
+            const firstTeamButton = $('.team-button.active');
+            if (firstTeamButton.length > 0) {
+                const firstTeamId = firstTeamButton.data('team');
+                if (firstTeamId) {
+                    console.log('Auto-loading first team data:', firstTeamId);
+                    updateDashboardData(firstTeamId);
+                }
+            }
 
             // Connect custom search input to DataTable search
             $('#customSearch').on('keyup', function() {
@@ -725,6 +734,7 @@
                     '',
                     '',
                     '',
+                    '',
                     ''
                 ]);
             } else {
@@ -787,12 +797,14 @@
                     }
                     
                     const createdDate = new Date(prospect.created_at).toISOString().split('T')[0];
+                    const salesName = prospect.pre_sales_person ? prospect.pre_sales_person.name : '-';
                     
                     // Add row to DataTable
                     prospectsTable.row.add([
                         `<span class="text-secondary">${index + 1}</span>`,
                         `<a href="#" class="text-reset" tabindex="-1">${prospect.company || ''}</a>`,
                         prospect.customer_name || '',
+                        salesName,
                         quotationsList,
                         prospect.target_deal || '',
                         `<span class="badge me-1" style="background-color: ${statusColor};"></span>${statusName}`,
