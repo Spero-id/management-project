@@ -259,13 +259,13 @@ class HomeController extends Controller
                 $monthlyBasePrice = $this->getMonthlyBasePriceForUser($userId, $month, $currentYear);
                 $monthlyGrossProfit = $monthlyOmset - $monthlyBasePrice;
             } else {
-                $monthlyOmset = Quotation::where('status', 'accepted')
+                $monthlyOmset = Quotation::whereHas('prospect', fn ($query) => $query->where('is_converted_to_project', true))
                     ->whereMonth('created_at', $month)
                     ->whereYear('created_at', $currentYear)
                     ->get()
                     ->sum(fn ($quotation) => $quotation->calculateGrandTotalPrice()['grand_total_price'] ?? 0);
+                $monthlyBasePrice = Quotation::whereHas('prospect', fn ($query) => $query->where('is_converted_to_project', true))
 
-                $monthlyBasePrice = Quotation::where('status', 'accepted')
                     ->whereMonth('created_at', $month)
                     ->whereYear('created_at', $currentYear)
                     ->get()
@@ -389,12 +389,12 @@ class HomeController extends Controller
     {
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
-        if (! $userId) {
-            $user = Auth::user();
-        } else {
+        $salesTarget = null;
+
+        if ($userId) {
             $user = User::find($userId);
+            $salesTarget = $user?->currentYearSalesTarget;
         }
-        $salesTarget = $user->currentYearSalesTarget;
 
         $prospectQuery = $userId
             ? fn ($query) => $query->whereHas('quotations', fn ($q) => $q->where('created_by', $userId))

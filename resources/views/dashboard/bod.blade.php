@@ -168,8 +168,11 @@
                 <div class="sales-team-selector">
                     <h3 class="mb-3">SALES TEAM</h3>
                     <div class="d-flex flex-wrap" style="max-height: 330px; overflow-y: auto; gap: .5rem;">
-                        @forelse($salesTeams as $index => $team)
-                            <button class="team-button {{ $index === 0 ? 'active' : '' }}" data-team="{{ $team['id'] }}">
+                        <button class="team-button active" data-team="all">
+                            ALL SALES
+                        </button>
+                        @forelse($salesTeams as $team)
+                            <button class="team-button" data-team="{{ $team['id'] }}">
                                 {{ $team['name'] }}
                             </button>
                         @empty
@@ -496,15 +499,8 @@
                 }
             });
 
-            // Auto-load first team data on page load
-            const firstTeamButton = $('.team-button.active');
-            if (firstTeamButton.length > 0) {
-                const firstTeamId = firstTeamButton.data('team');
-                if (firstTeamId) {
-                    console.log('Auto-loading first team data:', firstTeamId);
-                    updateDashboardData(firstTeamId);
-                }
-            }
+            // Note: Initial data is already loaded from server for "ALL SALES"
+            // No need to call updateDashboardData on first load
 
             // Connect custom search input to DataTable search
             $('#customSearch').on('keyup', function() {

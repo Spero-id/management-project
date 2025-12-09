@@ -185,7 +185,7 @@
                                     <h5 class="modal-title">Import Products</h5>
                                 </div>
 
-                                <div class="alert  alert-important alert-info mx-3 mt-3" role="alert">
+                                <div class="alert mx-3 mt-3" role="alert">
                                     <div class="d-flex">
                                         <div>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
