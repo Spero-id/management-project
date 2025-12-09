@@ -632,18 +632,7 @@
             prospectsTable.clear();
             
             if (prospects.length === 0) {
-                // Add empty state row
-                prospectsTable.row.add([
-                    '',
-                    '<div class="text-center py-5"><div class="text-muted"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><path d="m22 2-5 10-3-3-10 5"></path></svg><h5>No prospects found</h5><p>This sales team member has no prospects yet.</p></div></div>',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    ''
-                ]);
+              
             } else {
                 prospects.forEach(function(prospect, index) {
                     let quotationsList = '';
